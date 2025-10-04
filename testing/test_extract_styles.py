@@ -1,10 +1,10 @@
 """
 Tests for extract_styles_from_projects.py
 
-Version: 0.1.0
+Version: 0.2.0
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 import os
 import tempfile

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-10-04
+
+### Changed
+- Improved symbol naming for unknown layers: now uses symbol type prefix (Marker, Line, Fill) instead of "UnknownLayer"
+- Added automatic tagging of all extracted styles with the project filename for easy identification
+- Enhanced color ramp naming to use ramp type when original name is missing or generic
+
+### Fixed
+- Fixed issue where styles from layers without names were all labeled "UnknownLayer"
+- Improved style identification by including type information in names when layer context is unavailable
+
 ## [0.1.0] - 2025-10-04
 
 ### Added

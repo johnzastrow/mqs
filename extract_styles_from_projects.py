@@ -13,10 +13,10 @@ QGIS Style Extractor from Project Files
 Recursively searches directories for QGIS project files (.qgs, .qgz) and
 extracts all styles into a single XML style database file.
 
-Version: 0.1.0
+Version: 0.2.0
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 import os
 import tempfile
@@ -267,6 +267,9 @@ class StyleExtractorAlgorithm(QgsProcessingAlgorithm):
             "symbols3d": [],
         }
 
+        # Get project filename without extension for tagging
+        project_name = Path(project_file).stem
+
         # Handle .qgz files (ZIP archives)
         if project_file.lower().endswith('.qgz'):
             with tempfile.TemporaryDirectory() as temp_dir:
@@ -277,7 +280,7 @@ class StyleExtractorAlgorithm(QgsProcessingAlgorithm):
                     qgs_files = list(Path(temp_dir).glob('*.qgs'))
                     if qgs_files:
                         qgs_file = str(qgs_files[0])
-                        styles = self._extract_from_qgs(qgs_file, selected_types, name_counters, feedback)
+                        styles = self._extract_from_qgs(qgs_file, selected_types, name_counters, project_name, feedback)
 
                     # Extract from embedded .db files if requested
                     if extract_embedded:
@@ -288,7 +291,7 @@ class StyleExtractorAlgorithm(QgsProcessingAlgorithm):
                             # This would require QgsStyle.importDatabase() or direct SQLite access
         else:
             # Direct .qgs file
-            styles = self._extract_from_qgs(project_file, selected_types, name_counters, feedback)
+            styles = self._extract_from_qgs(project_file, selected_types, name_counters, project_name, feedback)
 
         return styles
 
@@ -297,6 +300,7 @@ class StyleExtractorAlgorithm(QgsProcessingAlgorithm):
         qgs_file: str,
         selected_types: set[str],
         name_counters: dict,
+        project_name: str,
         feedback: QgsProcessingFeedback,
     ) -> dict[str, list]:
         """Extract styles from a .qgs XML file."""
@@ -316,12 +320,12 @@ class StyleExtractorAlgorithm(QgsProcessingAlgorithm):
 
             # Extract symbols from layers
             if "Symbols" in selected_types:
-                symbols = self._extract_symbols_from_layers(root, name_counters)
+                symbols = self._extract_symbols_from_layers(root, name_counters, project_name)
                 styles["symbols"].extend(symbols)
 
             # Extract color ramps
             if "Color Ramps" in selected_types:
-                colorramps = self._extract_colorramps(root, name_counters)
+                colorramps = self._extract_colorramps(root, name_counters, project_name)
                 styles["colorramps"].extend(colorramps)
 
             # Extract text formats
@@ -351,7 +355,7 @@ class StyleExtractorAlgorithm(QgsProcessingAlgorithm):
 
         return styles
 
-    def _extract_symbols_from_layers(self, root: ET.Element, name_counters: dict) -> list[ET.Element]:
+    def _extract_symbols_from_layers(self, root: ET.Element, name_counters: dict, project_name: str) -> list[ET.Element]:
         """Extract symbol elements from map layers."""
         symbols = []
 
@@ -368,16 +372,28 @@ class StyleExtractorAlgorithm(QgsProcessingAlgorithm):
 
                     # Generate meaningful name
                     original_name = symbol.get('name', '')
+                    symbol_type = symbol.get('type', 'Symbol')
                     category_label = self._get_category_label(renderer, original_name)
 
-                    if category_label:
-                        new_name = f"{layer_name}_{category_label}"
+                    # If layer name is unknown, prefix with symbol type
+                    if layer_name == 'UnknownLayer':
+                        type_prefix = symbol_type.capitalize() if symbol_type else 'Symbol'
+                        if category_label:
+                            new_name = f"{type_prefix}_{category_label}"
+                        else:
+                            new_name = f"{type_prefix}_{original_name}" if original_name else type_prefix
                     else:
-                        new_name = f"{layer_name}_{original_name}" if original_name else layer_name
+                        if category_label:
+                            new_name = f"{layer_name}_{category_label}"
+                        else:
+                            new_name = f"{layer_name}_{original_name}" if original_name else layer_name
 
                     # Handle duplicates
                     new_name = self._get_unique_name(new_name, name_counters)
                     symbol_copy.set('name', new_name)
+
+                    # Add tag with project name
+                    symbol_copy.set('tags', project_name)
 
                     symbols.append(symbol_copy)
 
@@ -385,8 +401,16 @@ class StyleExtractorAlgorithm(QgsProcessingAlgorithm):
                 source_symbol = renderer.find('.//source-symbol/symbol')
                 if source_symbol is not None:
                     symbol_copy = self._copy_element(source_symbol)
-                    new_name = self._get_unique_name(f"{layer_name}_source", name_counters)
+                    symbol_type = source_symbol.get('type', 'Symbol')
+
+                    if layer_name == 'UnknownLayer':
+                        type_prefix = symbol_type.capitalize() if symbol_type else 'Symbol'
+                        new_name = self._get_unique_name(f"{type_prefix}_source", name_counters)
+                    else:
+                        new_name = self._get_unique_name(f"{layer_name}_source", name_counters)
+
                     symbol_copy.set('name', new_name)
+                    symbol_copy.set('tags', project_name)
                     symbols.append(symbol_copy)
 
         return symbols
@@ -399,15 +423,26 @@ class StyleExtractorAlgorithm(QgsProcessingAlgorithm):
                 return label.replace(' ', '_') if label else None
         return None
 
-    def _extract_colorramps(self, root: ET.Element, name_counters: dict) -> list[ET.Element]:
+    def _extract_colorramps(self, root: ET.Element, name_counters: dict, project_name: str) -> list[ET.Element]:
         """Extract color ramp elements."""
         colorramps = []
 
         for colorramp in root.findall('.//colorramp'):
             ramp_copy = self._copy_element(colorramp)
             original_name = colorramp.get('name', 'ColorRamp')
+            ramp_type = colorramp.get('type', '')
+
+            # If original name is generic or missing, prefix with type
+            if not original_name or original_name == 'ColorRamp':
+                type_prefix = ramp_type.capitalize() if ramp_type else 'ColorRamp'
+                original_name = type_prefix
+
             new_name = self._get_unique_name(original_name, name_counters)
             ramp_copy.set('name', new_name)
+
+            # Add tag with project name
+            ramp_copy.set('tags', project_name)
+
             colorramps.append(ramp_copy)
 
         return colorramps
