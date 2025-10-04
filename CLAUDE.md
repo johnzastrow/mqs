@@ -32,12 +32,41 @@ Never implement features without corresponding tests.
 3. Update `CHANGELOG.md` with a description of changes for each version bump
 4. Include version number and date in CHANGELOG entries
 
-## Repository Status
+## Repository Structure
 
-This is a nascent repository. As QGIS-related code, scripts, and utilities are added, this document should be updated to reflect:
+This repository contains multiple QGIS-related subprojects, each organized in its own directory:
 
-- Primary programming languages used (likely Python for QGIS plugins/scripts)
-- Build/installation procedures
-- QGIS version compatibility requirements
-- Any QGIS plugin development conventions
-- Testing framework and commands (e.g., pytest)
+```
+mqs/
+├── Scripts/                    # Executable QGIS scripts
+│   └── extract_styles_from_projects.py
+├── docs/                       # Subproject documentation
+│   └── ExtractStylesfromDirectoriesForStyleManager/
+│       ├── REQUIREMENTS.md
+│       ├── CHANGELOG.md
+│       ├── testing/
+│       └── [example files]
+└── testing/                    # Repository-level tests
+```
+
+### Subproject Organization
+
+Each subproject should have:
+- Documentation in `docs/[SubprojectName]/`
+- Executable scripts in `Scripts/`
+- Tests in `docs/[SubprojectName]/testing/`
+- Its own CHANGELOG.md and REQUIREMENTS.md
+
+### Current Subprojects
+
+1. **ExtractStylesfromDirectoriesForStyleManager** (v0.2.0)
+   - Script: `Scripts/extract_styles_from_projects.py`
+   - Docs: `docs/ExtractStylesfromDirectoriesForStyleManager/`
+   - Purpose: Extract styles from QGIS project files into XML format
+
+## Technical Details
+
+- Primary language: Python (PyQGIS)
+- QGIS version: 3.40+
+- Testing framework: unittest (Python standard library)
+- All scripts must work within QGIS Processing Toolbox environment

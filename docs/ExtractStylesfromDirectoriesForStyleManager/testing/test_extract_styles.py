@@ -22,7 +22,7 @@ class TestStyleExtractor(unittest.TestCase):
     def setUp(self):
         """Set up test fixtures."""
         self.test_dir = tempfile.mkdtemp()
-        self.docs_dir = Path(__file__).parent.parent / "docs"
+        self.docs_dir = Path(__file__).parent.parent
 
     def tearDown(self):
         """Clean up test fixtures."""
@@ -108,7 +108,7 @@ class TestXMLParsing(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.docs_dir = Path(__file__).parent.parent / "docs"
+        self.docs_dir = Path(__file__).parent.parent
 
     def test_parse_example_xml(self):
         """Test parsing of example XML files."""
@@ -145,7 +145,7 @@ class TestIntegration(unittest.TestCase):
 
     def setUp(self):
         """Set up test fixtures."""
-        self.docs_dir = Path(__file__).parent.parent / "docs"
+        self.docs_dir = Path(__file__).parent.parent
 
     def test_example_project_processing(self):
         """Test processing of example project file."""
