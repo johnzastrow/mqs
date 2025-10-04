@@ -9,8 +9,10 @@ Lately I'm doing work using python scripts to be used the in the [QGIS Toolbox](
 
 1. Open your QGIS Toolbox
 2. Select `Add script to toolbox` from the little python button
-![Screenshot showing the QGIS Toolbox interface with the Add script to toolbox option highlighted. The Python button is selected, and a dialog box is open for importing a new script. The workspace background displays various QGIS tool categories. The tone is instructional and neutral. Visible text includes Add script to toolbox.](docs/ExtractStylesfromDirectoriesForStyleManager/xtractStylesfromDirectoriesForStyleManager/images/adding_script_to_toolbox.png)
-
+![Screenshot showing the QGIS Toolbox interface with the Add script to toolbox option highlighted. The Python button is selected, and a dialog box is open for importing a new script. The workspace background displays various QGIS tool categories. The tone is instructional and neutral. Visible text includes Add script to toolbox.](docs/ExtractStylesfromDirectoriesForStyleManager/images/adding_script_to_toolbox.png)
+The QGIS Toolbox interface displays a list of tool categories including Vector tiles, GDAL, Lat Lon tools, Models, QuickOSM, Scripts, and Style Management. The script Extract Styles from Project Files is highlighted under Style Management, indicated by a blue selection bar and a gear icon. Below the toolbox, controls for Magnifier, Rotation, and Render are visible. The environment is neutral and instructional. Visible text includes Vector tiles, GDAL, Lat Lon tools, Models, QuickOSM, Scripts, Style Management, Extract Styles from Project Files, Magnifier, Rotation, and Render.
+3. Double clicking the script name from the toolbox will run it and open the associated dialog screen 
+Screenshot of the QGIS Style Management dialog for extracting styles from project files. The interface displays options to select an input directory, style types to include, and whether to extract from embedded style databases. The right panel provides instructions and parameter descriptions for the extraction process. Buttons for running, canceling, and closing the dialog are visible at the bottom, along with a progress bar set at zero percent. The environment is neutral and instructional. Visible text includes Style Management - Extract Styles From Project Files, Extract Styles from Project Files, Input directory to search, Style types to include, Extract from embedded style databases, Output XML file, Advanced, Run as Batch Process, Run, Cancel, and Close.
 
 ## Repository Structure
 
