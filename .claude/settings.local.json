@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//tmp/**)",
+      "Bash(python3:*)",
+      "WebFetch(domain:qgis.org)",
+      "WebFetch(domain:docs.qgis.org)",
+      "WebSearch",
+      "WebFetch(domain:api.qgis.org)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

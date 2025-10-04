@@ -1,0 +1,1743 @@
+<!DOCTYPE qgis_style>
+<qgis_style version="2">
+  <symbols>
+    <symbol is_animated="0" name="COUNTIES_WGS84" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{480e6528-6ea9-4177-a9b6-b95635f68b75}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="228,197,123,255,rgb:0.8941176,0.772549,0.4823529,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Alabama" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{7e55b9ae-4b41-4045-87c2-70c15902bab9}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="242,255,206,255,rgb:0.9490196,1,0.8078431,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Alaska" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{29cb384d-2079-4100-91a0-8d1b0c2c5f84}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="237,254,207,255,rgb:0.9294118,0.9960784,0.8117647,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Arizona" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{b53dfa88-69e9-4835-b9ec-2817ab140431}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="233,253,209,255,rgb:0.9137255,0.9921569,0.8196078,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Arkansas" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{283fe6f7-7dff-422c-9bea-e75e7a37faa4}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="228,252,210,255,rgb:0.8941176,0.9882353,0.8235294,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 California" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{5c5fdaaf-4895-42fd-a295-0735ebb54354}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="224,251,212,255,rgb:0.8784314,0.9843137,0.8313725,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Colorado" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{c4eadd24-f16c-4cbf-860d-d9567eeb3be8}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="220,250,214,255,rgb:0.8627451,0.9803922,0.8392157,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Connecticut" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{a64375a5-44ef-48b1-8f36-fc20101e6733}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="215,249,215,255,rgb:0.8431373,0.9764706,0.8431373,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Delaware" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{9bd0f566-6c59-4711-b62d-8825063633dd}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="211,248,217,255,rgb:0.827451,0.972549,0.8509804,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 District of Columbia" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{a1179143-36c5-485a-81be-08f0cf50a449}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="206,248,219,255,rgb:0.8078431,0.972549,0.8588235,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Florida" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{2553ff61-9269-4254-a128-da9c973e6724}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="202,247,220,255,rgb:0.7921569,0.9686275,0.8627451,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Georgia" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{650097ab-f0b5-4514-a041-0ed8589fa1ad}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="198,246,222,255,rgb:0.7764706,0.9647059,0.8705882,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Hawaii" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{b370d3a7-b518-46a2-9047-a2fd3003b0da}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="193,245,224,255,rgb:0.7568627,0.9607843,0.8784314,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Idaho" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{5916810b-a7eb-4141-928a-43e6d0a3e9b2}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="189,244,225,255,rgb:0.7411765,0.9568627,0.8823529,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Illinois" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{7dcbd4bd-1b27-4ff0-9ee5-6ae71dc720bb}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="185,242,227,255,rgb:0.7254902,0.9490196,0.8901961,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Indiana" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{9433d905-a069-4282-9266-4a13622f3eee}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="181,238,228,255,rgb:0.7098039,0.9333333,0.8941176,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Iowa" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{4a455c51-cf8f-4a83-9e19-eaae60b88168}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="178,234,230,255,rgb:0.6980392,0.9176471,0.9019608,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Kansas" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{b40baa5f-75ee-4018-bcc2-b126feba4532}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="174,230,231,255,rgb:0.6823529,0.9019608,0.9058824,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Kentucky" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{84f9b800-285c-471f-826b-1e0b8ed98494}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="171,226,233,255,rgb:0.6705882,0.8862745,0.9137255,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Louisiana" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{e593f59b-a724-4e8a-8b9b-149eea7bbf7d}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="167,222,234,255,rgb:0.654902,0.8705882,0.9176471,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Maine" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{7e5374a0-0076-4654-ad07-eff81da26700}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="164,218,235,255,rgb:0.6431373,0.854902,0.9215686,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Maryland" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{2cdde36c-8382-4cbe-b170-b797db3835f8}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="160,214,237,255,rgb:0.627451,0.8392157,0.9294118,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Massachusetts" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{c26e94b9-1953-4b22-97c6-b7e940e1c7fe}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="157,210,238,255,rgb:0.6156863,0.8235294,0.9333333,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Michigan" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{cbd9727f-780c-4a2b-9dfa-542f54cb9c41}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="154,206,240,255,rgb:0.6039216,0.8078431,0.9411765,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Minnesota" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{a8f39d16-0a5d-4174-8232-478671248e2d}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="150,202,241,255,rgb:0.5882353,0.7921569,0.945098,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Mississippi" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{b435bc42-a9fd-45fb-9af8-8a57237810f0}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="147,198,242,255,rgb:0.5764706,0.7764706,0.9490196,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Missouri" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{1bd42516-d416-4d20-97e3-c068c57ee2f9}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="143,194,244,255,rgb:0.5607843,0.7607843,0.9568627,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Montana" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{6100882a-1ea5-4064-8c09-a867fb0fda1a}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="145,191,243,255,rgb:0.5686275,0.7490196,0.9529412,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Nebraska" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{4e4104e4-fba9-488a-b92c-77716655caee}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="152,189,240,255,rgb:0.5960784,0.7411765,0.9411765,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Nevada" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{ee5ae066-48f4-41ca-a0e5-26e87fe3f5a5}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="159,187,237,255,rgb:0.6235294,0.7333333,0.9294118,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 New Hampshire" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{17248a96-628e-4418-8fef-2b6abb95c975}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="166,186,235,255,rgb:0.6509804,0.7294118,0.9215686,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 New Jersey" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{18cecefa-cb89-4f67-98ed-914b5cdfc1bf}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="173,184,232,255,rgb:0.6784314,0.7215686,0.9098039,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 New Mexico" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{8750f6cd-fe26-4e4b-bc64-18cb4d1a057d}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="180,182,229,255,rgb:0.7058824,0.7137255,0.8980392,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 New York" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{de939e15-1c38-45f4-82b3-a30917afc69a}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="187,181,226,255,rgb:0.7333333,0.7098039,0.8862745,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 North Carolina" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{bbba3dd6-94c6-4fd9-9c94-c1a623970133}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="194,179,223,255,rgb:0.7607843,0.7019608,0.8745098,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 North Dakota" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{bb73d9ff-ca5d-48f6-afe4-dc0df019d5b3}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="202,178,221,255,rgb:0.7921569,0.6980392,0.8666667,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Ohio" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{f24e43aa-e787-4790-b734-d5f36b3899ef}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="209,176,218,255,rgb:0.8196078,0.6901961,0.854902,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Oklahoma" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{8c812147-4ef2-4a5d-a22a-96717133066a}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="216,174,215,255,rgb:0.8470588,0.6823529,0.8431373,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Oregon" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{d640cdcd-f124-4443-a514-15b498c3b252}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="223,173,212,255,rgb:0.8745098,0.6784314,0.8313725,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Pennsylvania" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{bdc3db88-fbcf-4b70-835f-84fa2c3771e0}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="230,171,209,255,rgb:0.9019608,0.6705882,0.8196078,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Rhode Island" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{b4d15d20-f46a-4fb5-a70d-f1887c7b7f1e}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="231,172,203,255,rgb:0.9058824,0.6745098,0.7960784,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 South Carolina" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{312bfc64-c6fb-48dc-9094-642a65bf12ca}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="231,174,197,255,rgb:0.9058824,0.6823529,0.772549,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 South Dakota" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{95af09ca-5577-40ee-a074-8623bf68c314}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="231,176,190,255,rgb:0.9058824,0.6901961,0.745098,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Tennessee" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{f053c301-c73f-4576-b886-80db6d330f7f}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="230,178,183,255,rgb:0.9019608,0.6980392,0.7176471,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Texas" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{5dac35ad-c633-4a45-a805-e6fcf0f2da11}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="230,180,176,255,rgb:0.9019608,0.7058824,0.6901961,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Utah" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{8c6901a4-0e40-4ef0-b254-b4790bcb459e}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="230,182,170,255,rgb:0.9019608,0.7137255,0.6666667,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Vermont" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{613b7134-e816-4bfb-9540-c7c5e4e971c2}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="229,184,163,255,rgb:0.8980392,0.7215686,0.6392157,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Virginia" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{c1106854-f6ce-4e01-8817-5865e638c443}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="229,186,156,255,rgb:0.8980392,0.7294118,0.6117647,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Washington" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{ff7e06ef-5476-4851-8c15-016bfa5ff37d}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="229,188,149,255,rgb:0.8980392,0.7372549,0.5843137,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 West Virginia" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{57248367-8b15-4975-b76b-31b37b0a9121}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="228,190,143,255,rgb:0.8941176,0.745098,0.5607843,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Wisconsin" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{f28704ed-430d-4f48-b98b-e500d6ebd2b9}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="228,192,136,255,rgb:0.8941176,0.7529412,0.5333333,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="COUNTIES_WGS84 Wyoming" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{34777f31-f554-44d3-af76-92bd7a0649fc}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="228,194,129,255,rgb:0.8941176,0.7607843,0.5058824,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="255,255,255,255,rgb:1,1,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="LAKES_WGS84" alpha="1" force_rhr="0" type="fill" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleFill" pass="0" id="{ffb02177-fbc7-48c2-a80e-33755ca2792a}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="border_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="color" value="178,218,236,255,rgb:0.6980392,0.854902,0.9254902,1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="153,163,255,255,rgb:0.6,0.6392157,1,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0.26" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="style" value="solid" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="US_GEONAMES" alpha="1" force_rhr="0" type="marker" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleMarker" pass="0" id="{ffc4753a-d15c-45ae-9e18-11d67ffbd411}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="angle" value="0" type="QString"/>
+          <Option name="cap_style" value="square" type="QString"/>
+          <Option name="color" value="0,66,159,255,rgb:0,0.2588235,0.6235294,1" type="QString"/>
+          <Option name="horizontal_anchor_point" value="1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="name" value="circle" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="0,0,0,255,rgb:0,0,0,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0" type="QString"/>
+          <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="scale_method" value="diameter" type="QString"/>
+          <Option name="size" value="2" type="QString"/>
+          <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="size_unit" value="MM" type="QString"/>
+          <Option name="vertical_anchor_point" value="1" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+    <symbol is_animated="0" name="V_attributed_geonames" alpha="1" force_rhr="0" type="marker" clip_to_extent="1" frame_rate="10">
+      <data_defined_properties>
+        <Option type="Map">
+          <Option name="name" value="" type="QString"/>
+          <Option name="properties"/>
+          <Option name="type" value="collection" type="QString"/>
+        </Option>
+      </data_defined_properties>
+      <layer class="SimpleMarker" pass="0" id="{1837f2b7-b176-4cb5-8287-6bb19c0e78fb}" enabled="1" locked="0">
+        <Option type="Map">
+          <Option name="angle" value="0" type="QString"/>
+          <Option name="cap_style" value="square" type="QString"/>
+          <Option name="color" value="172,58,41,255,rgb:0.6745098,0.227451,0.1607843,1" type="QString"/>
+          <Option name="horizontal_anchor_point" value="1" type="QString"/>
+          <Option name="joinstyle" value="bevel" type="QString"/>
+          <Option name="name" value="circle" type="QString"/>
+          <Option name="offset" value="0,0" type="QString"/>
+          <Option name="offset_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="offset_unit" value="MM" type="QString"/>
+          <Option name="outline_color" value="0,0,0,255,rgb:0,0,0,1" type="QString"/>
+          <Option name="outline_style" value="solid" type="QString"/>
+          <Option name="outline_width" value="0" type="QString"/>
+          <Option name="outline_width_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="outline_width_unit" value="MM" type="QString"/>
+          <Option name="scale_method" value="diameter" type="QString"/>
+          <Option name="size" value="2" type="QString"/>
+          <Option name="size_map_unit_scale" value="3x:0,0,0,0,0,0" type="QString"/>
+          <Option name="size_unit" value="MM" type="QString"/>
+          <Option name="vertical_anchor_point" value="1" type="QString"/>
+        </Option>
+        <data_defined_properties>
+          <Option type="Map">
+            <Option name="name" value="" type="QString"/>
+            <Option name="properties"/>
+            <Option name="type" value="collection" type="QString"/>
+          </Option>
+        </data_defined_properties>
+      </layer>
+    </symbol>
+  </symbols>
+  <colorramps>
+    <colorramp name="COUNTIES_WGS84" type="gradient">
+      <Option type="Map">
+        <Option name="color1" value="242,255,206,255,rgb:0.9490196,1,0.8078431,1" type="QString"/>
+        <Option name="color2" value="228,197,123,255,rgb:0.8941176,0.772549,0.4823529,1" type="QString"/>
+        <Option name="direction" value="ccw" type="QString"/>
+        <Option name="discrete" value="0" type="QString"/>
+        <Option name="rampType" value="gradient" type="QString"/>
+        <Option name="spec" value="rgb" type="QString"/>
+        <Option name="stops" value="0.25;186,244,227,255,rgb:0.7294118,0.9568627,0.8901961,1;rgb;ccw:0.5;142,192,245,255,rgb:0.5568627,0.7529412,0.9607843,1;rgb;ccw:0.75;232,171,209,255,rgb:0.9098039,0.6705882,0.8196078,1;rgb;ccw" type="QString"/>
+      </Option>
+    </colorramp>
+  </colorramps>
+  <textformats/>
+  <labelsettings/>
+  <legendpatchshapes/>
+  <symbols3d/>
+</qgis_style>
