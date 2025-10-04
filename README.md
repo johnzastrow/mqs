@@ -4,6 +4,8 @@ My QGIS Stuff - A random assortment of things I might reuse. These might be imag
 ## Support
 These are my resources that I make freely available to the world. You can ask me for help using them, but I may not be able to provide it due to knowledge or time constraints. 
 
+Have a look at my [blog post](https://johnzastrow.github.io/2025-10-01-qgis-tutorial-materials/) for some more usefulness
+
 ## Scripts
 Lately I'm doing work using python scripts to be used the in the [QGIS Toolbox](https://docs.qgis.org/3.40/en/docs/user_manual/processing/toolbox.html). You can use these scripts by downloading them, then importing them into your toolbox as following
 
@@ -37,4 +39,14 @@ This makes it really easy to create duplicates and otherwise pollute your global
 
 See `docs/ExtractStylesfromDirectoriesForStyleManager/REQUIREMENTS.md` for detailed documentation.
 
-#### ExtractStylesfromDirectoriesForStyleManager
+#### Resources
+
+Files that I might want to reuse and you might find useful
+
+1. Resources\qgis_styles_for_style_manager.xml - Some styles I might to reuse across my QGIS installs, compiled using `extract_styles_from_projects.py`. I'll be adding to these.
+
+#### Scripts
+
+Usually python scripts that correspond to the subprojects listed above. The rest of the development files for these scripts will be found under the `docs` directory -- and you don't likely need to look at that stuff unless you want to learn more. Just grab scripts from this directory.
+
+1. **Scripts\extract_styles_from_projects.py** - see ExtractStylesfromDirectoriesForStyleManager
