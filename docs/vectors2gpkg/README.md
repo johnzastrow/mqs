@@ -43,6 +43,9 @@ This tool simplifies the process of consolidating multiple vector files from com
 | **Vector File Types** | Multi-select list of vector file types to process | No | All types |
 | **Apply QML styles** | Apply .qml style files found alongside vector files | No | True |
 | **Create spatial indexes** | Create spatial indexes for each layer | No | True |
+| **Dry run** | Preview layer names without processing data (output path not required) | No | False |
+| **Directory naming strategy** | Choose how directory names are incorporated into layer names | No | Filename only |
+| **Directory depth** | Number of parent directories to include (for "Last N directories" strategy) | No | 2 |
 
 ### Basic Workflow
 
@@ -53,6 +56,45 @@ This tool simplifies the process of consolidating multiple vector files from com
 5. Choose output location for the GeoPackage
 6. Configure other options as needed
 7. Click "Run"
+
+### Dry Run Mode
+
+Before processing large datasets, use dry run mode to preview the layer names that would be generated:
+
+1. **Enable dry run**: Check the "Dry run" option in the parameters
+2. **Optional output**: Output GeoPackage path is not required in dry run mode
+3. **Configure naming**: Set your preferred directory naming strategy and depth
+4. **Preview results**: The script will display a formatted table showing:
+   - Original file paths
+   - Resulting layer/table names
+   - File/layer types
+   - Naming strategy summary
+
+**Example Dry Run Output:**
+```
+================================================================================
+DRY RUN RESULTS - Layer Name Preview
+================================================================================
+No.  Original Path                                      Layer/Table Name
+--------------------------------------------------------------------------------
+  1. /data/2023/boundaries/counties.shp                boundaries_counties (vector file)
+  2. /data/2023/boundaries/states.geojson              boundaries_states (vector file)
+  3. /data/2023/admin.gpkg:districts                   2023_admin_districts (container layer)
+  4. /data/ecology/standalone_codes.dbf                ecology_standalone_codes (dBase table)
+--------------------------------------------------------------------------------
+Total files that would be processed: 4
+Unique layer names generated: 4
+Directory naming strategy: Parent directory + filename
+Note: This was a dry run. No data was processed.
+================================================================================
+```
+
+**Dry Run Benefits:**
+- **Test naming strategies** before processing
+- **Identify potential conflicts** in layer names
+- **Preview results** for complex directory structures
+- **No data processing** - fast execution
+- **Refine settings** based on preview results
 
 ### Example Directory Structure
 
@@ -106,6 +148,83 @@ When multiple files would generate the same layer name, the script automatically
 - And so on...
 
 This ensures no data is lost due to naming collisions and all layers are preserved in the final GeoPackage.
+
+## Directory-Aware Layer Naming
+
+The script offers flexible directory naming strategies to incorporate directory structure into layer names, providing better context and organization for your data.
+
+### Naming Strategies
+
+**1. Filename only (current behavior)**
+- Default option for backward compatibility
+- Uses only the file name without directory context
+- Example: `/data/2023/boundaries/counties.shp` → `counties`
+
+**2. Parent directory + filename**
+- Includes the immediate parent directory
+- Good balance of context and brevity
+- Example: `/data/2023/boundaries/counties.shp` → `boundaries_counties`
+
+**3. Last N directories + filename**
+- User-configurable depth (1-5 directories)
+- Includes the last N directories in the path
+- Example with depth=2: `/data/projects/watershed/2023/hydrology/streams.shp` → `2023_hydrology_streams`
+
+**4. Smart path (auto-detect important directories)**
+- Automatically identifies meaningful directories
+- Skips common non-semantic directories (`home`, `temp`, `data`, etc.)
+- Prioritizes years (1900-2099), quarters (Q1-Q4), and project names
+- Example: `/home/user/projects/watershed_study/2023/Q1/boundaries/counties.shp` → `watershed_study_2023_Q1_boundaries_counties`
+
+**5. Full relative path (truncated if needed)**
+- Includes complete path from input root directory
+- Automatically truncated to respect SQLite 63-character limit
+- Example: `/data/2023/admin/boundaries/counties.shp` → `2023_admin_boundaries_counties`
+
+### Configuration Options
+
+- **Directory Naming Strategy**: Choose from 5 naming approaches
+- **Directory Depth**: When using "Last N directories", specify how many parent directories to include (1-5)
+- **Automatic Sanitization**: Directory names are cleaned using the same rules as filenames
+- **Length Management**: All strategies respect SQLite identifier limits
+
+### Smart Path Detection Features
+
+The smart path strategy includes intelligent filtering:
+
+**Automatically Skipped Directories:**
+- Common system paths: `home`, `user`, `users`, `desktop`, `documents`, `downloads`
+- Generic data paths: `temp`, `tmp`, `data`, `gis`, `spatial`, `vector`, `files`
+- Non-descriptive paths: `shapefiles`, `geodata`
+
+**Automatically Prioritized Directories:**
+- Years: `2023`, `2024`, `1995`, etc.
+- Quarters/Periods: `Q1`, `Q2`, `quarter1`, `H1`, `half1`
+- Meaningful project names (length > 2, not just numbers)
+
+### Examples by Strategy
+
+Given input file: `/projects/environmental_monitoring/2023/quarterly_reports/Q3/water_quality/monitoring_stations.shp`
+
+| Strategy | Result |
+|----------|---------|
+| Filename only | `monitoring_stations` |
+| Parent directory | `water_quality_monitoring_stations` |
+| Last 2 directories | `Q3_water_quality_monitoring_stations` |
+| Smart path | `environmental_monitoring_2023_Q3_water_quality_monitoring_stations` |
+| Full relative path | `projects_environmental_monitoring_2023_quarterly_reports_Q3_water_q...` |
+
+### Container Format Support
+
+Directory naming works with all container formats:
+
+**GeoPackage Example:**
+- Input: `/data/2023/admin/boundaries.gpkg:counties`
+- Parent directory strategy: `admin_boundaries_counties`
+
+**File Geodatabase Example:**
+- Input: `/projects/hydrology/watersheds.gdb:stream_network`
+- Smart path strategy: `hydrology_watersheds_stream_network`
 
 ## Style Application
 

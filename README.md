@@ -67,6 +67,8 @@ A QGIS Processing Toolbox script that recursively searches directories for vecto
 - Spatial indexing and metadata preservation
 - QML style file application
 - Smart layer naming with invalid character replacement and duplicate collision handling
+- Directory-aware layer naming with 5 configurable strategies (filename only, parent directory, smart path detection, etc.)
+- Dry run mode to preview layer names before processing data
 - Automatic duplicate resolution with incrementing numbers (roads, roads_1, roads_2, etc.)
 
 See `docs/vectors2gpkg/README.md` for detailed documentation.

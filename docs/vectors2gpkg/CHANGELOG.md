@@ -7,6 +7,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2025-10-04
+
+### Added
+- **Dry run mode** - Preview layer names without processing any data
+- Comprehensive dry run output showing original paths and resulting layer names
+- Formatted table display with file numbering and type indicators
+- Strategy summary in dry run results
+- Progress tracking during dry run execution
+
+### Changed
+- Output GeoPackage path no longer required when using dry run mode
+- Enhanced user interface with dry run parameter prominently positioned
+- Improved validation logic to handle dry run vs normal processing modes
+- Updated help text with dry run mode documentation and use cases
+
+### Technical
+- Added `_perform_dry_run()` method for dry run processing
+- Added `_get_original_path_and_type()` for path and type extraction
+- Added `_generate_dry_run_layer_name()` for consistent layer name generation
+- Enhanced parameter validation with conditional requirement logic
+
+## [0.7.0] - 2025-10-04
+
+### Added
+- Directory-aware layer naming with 5 configurable strategies
+- **Filename only** (current behavior) - maintains backward compatibility
+- **Parent directory + filename** - includes immediate parent directory
+- **Last N directories + filename** - includes configurable number of parent directories
+- **Smart path detection** - automatically detects important directories (years, projects, etc.)
+- **Full relative path** - includes complete path from input root (truncated if needed)
+- User-configurable directory depth parameter for "Last N directories" strategy
+- Intelligent directory filtering that skips common non-semantic directories (home, temp, data, etc.)
+- Automatic year and period detection (2023, Q1, etc.) in smart path strategy
+
+### Changed
+- Enhanced layer naming system with directory context preservation
+- Default naming strategy remains "Filename only" for backward compatibility
+- All naming strategies respect SQLite 63-character identifier limits
+- Directory names are sanitized using same rules as filenames
+- Container formats (GeoPackages, File Geodatabases, SpatiaLite) now support directory-aware naming
+
+### Technical
+- Added `_generate_directory_aware_name()` method with strategy dispatch
+- Added individual strategy methods for each naming approach
+- Added `_sanitize_directory_name()` for directory name cleaning
+- Enhanced parameter handling with directory naming and depth options
+- Comprehensive regex patterns for semantic directory detection
+
 ## [0.6.0] - 2025-10-04
 
 ### Added

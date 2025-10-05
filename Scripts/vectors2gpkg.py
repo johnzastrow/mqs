@@ -13,10 +13,10 @@ Vector Files to GeoPackage Converter
 Recursively searches a directory for vector files (shapefiles, GeoJSON, etc.) and loads them into a
 GeoPackage with metadata preservation and optional style application.
 
-Version: 0.6.0
+Version: 0.8.0
 """
 
-__version__ = "0.6.0"
+__version__ = "0.8.0"
 
 import os
 import re
@@ -33,6 +33,7 @@ from qgis.core import (
     QgsProcessingParameterFileDestination,
     QgsProcessingParameterBoolean,
     QgsProcessingParameterEnum,
+    QgsProcessingParameterNumber,
     QgsVectorLayer,
     QgsVectorFileWriter,
     QgsCoordinateReferenceSystem,
@@ -54,6 +55,9 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
     VECTOR_TYPES = "VECTOR_TYPES"
     APPLY_STYLES = "APPLY_STYLES"
     CREATE_SPATIAL_INDEX = "CREATE_SPATIAL_INDEX"
+    DIRECTORY_NAMING = "DIRECTORY_NAMING"
+    DIRECTORY_DEPTH = "DIRECTORY_DEPTH"
+    DRY_RUN = "DRY_RUN"
 
     def createInstance(self):
         return Vectors2GpkgAlgorithm()
@@ -85,6 +89,9 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
         <li>Preserves metadata from original vector files</li>
         <li>Applies QML style files if found in same directory</li>
         <li>Smart layer naming with invalid character replacement and duplicate collision handling</li>
+        <li>Directory-aware layer naming with multiple strategies (parent directory, smart path detection, configurable depth)</li>
+        <li>Flexible naming options: filename only, directory + filename, or intelligent directory detection</li>
+        <li>Dry run mode for previewing layer names before processing data</li>
         </ul>
 
         <h3>Parameters:</h3>
@@ -94,7 +101,15 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
         <li><b>Vector File Types:</b> Select which vector file types to process</li>
         <li><b>Apply Styles:</b> Apply .qml style files found alongside vector files</li>
         <li><b>Create Spatial Index:</b> Create spatial indexes for each layer (recommended)</li>
+        <li><b>Dry Run:</b> Preview layer names without processing data (output path not required)</li>
+        <li><b>Directory Naming Strategy:</b> Choose how directory names are incorporated into layer names</li>
+        <li><b>Directory Depth:</b> When using 'Last N directories', specify how many directories to include</li>
         </ul>
+
+        <h3>Dry Run Mode:</h3>
+        <p>Enable dry run to preview the layer names that would be generated without processing any data.
+        This is useful for testing directory naming strategies and seeing the results before committing to
+        processing large datasets. In dry run mode, the output GeoPackage path is not required.</p>
         """
 
     def initAlgorithm(self, config=None):
@@ -159,6 +174,43 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
             )
         )
 
+        # Dry run option
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                self.DRY_RUN,
+                "Dry run (preview layer names without processing data)",
+                defaultValue=False
+            )
+        )
+
+        # Directory naming strategy parameter
+        self.addParameter(
+            QgsProcessingParameterEnum(
+                self.DIRECTORY_NAMING,
+                "Directory naming strategy",
+                options=[
+                    "Filename only (current behavior)",
+                    "Parent directory + filename",
+                    "Last N directories + filename",
+                    "Smart path (auto-detect important directories)",
+                    "Full relative path (truncated if needed)"
+                ],
+                defaultValue=0  # Filename only as default (backward compatibility)
+            )
+        )
+
+        # Directory depth parameter (for "Last N directories" option)
+        self.addParameter(
+            QgsProcessingParameterNumber(
+                self.DIRECTORY_DEPTH,
+                "Directory depth (when using 'Last N directories')",
+                type=QgsProcessingParameterNumber.Integer,
+                defaultValue=2,
+                minValue=1,
+                maxValue=5
+            )
+        )
+
     def processAlgorithm(self, parameters, context, feedback):
         """Main processing method."""
 
@@ -168,12 +220,15 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
         vector_types = self.parameterAsEnums(parameters, self.VECTOR_TYPES, context)
         apply_styles = self.parameterAsBool(parameters, self.APPLY_STYLES, context)
         create_spatial_index = self.parameterAsBool(parameters, self.CREATE_SPATIAL_INDEX, context)
+        directory_naming = self.parameterAsEnum(parameters, self.DIRECTORY_NAMING, context)
+        directory_depth = self.parameterAsInt(parameters, self.DIRECTORY_DEPTH, context)
+        dry_run = self.parameterAsBool(parameters, self.DRY_RUN, context)
 
         if not input_dir:
             raise QgsProcessingException("Input directory is required")
 
-        if not output_gpkg:
-            raise QgsProcessingException("Output GeoPackage path is required")
+        if not dry_run and not output_gpkg:
+            raise QgsProcessingException("Output GeoPackage path is required (unless using dry run mode)")
 
         # Validate input directory
         input_path = Path(input_dir)
@@ -181,16 +236,23 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
             raise QgsProcessingException(f"Input directory does not exist: {input_dir}")
 
         feedback.pushInfo(f"Processing vector files in: {input_dir}")
-        feedback.pushInfo(f"Output GeoPackage: {output_gpkg}")
+        if dry_run:
+            feedback.pushInfo("DRY RUN MODE - No data will be processed, only layer names will be generated")
+        else:
+            feedback.pushInfo(f"Output GeoPackage: {output_gpkg}")
 
         # Find all vector files
         vector_files = self._find_vector_files(input_path, vector_types, feedback)
 
         if not vector_files:
             feedback.pushWarning("No vector files found in the specified directory")
-            return {self.OUTPUT_GPKG: output_gpkg}
+            return {self.OUTPUT_GPKG: output_gpkg if not dry_run else None}
 
         feedback.pushInfo(f"Found {len(vector_files)} vector files to process")
+
+        if dry_run:
+            # Dry run mode - only generate and display layer names
+            return self._perform_dry_run(vector_files, input_path, directory_naming, directory_depth, feedback)
 
         # Process each vector file
         total_files = len(vector_files)
@@ -231,6 +293,9 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                     create_spatial_index,
                     is_first_layer,
                     used_layer_names,
+                    input_path,
+                    directory_naming,
+                    directory_depth,
                     feedback
                 )
                 processed_count += 1
@@ -523,7 +588,8 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
 
     def _process_vector_file(self, vector_item, output_gpkg: str,
                           apply_styles: bool, create_spatial_index: bool,
-                          is_first_layer: bool, used_layer_names: set, feedback) -> str:
+                          is_first_layer: bool, used_layer_names: set, input_root: Path,
+                          directory_naming: int, directory_depth: int, feedback) -> str:
         """Process a single vector file or GeoPackage layer into the GeoPackage."""
 
         # Check the type of vector item and handle accordingly
@@ -534,7 +600,8 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                 # Standalone dBase file: ("dbf_standalone", dbf_path)
                 _, dbf_path = vector_item
                 layer_uri = str(dbf_path)
-                base_layer_name = self._generate_layer_name(dbf_path.stem)
+                base_layer_name = self._generate_directory_aware_name(
+                    dbf_path, input_root, directory_naming, directory_depth)
                 layer_name = self._ensure_unique_layer_name(base_layer_name, used_layer_names)
                 source_description = f"dBase table: {dbf_path.name}"
                 style_source_path = dbf_path
@@ -546,7 +613,10 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                 if container_layer_name:
                     # Load specific layer from container (GeoPackage or File Geodatabase)
                     layer_uri = f"{container_path}|layername={container_layer_name}"
-                    base_layer_name = self._generate_layer_name(f"{container_path.stem}_{container_layer_name}")
+                    # For container layers, use container path for directory naming
+                    container_base_name = self._generate_directory_aware_name(
+                        container_path, input_root, directory_naming, directory_depth)
+                    base_layer_name = self._generate_layer_name(f"{container_base_name}_{container_layer_name}")
                     layer_name = self._ensure_unique_layer_name(base_layer_name, used_layer_names)
 
                     if container_path.suffix.lower() == '.gdb':
@@ -556,7 +626,8 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                 else:
                     # Load container as single file
                     layer_uri = str(container_path)
-                    base_layer_name = self._generate_layer_name(container_path.stem)
+                    base_layer_name = self._generate_directory_aware_name(
+                        container_path, input_root, directory_naming, directory_depth)
                     layer_name = self._ensure_unique_layer_name(base_layer_name, used_layer_names)
                     source_description = str(container_path.name)
 
@@ -565,7 +636,8 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
             # Regular vector file
             vector_path = vector_item
             layer_uri = str(vector_path)
-            base_layer_name = self._generate_layer_name(vector_path.stem)
+            base_layer_name = self._generate_directory_aware_name(
+                vector_path, input_root, directory_naming, directory_depth)
             layer_name = self._ensure_unique_layer_name(base_layer_name, used_layer_names)
             source_description = str(vector_path.name)
             style_source_path = vector_path
@@ -668,6 +740,254 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                 fallback_name = f"layer_{unique_suffix}"
                 used_names.add(fallback_name)
                 return fallback_name
+
+    def _generate_directory_aware_name(self, vector_path: Path, input_root: Path,
+                                     naming_strategy: int, directory_depth: int) -> str:
+        """Generate layer name incorporating directory structure based on strategy."""
+
+        # Strategy 0: Filename only (current behavior)
+        if naming_strategy == 0:
+            return self._generate_layer_name(vector_path.stem)
+
+        # Get relative path from input root
+        try:
+            relative_path = vector_path.relative_to(input_root)
+            path_parts = relative_path.parts[:-1]  # Exclude the filename itself
+        except ValueError:
+            # Fallback if path is not relative to input_root
+            path_parts = vector_path.parent.parts
+
+        # Apply strategy-specific logic
+        if naming_strategy == 1:  # Parent directory + filename
+            return self._parent_directory_strategy(vector_path, path_parts)
+        elif naming_strategy == 2:  # Last N directories + filename
+            return self._last_n_directories_strategy(vector_path, path_parts, directory_depth)
+        elif naming_strategy == 3:  # Smart path (auto-detect important directories)
+            return self._smart_path_strategy(vector_path, path_parts)
+        elif naming_strategy == 4:  # Full relative path (truncated if needed)
+            return self._full_relative_path_strategy(vector_path, path_parts)
+        else:
+            # Fallback to filename only
+            return self._generate_layer_name(vector_path.stem)
+
+    def _parent_directory_strategy(self, vector_path: Path, path_parts: tuple) -> str:
+        """Strategy 1: Parent directory + filename."""
+        if path_parts:
+            parent_dir = self._sanitize_directory_name(path_parts[-1])
+            filename = self._generate_layer_name(vector_path.stem)
+            combined = f"{parent_dir}_{filename}"
+            return self._generate_layer_name(combined)
+        else:
+            return self._generate_layer_name(vector_path.stem)
+
+    def _last_n_directories_strategy(self, vector_path: Path, path_parts: tuple, depth: int) -> str:
+        """Strategy 2: Last N directories + filename."""
+        if path_parts:
+            # Take the last N directories
+            relevant_parts = path_parts[-depth:] if len(path_parts) >= depth else path_parts
+            dir_parts = [self._sanitize_directory_name(part) for part in relevant_parts]
+            filename = self._generate_layer_name(vector_path.stem)
+            combined = "_".join(dir_parts + [filename])
+            return self._generate_layer_name(combined)
+        else:
+            return self._generate_layer_name(vector_path.stem)
+
+    def _smart_path_strategy(self, vector_path: Path, path_parts: tuple) -> str:
+        """Strategy 3: Smart path (auto-detect important directories)."""
+        if not path_parts:
+            return self._generate_layer_name(vector_path.stem)
+
+        # Define semantic filters
+        skip_patterns = {
+            'home', 'user', 'users', 'desktop', 'documents', 'downloads', 'temp', 'tmp',
+            'data', 'gis', 'spatial', 'vector', 'files', 'shapefiles', 'geodata'
+        }
+
+        # Year patterns (1900-2099)
+        year_pattern = re.compile(r'^(19|20)\d{2}$')
+
+        # Quarter/period patterns
+        period_pattern = re.compile(r'^(q[1-4]|quarter[1-4]|h[12]|half[12])$', re.IGNORECASE)
+
+        important_parts = []
+        for part in path_parts:
+            part_lower = part.lower()
+
+            # Skip common non-semantic directories
+            if part_lower in skip_patterns:
+                continue
+
+            # Always include years
+            if year_pattern.match(part):
+                important_parts.append(part)
+                continue
+
+            # Always include quarters/periods
+            if period_pattern.match(part):
+                important_parts.append(part)
+                continue
+
+            # Include meaningful directory names (not too generic)
+            if len(part) > 2 and not part.isdigit():
+                important_parts.append(part)
+
+        # Limit to last 3 important parts to avoid very long names
+        important_parts = important_parts[-3:]
+
+        if important_parts:
+            dir_parts = [self._sanitize_directory_name(part) for part in important_parts]
+            filename = self._generate_layer_name(vector_path.stem)
+            combined = "_".join(dir_parts + [filename])
+            return self._generate_layer_name(combined)
+        else:
+            return self._generate_layer_name(vector_path.stem)
+
+    def _full_relative_path_strategy(self, vector_path: Path, path_parts: tuple) -> str:
+        """Strategy 4: Full relative path (truncated if needed)."""
+        if not path_parts:
+            return self._generate_layer_name(vector_path.stem)
+
+        # Combine all path parts with filename
+        dir_parts = [self._sanitize_directory_name(part) for part in path_parts]
+        filename = self._generate_layer_name(vector_path.stem)
+        combined = "_".join(dir_parts + [filename])
+
+        # Apply standard layer name generation (which includes length limits)
+        return self._generate_layer_name(combined)
+
+    def _sanitize_directory_name(self, directory_name: str) -> str:
+        """Sanitize directory name for use in layer names."""
+        # Basic sanitization - replace invalid characters with underscores
+        sanitized = re.sub(r'[^a-zA-Z0-9_]', '_', directory_name)
+
+        # Remove multiple consecutive underscores
+        sanitized = re.sub(r'_+', '_', sanitized)
+
+        # Strip leading/trailing underscores
+        sanitized = sanitized.strip('_')
+
+        # Ensure not empty
+        if not sanitized:
+            sanitized = "dir"
+
+        return sanitized
+
+    def _perform_dry_run(self, vector_files: list, input_root: Path, directory_naming: int,
+                        directory_depth: int, feedback) -> dict:
+        """Perform dry run - generate layer names without processing data."""
+
+        feedback.pushInfo("\n" + "="*80)
+        feedback.pushInfo("DRY RUN RESULTS - Layer Name Preview")
+        feedback.pushInfo("="*80)
+
+        used_layer_names = set()  # Track used layer names to handle duplicates
+        total_files = len(vector_files)
+
+        # Headers for the output table
+        feedback.pushInfo(f"{'No.':<4} {'Original Path':<50} {'Layer/Table Name':<30}")
+        feedback.pushInfo("-" * 84)
+
+        for i, vector_item in enumerate(vector_files):
+            if feedback.isCanceled():
+                break
+
+            # Update progress
+            progress = int((i / total_files) * 100)
+            feedback.setProgress(progress)
+
+            try:
+                # Generate the original path and layer name
+                original_path, layer_type = self._get_original_path_and_type(vector_item)
+
+                # Generate the final layer name that would be used
+                final_layer_name = self._generate_dry_run_layer_name(
+                    vector_item, input_root, directory_naming, directory_depth, used_layer_names)
+
+                # Format and display the result
+                row_num = f"{i+1:>3}."
+                path_display = str(original_path)
+                if len(path_display) > 47:
+                    path_display = "..." + path_display[-44:]
+
+                layer_display = f"{final_layer_name} ({layer_type})"
+
+                feedback.pushInfo(f"{row_num:<4} {path_display:<50} {layer_display:<30}")
+
+            except Exception as e:
+                feedback.pushWarning(f"Error processing {vector_item}: {str(e)}")
+                continue
+
+        feedback.pushInfo("-" * 84)
+        feedback.pushInfo(f"Total files that would be processed: {len(vector_files)}")
+        feedback.pushInfo(f"Unique layer names generated: {len(used_layer_names)}")
+
+        # Summary by directory naming strategy
+        strategy_names = [
+            "Filename only (current behavior)",
+            "Parent directory + filename",
+            "Last N directories + filename",
+            "Smart path (auto-detect important directories)",
+            "Full relative path (truncated if needed)"
+        ]
+        feedback.pushInfo(f"Directory naming strategy: {strategy_names[directory_naming]}")
+        if directory_naming == 2:  # Last N directories
+            feedback.pushInfo(f"Directory depth: {directory_depth}")
+
+        feedback.pushInfo("\nNote: This was a dry run. No data was processed.")
+        feedback.pushInfo("="*80)
+
+        return {self.OUTPUT_GPKG: None}
+
+    def _get_original_path_and_type(self, vector_item) -> tuple:
+        """Get the original path and type description for dry run display."""
+        if isinstance(vector_item, tuple):
+            if vector_item[0] == "dbf_standalone":
+                # Standalone dBase file: ("dbf_standalone", dbf_path)
+                _, dbf_path = vector_item
+                return dbf_path, "dBase table"
+            else:
+                # Container layer: (container_path, layer_name)
+                container_path, layer_name = vector_item
+                if layer_name:
+                    return f"{container_path}:{layer_name}", "container layer"
+                else:
+                    return container_path, "container file"
+        else:
+            # Regular vector file
+            return vector_item, "vector file"
+
+    def _generate_dry_run_layer_name(self, vector_item, input_root: Path, directory_naming: int,
+                                   directory_depth: int, used_layer_names: set) -> str:
+        """Generate layer name for dry run preview."""
+
+        # Generate base layer name using the same logic as actual processing
+        if isinstance(vector_item, tuple):
+            if vector_item[0] == "dbf_standalone":
+                # Standalone dBase file
+                _, dbf_path = vector_item
+                base_layer_name = self._generate_directory_aware_name(
+                    dbf_path, input_root, directory_naming, directory_depth)
+            else:
+                # Container layer
+                container_path, container_layer_name = vector_item
+                if container_layer_name:
+                    # Specific layer from container
+                    container_base_name = self._generate_directory_aware_name(
+                        container_path, input_root, directory_naming, directory_depth)
+                    base_layer_name = self._generate_layer_name(f"{container_base_name}_{container_layer_name}")
+                else:
+                    # Container as single file
+                    base_layer_name = self._generate_directory_aware_name(
+                        container_path, input_root, directory_naming, directory_depth)
+        else:
+            # Regular vector file
+            base_layer_name = self._generate_directory_aware_name(
+                vector_item, input_root, directory_naming, directory_depth)
+
+        # Apply duplicate handling
+        final_layer_name = self._ensure_unique_layer_name(base_layer_name, used_layer_names)
+
+        return final_layer_name
 
     def _apply_style_if_available(self, vector_path: Path, layer_name: str,
                                  output_gpkg: str, feedback):

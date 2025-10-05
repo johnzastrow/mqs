@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2025-10-04
+
+### Added
+- vectors2gpkg dry run mode (v0.8.0) - preview layer names without processing data
+- Comprehensive dry run output with formatted table display
+- Enhanced workflow for testing directory naming strategies before processing
+
+### Changed
+- Updated vectors2gpkg with optional output path when using dry run mode
+- Enhanced main README features to include dry run capabilities
+
+## [0.5.0] - 2025-10-04
+
+### Added
+- vectors2gpkg directory-aware layer naming (v0.7.0) - 5 configurable naming strategies
+- Smart path detection with automatic year and project directory recognition
+- User-configurable directory depth and intelligent semantic filtering
+- Backward compatible "filename only" option maintains existing behavior
+
+### Changed
+- Enhanced vectors2gpkg with comprehensive directory structure incorporation
+- Updated main README features to include directory-aware naming capabilities
+
 ## [0.4.0] - 2025-10-04
 
 ### Added
