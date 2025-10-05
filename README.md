@@ -60,13 +60,14 @@ Script: `Scripts/vectors2gpkg.py`
 A QGIS Processing Toolbox script that recursively searches directories for vector files and loads them into a single GeoPackage with metadata preservation and optional style application. Consolidates scattered vector data from complex directory structures into a modern, portable GeoPackage format.
 
 **Features:**
-- Supports 10 vector formats: shapefiles, GeoJSON, KML, GPX, GML, GeoPackages, File Geodatabases, SpatiaLite, MapInfo, standalone dBase files
+- Supports 10 vector formats: shapefiles, GeoJSON, KML/KMZ, GPX, GML, GeoPackages, File Geodatabases, SpatiaLite, MapInfo, standalone dBase files
 - Container format support: copies all layers from GeoPackages, File Geodatabases, and SpatiaLite databases
 - Non-spatial table handling: loads attribute-only tables from container formats and standalone dBase files
 - User-selectable file types with multi-select controls
 - Spatial indexing and metadata preservation
 - QML style file application
-- Smart layer naming with invalid character replacement
+- Smart layer naming with invalid character replacement and duplicate collision handling
+- Automatic duplicate resolution with incrementing numbers (roads, roads_1, roads_2, etc.)
 
 See `docs/vectors2gpkg/README.md` for detailed documentation.
 

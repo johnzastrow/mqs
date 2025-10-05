@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2025-10-04
+
+### Added
+- Duplicate layer name handling with automatic incrementing numbers
+- Smart layer name collision detection across all processed layers and tables
+- Comprehensive duplicate name resolution with fallback mechanisms
+
+### Changed
+- Enhanced layer naming system to prevent overwrites when duplicate names occur
+- Layer names now automatically append incrementing numbers (e.g., layer_1, layer_2) when collisions are detected
+- Improved processing to track all used layer names throughout the entire operation
+
+### Technical
+- Added `_ensure_unique_layer_name()` method with SQLite identifier length handling
+- Integrated duplicate tracking into the main processing loop
+- Enhanced error handling for extreme edge cases (safety fallback with UUID)
+
+## [0.5.1] - 2025-10-04
+
+### Added
+- KMZ file support (.kmz) - compressed KML files are now supported alongside KML files
+- Enhanced KML/KMZ pattern recognition in file discovery
+
+### Changed
+- Updated vector file type parameter to show "KML files (.kml/.kmz)" instead of just ".kml"
+- Updated help text to mention KML/KMZ support
+
 ## [0.5.0] - 2025-10-04
 
 ### Added

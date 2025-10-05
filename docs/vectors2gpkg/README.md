@@ -14,11 +14,15 @@ This tool simplifies the process of consolidating multiple vector files from com
 ## Features
 
 - **Recursive Processing**: Automatically finds all vector files in directory trees
-- **Multiple Formats**: Supports shapefiles, GeoJSON, KML, GPX, GML, and more
+- **Multiple Formats**: Supports 10 vector formats (shapefiles, GeoJSON, KML/KMZ, GPX, GML, GeoPackages, File Geodatabases, SpatiaLite, MapInfo, standalone dBase)
+- **Container Format Support**: Extracts individual layers from GeoPackages, File Geodatabases, and SpatiaLite databases
+- **Non-Spatial Tables**: Loads attribute-only tables from container formats and standalone dBase files
+- **User-Selectable Types**: Multi-select parameter for choosing which vector file types to process
 - **Spatial Indexing**: Creates spatial indexes for optimal performance (optional)
-- **Metadata Preservation**: Maintains original vector file metadata
+- **Metadata Preservation**: Maintains original vector file metadata across all formats
 - **Style Application**: Applies QML style files found alongside vector files (optional)
-- **Smart Naming**: Generates clean layer names from file names
+- **Smart Naming**: Generates clean layer names with invalid character replacement
+- **Duplicate Handling**: Automatically resolves layer name collisions with incrementing numbers
 - **Error Handling**: Continues processing even if individual files fail
 - **Progress Feedback**: Detailed progress reporting and error logging
 
@@ -87,11 +91,21 @@ The script automatically generates clean layer names by:
 3. Ensuring names don't start with numbers
 4. Removing excessive underscores
 5. Limiting to 63 characters (SQLite identifier limit)
+6. **Handling duplicates** by appending incrementing numbers
 
 **Examples**:
 - `my-data file.shp` → `my_data_file`
 - `123roads.shp` → `layer_123roads`
 - `special$chars%.shp` → `special_chars_`
+
+**Duplicate Handling**:
+When multiple files would generate the same layer name, the script automatically handles this by appending incrementing numbers:
+- First occurrence: `roads` → `roads`
+- Second occurrence: `roads` → `roads_1`
+- Third occurrence: `roads` → `roads_2`
+- And so on...
+
+This ensures no data is lost due to naming collisions and all layers are preserved in the final GeoPackage.
 
 ## Style Application
 
@@ -106,7 +120,7 @@ The script provides a multi-select parameter allowing you to choose which vector
 
 - **Shapefiles (.shp)**: Traditional ESRI shapefiles
 - **GeoJSON (.geojson/.json)**: JSON-based vector format
-- **KML files (.kml)**: Google Earth format
+- **KML files (.kml/.kmz)**: Google Earth format (including compressed KMZ)
 - **GPX files (.gpx)**: GPS exchange format
 - **GML files (.gml)**: Geography Markup Language
 - **GeoPackage files (.gpkg)**: OGC GeoPackage format
@@ -187,12 +201,14 @@ The script automatically detects and processes standalone dBase (.dbf) files - t
 - Result: `roads` layer (spatial) and `codes` table (non-spatial) in GeoPackage
 - The `roads.dbf` is ignored as it's part of the shapefile set
 
-## Error Handling
+## Error Handling and Data Safety
 
-The script is designed to be robust:
+The script is designed to be robust and ensure no data loss:
 
 - **Individual File Errors**: If one vector file fails to load, processing continues with the remaining files
 - **Directory Access**: Warns about inaccessible directories but continues processing
+- **Layer Name Conflicts**: Automatically resolves duplicate layer names without user intervention
+- **Data Preservation**: Ensures all layers are preserved even when naming conflicts occur
 - **Style Application**: Logs style application failures but doesn't stop processing
 - **Detailed Logging**: All errors and warnings are reported in the QGIS log
 

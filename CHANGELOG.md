@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2025-10-04
+
+### Added
+- vectors2gpkg duplicate layer name handling (v0.6.0) - automatic resolution of naming collisions
+- KMZ file support for compressed KML files (v0.5.1)
+- Smart layer naming with incrementing numbers for duplicate names
+- Enhanced documentation for duplicate handling across all formats
+
+### Changed
+- Updated vectors2gpkg subproject to v0.6.0 with comprehensive duplicate prevention
+- Enhanced main README features list to include duplicate collision handling
+- Updated REQUIREMENTS.md to reflect current multi-format capabilities
+
 ## [0.3.0] - 2025-10-04
 
 ### Added

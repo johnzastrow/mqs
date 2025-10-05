@@ -13,10 +13,10 @@ Vector Files to GeoPackage Converter
 Recursively searches a directory for vector files (shapefiles, GeoJSON, etc.) and loads them into a
 GeoPackage with metadata preservation and optional style application.
 
-Version: 0.5.0
+Version: 0.6.0
 """
 
-__version__ = "0.5.0"
+__version__ = "0.6.0"
 
 import os
 import re
@@ -77,14 +77,14 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
         <h3>Features:</h3>
         <ul>
         <li>Recursively processes all vector files in directory tree</li>
-        <li>Supports multiple vector formats (shapefiles, GeoJSON, KML, GPX, GeoPackages, File Geodatabases, SpatiaLite, MapInfo, etc.)</li>
+        <li>Supports multiple vector formats (shapefiles, GeoJSON, KML/KMZ, GPX, GeoPackages, File Geodatabases, SpatiaLite, MapInfo, etc.)</li>
         <li>Copies both spatial and non-spatial layers from container formats (GeoPackages, File Geodatabases, SpatiaLite)</li>
         <li>Loads standalone dBase files as non-spatial tables</li>
         <li>User-selectable vector file types to process</li>
         <li>Creates spatial indexes for each layer</li>
         <li>Preserves metadata from original vector files</li>
         <li>Applies QML style files if found in same directory</li>
-        <li>Layer names derived from file names with invalid characters replaced</li>
+        <li>Smart layer naming with invalid character replacement and duplicate collision handling</li>
         </ul>
 
         <h3>Parameters:</h3>
@@ -127,7 +127,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                 options=[
                     "Shapefiles (.shp)",
                     "GeoJSON (.geojson/.json)",
-                    "KML files (.kml)",
+                    "KML files (.kml/.kmz)",
                     "GPX files (.gpx)",
                     "GML files (.gml)",
                     "GeoPackage files (.gpkg)",
@@ -197,6 +197,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
         processed_count = 0
         error_count = 0
         is_first_layer = True
+        used_layer_names = set()  # Track used layer names to handle duplicates
 
         for i, vector_item in enumerate(vector_files):
             if feedback.isCanceled():
@@ -229,6 +230,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                     apply_styles,
                     create_spatial_index,
                     is_first_layer,
+                    used_layer_names,
                     feedback
                 )
                 processed_count += 1
@@ -257,7 +259,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
         type_patterns = {
             0: ["*.shp"],  # Shapefiles
             1: ["*.geojson", "*.json"],  # GeoJSON
-            2: ["*.kml"],  # KML
+            2: ["*.kml", "*.kmz"],  # KML/KMZ
             3: ["*.gpx"],  # GPX
             4: ["*.gml"],  # GML
             5: ["*.gpkg"],  # GeoPackage
@@ -521,7 +523,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
 
     def _process_vector_file(self, vector_item, output_gpkg: str,
                           apply_styles: bool, create_spatial_index: bool,
-                          is_first_layer: bool, feedback) -> str:
+                          is_first_layer: bool, used_layer_names: set, feedback) -> str:
         """Process a single vector file or GeoPackage layer into the GeoPackage."""
 
         # Check the type of vector item and handle accordingly
@@ -532,7 +534,8 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                 # Standalone dBase file: ("dbf_standalone", dbf_path)
                 _, dbf_path = vector_item
                 layer_uri = str(dbf_path)
-                layer_name = self._generate_layer_name(dbf_path.stem)
+                base_layer_name = self._generate_layer_name(dbf_path.stem)
+                layer_name = self._ensure_unique_layer_name(base_layer_name, used_layer_names)
                 source_description = f"dBase table: {dbf_path.name}"
                 style_source_path = dbf_path
                 is_non_spatial = True
@@ -543,7 +546,8 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                 if container_layer_name:
                     # Load specific layer from container (GeoPackage or File Geodatabase)
                     layer_uri = f"{container_path}|layername={container_layer_name}"
-                    layer_name = self._generate_layer_name(f"{container_path.stem}_{container_layer_name}")
+                    base_layer_name = self._generate_layer_name(f"{container_path.stem}_{container_layer_name}")
+                    layer_name = self._ensure_unique_layer_name(base_layer_name, used_layer_names)
 
                     if container_path.suffix.lower() == '.gdb':
                         source_description = f"{container_path.name}:{container_layer_name}"
@@ -552,7 +556,8 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                 else:
                     # Load container as single file
                     layer_uri = str(container_path)
-                    layer_name = self._generate_layer_name(container_path.stem)
+                    base_layer_name = self._generate_layer_name(container_path.stem)
+                    layer_name = self._ensure_unique_layer_name(base_layer_name, used_layer_names)
                     source_description = str(container_path.name)
 
                 style_source_path = container_path
@@ -560,7 +565,8 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
             # Regular vector file
             vector_path = vector_item
             layer_uri = str(vector_path)
-            layer_name = self._generate_layer_name(vector_path.stem)
+            base_layer_name = self._generate_layer_name(vector_path.stem)
+            layer_name = self._ensure_unique_layer_name(base_layer_name, used_layer_names)
             source_description = str(vector_path.name)
             style_source_path = vector_path
 
@@ -630,6 +636,38 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
             clean_name = "unnamed_layer"
 
         return clean_name[:63]  # SQLite identifier limit
+
+    def _ensure_unique_layer_name(self, base_name: str, used_names: set) -> str:
+        """Ensure layer name is unique by appending incrementing numbers if needed."""
+        # If base name is not used, return it
+        if base_name not in used_names:
+            used_names.add(base_name)
+            return base_name
+
+        # Try incrementing numbers until we find an unused name
+        counter = 1
+        while True:
+            # Calculate available space for counter suffix
+            suffix = f"_{counter}"
+            max_base_length = 63 - len(suffix)  # SQLite identifier limit
+
+            # Truncate base name if needed to fit with suffix
+            truncated_base = base_name[:max_base_length]
+            candidate_name = f"{truncated_base}{suffix}"
+
+            if candidate_name not in used_names:
+                used_names.add(candidate_name)
+                return candidate_name
+
+            counter += 1
+
+            # Safety check to prevent infinite loop (very unlikely)
+            if counter > 9999:
+                import uuid
+                unique_suffix = str(uuid.uuid4())[:8]
+                fallback_name = f"layer_{unique_suffix}"
+                used_names.add(fallback_name)
+                return fallback_name
 
     def _apply_style_if_available(self, vector_path: Path, layer_name: str,
                                  output_gpkg: str, feedback):
