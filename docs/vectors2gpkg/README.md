@@ -75,13 +75,13 @@ Before processing large datasets, use dry run mode to preview the layer names th
 ================================================================================
 DRY RUN RESULTS - Layer Name Preview
 ================================================================================
-No.  Original Path                                      Layer/Table Name
---------------------------------------------------------------------------------
-  1. /data/2023/boundaries/counties.shp                boundaries_counties (vector file)
-  2. /data/2023/boundaries/states.geojson              boundaries_states (vector file)
-  3. /data/2023/admin.gpkg:districts                   2023_admin_districts (container layer)
-  4. /data/ecology/standalone_codes.dbf                ecology_standalone_codes (dBase table)
---------------------------------------------------------------------------------
+No.  | Original Path                                      | Layer/Table Name
+------------------------------------------------------------------------------------------
+  1. | /data/2023/boundaries/counties.shp                | boundaries_counties (vector file)
+  2. | /data/2023/boundaries/states.geojson              | boundaries_states (vector file)
+  3. | /data/2023/admin.gpkg:districts                    | 2023_admin_districts (container layer)
+  4. | /data/ecology/standalone_codes.dbf                 | ecology_standalone_codes (dBase table)
+------------------------------------------------------------------------------------------
 Total files that would be processed: 4
 Unique layer names generated: 4
 Directory naming strategy: Parent directory + filename
@@ -170,21 +170,33 @@ The script offers flexible directory naming strategies to incorporate directory 
 - Includes the last N directories in the path
 - Example with depth=2: `/data/projects/watershed/2023/hydrology/streams.shp` → `2023_hydrology_streams`
 
-**4. Smart path (auto-detect important directories)**
+**4. First N directories + filename**
+- User-configurable depth (1-5 directories)
+- Includes the first N directories from the top-level containing folder
+- Example with depth=2: `/data/projects/watershed/2023/hydrology/streams.shp` → `data_projects_streams`
+
+**5. Selected levels (specify directory levels)**
+- User-specified comma-separated directory level numbers
+- Allows skipping levels and selecting non-contiguous directories
+- Level 0 is the first directory after the input root, level 1 is the next, etc.
+- Example with levels="0,3": `/data/projects/watershed/2023/hydrology/streams.shp` → `data_2023_streams`
+
+**6. Smart path (auto-detect important directories)**
 - Automatically identifies meaningful directories
 - Skips common non-semantic directories (`home`, `temp`, `data`, etc.)
 - Prioritizes years (1900-2099), quarters (Q1-Q4), and project names
 - Example: `/home/user/projects/watershed_study/2023/Q1/boundaries/counties.shp` → `watershed_study_2023_Q1_boundaries_counties`
 
-**5. Full relative path (truncated if needed)**
+**7. Full relative path (truncated if needed)**
 - Includes complete path from input root directory
 - Automatically truncated to respect SQLite 63-character limit
 - Example: `/data/2023/admin/boundaries/counties.shp` → `2023_admin_boundaries_counties`
 
 ### Configuration Options
 
-- **Directory Naming Strategy**: Choose from 5 naming approaches
-- **Directory Depth**: When using "Last N directories", specify how many parent directories to include (1-5)
+- **Directory Naming Strategy**: Choose from 7 naming approaches
+- **Directory Depth**: When using "Last N directories" or "First N directories", specify how many directories to include (1-5)
+- **Directory Levels**: When using "Selected levels", specify comma-separated directory level numbers (e.g., "0,2,4")
 - **Automatic Sanitization**: Directory names are cleaned using the same rules as filenames
 - **Length Management**: All strategies respect SQLite identifier limits
 
@@ -211,6 +223,8 @@ Given input file: `/projects/environmental_monitoring/2023/quarterly_reports/Q3/
 | Filename only | `monitoring_stations` |
 | Parent directory | `water_quality_monitoring_stations` |
 | Last 2 directories | `Q3_water_quality_monitoring_stations` |
+| First 2 directories | `projects_environmental_monitoring_stations` |
+| Selected levels (0,2,4) | `projects_2023_water_quality_monitoring_stations` |
 | Smart path | `environmental_monitoring_2023_Q3_water_quality_monitoring_stations` |
 | Full relative path | `projects_environmental_monitoring_2023_quarterly_reports_Q3_water_q...` |
 

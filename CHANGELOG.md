@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.7.0] - 2025-10-05
+
+### Added
+- rasters2gpkg subproject (v0.1.0) - Raster Files to GeoPackage Converter
+- Support for 10 raster formats including GeoTIFF, ERDAS IMAGINE, ENVI, ASCII Grid, ESRI Grid, NetCDF, HDF, JPEG2000, PNG, JPEG
+- Complete directory-aware layer naming system with 7 configurable strategies
+- Dry run mode for previewing raster layer names before processing
+- Comprehensive documentation for rasters2gpkg in docs/rasters2gpkg/
+
+### Changed
+- Updated main README.md to include rasters2gpkg subproject overview
+- Updated Scripts section to reference rasters2gpkg.py
+
+### Abandoned
+- **rasters2gpkg subproject discontinued** due to GeoPackage specification limitations for analytical raster data
+- GeoPackage raster storage is designed for tile-based base layers, not analytical datasets requiring lossless compression, high bit-depths, and continuous data access
+- Alternative approaches recommended: keep native raster formats (GeoTIFF, NetCDF, HDF) optimized for analytical workflows
+
+## [0.6.2] - 2025-10-05
+
+### Changed
+- vectors2gpkg enhanced with "Selected levels" naming strategy (v0.8.2) - allows users to specify comma-separated directory level numbers for custom directory selection
+- Updated vectors2gpkg with 7 total directory naming strategies including non-contiguous directory level selection
+- Enhanced flexibility for precise control over which directory levels are included in layer names
+
+## [0.6.1] - 2025-10-05
+
+### Changed
+- vectors2gpkg enhanced with "First N directories" naming strategy (v0.8.1) - complements existing "Last N directories" with top-level directory selection
+- Updated vectors2gpkg with 6 total directory naming strategies for improved workflow flexibility
+
 ## [0.6.0] - 2025-10-04
 
 ### Added

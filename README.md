@@ -75,6 +75,20 @@ See `docs/vectors2gpkg/README.md` for detailed documentation.
 
 ---
 
+#### rasters2gpkg ⚠️ ABANDONED
+Location: `docs/rasters2gpkg/`
+Script: `Scripts/rasters2gpkg.py`
+
+**This subproject has been abandoned due to GeoPackage specification limitations for analytical raster data.**
+
+The GeoPackage raster storage specification is designed for tile-based base layers (web mapping), not analytical datasets requiring lossless compression, high bit-depths, and continuous data access. For analytical raster workflows, keep native formats (GeoTIFF, NetCDF, HDF) that are optimized for scientific analysis.
+
+~~A QGIS Processing Toolbox script that recursively searches directories for raster files and loads them into a single GeoPackage with metadata preservation and optional style application. Consolidates scattered raster data from complex directory structures into a modern, portable GeoPackage format.~~
+
+See `docs/rasters2gpkg/README.md` for detailed explanation of abandonment reasons and alternative approaches.
+
+---
+
 #### Resources
 
 Files that I might want to reuse and you might find useful
@@ -89,3 +103,4 @@ Usually python scripts that correspond to the subprojects listed above. The rest
 
 1. **Scripts\extract_styles_from_projects.py** - see ExtractStylesfromDirectoriesForStyleManager above
 2. **Scripts\vectors2gpkg.py** - see vectors2gpkg above
+3. **Scripts\rasters2gpkg.py** - ⚠️ ABANDONED - see rasters2gpkg above for explanation

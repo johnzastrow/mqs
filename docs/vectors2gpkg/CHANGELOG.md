@@ -7,6 +7,43 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.2] - 2025-10-05
+
+### Added
+- **Selected levels naming strategy** - allows users to specify comma-separated directory level numbers for custom directory selection
+- Directory levels parameter for precise control over which directory levels to include in layer names
+- Support for non-contiguous directory selection (e.g., "0,2,4" to skip levels 1 and 3)
+- Robust error handling for invalid level specifications with fallback to filename-only naming
+
+### Changed
+- Updated directory naming strategy options from 6 to 7 total strategies
+- Enhanced parameter interface with directory levels string input for flexible level specification
+- Updated dry run output to display directory levels configuration when using Selected levels strategy
+- Updated help text and parameter descriptions to include the new Selected levels option
+
+### Technical
+- Added `_selected_levels_strategy()` method with comma-separated level parsing and validation
+- Enhanced strategy dispatch logic to handle new strategy index positions
+- Added comprehensive error handling for level parsing with graceful fallbacks
+- Updated all method signatures to pass directory_levels parameter throughout the processing chain
+
+## [0.8.1] - 2025-10-05
+
+### Added
+- **First N directories + filename** naming strategy - includes the first N directories from the top-level containing folder
+- Enhanced directory depth parameter to support both "Last N directories" and "First N directories" strategies
+- Complementary naming option to the existing "Last N directories" strategy for different directory naming needs
+
+### Changed
+- Updated directory naming strategy options from 5 to 6 total strategies
+- Enhanced dry run output to show directory depth for both Last N and First N directory strategies
+- Updated help text and parameter descriptions to include the new First N directories option
+
+### Technical
+- Added `_first_n_directories_strategy()` method with configurable depth (1-5 directories)
+- Updated strategy dispatch logic to handle new strategy index positions
+- Enhanced strategy name arrays and conditional logic for dry run output
+
 ## [0.8.0] - 2025-10-04
 
 ### Added

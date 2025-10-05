@@ -13,10 +13,10 @@ Vector Files to GeoPackage Converter
 Recursively searches a directory for vector files (shapefiles, GeoJSON, etc.) and loads them into a
 GeoPackage with metadata preservation and optional style application.
 
-Version: 0.8.0
+Version: 0.8.2
 """
 
-__version__ = "0.8.0"
+__version__ = "0.8.2"
 
 import os
 import re
@@ -34,6 +34,7 @@ from qgis.core import (
     QgsProcessingParameterBoolean,
     QgsProcessingParameterEnum,
     QgsProcessingParameterNumber,
+    QgsProcessingParameterString,
     QgsVectorLayer,
     QgsVectorFileWriter,
     QgsCoordinateReferenceSystem,
@@ -57,6 +58,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
     CREATE_SPATIAL_INDEX = "CREATE_SPATIAL_INDEX"
     DIRECTORY_NAMING = "DIRECTORY_NAMING"
     DIRECTORY_DEPTH = "DIRECTORY_DEPTH"
+    DIRECTORY_LEVELS = "DIRECTORY_LEVELS"
     DRY_RUN = "DRY_RUN"
 
     def createInstance(self):
@@ -103,7 +105,8 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
         <li><b>Create Spatial Index:</b> Create spatial indexes for each layer (recommended)</li>
         <li><b>Dry Run:</b> Preview layer names without processing data (output path not required)</li>
         <li><b>Directory Naming Strategy:</b> Choose how directory names are incorporated into layer names</li>
-        <li><b>Directory Depth:</b> When using 'Last N directories', specify how many directories to include</li>
+        <li><b>Directory Depth:</b> When using 'Last N directories' or 'First N directories', specify how many directories to include</li>
+        <li><b>Directory Levels:</b> When using 'Selected levels', specify comma-separated directory level numbers (e.g., '0,2,4')</li>
         </ul>
 
         <h3>Dry Run Mode:</h3>
@@ -192,6 +195,8 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                     "Filename only (current behavior)",
                     "Parent directory + filename",
                     "Last N directories + filename",
+                    "First N directories + filename",
+                    "Selected levels (specify directory levels)",
                     "Smart path (auto-detect important directories)",
                     "Full relative path (truncated if needed)"
                 ],
@@ -199,15 +204,25 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
             )
         )
 
-        # Directory depth parameter (for "Last N directories" option)
+        # Directory depth parameter (for "Last N directories" and "First N directories" options)
         self.addParameter(
             QgsProcessingParameterNumber(
                 self.DIRECTORY_DEPTH,
-                "Directory depth (when using 'Last N directories')",
+                "Directory depth (when using 'Last N directories' or 'First N directories')",
                 type=QgsProcessingParameterNumber.Integer,
                 defaultValue=2,
                 minValue=1,
                 maxValue=5
+            )
+        )
+
+        # Directory levels parameter (for "Selected levels" option)
+        self.addParameter(
+            QgsProcessingParameterString(
+                self.DIRECTORY_LEVELS,
+                "Directory levels (when using 'Selected levels' - comma-separated numbers, e.g., '0,2,4')",
+                defaultValue="0,1",
+                optional=False
             )
         )
 
@@ -222,6 +237,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
         create_spatial_index = self.parameterAsBool(parameters, self.CREATE_SPATIAL_INDEX, context)
         directory_naming = self.parameterAsEnum(parameters, self.DIRECTORY_NAMING, context)
         directory_depth = self.parameterAsInt(parameters, self.DIRECTORY_DEPTH, context)
+        directory_levels = self.parameterAsString(parameters, self.DIRECTORY_LEVELS, context)
         dry_run = self.parameterAsBool(parameters, self.DRY_RUN, context)
 
         if not input_dir:
@@ -252,7 +268,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
 
         if dry_run:
             # Dry run mode - only generate and display layer names
-            return self._perform_dry_run(vector_files, input_path, directory_naming, directory_depth, feedback)
+            return self._perform_dry_run(vector_files, input_path, directory_naming, directory_depth, directory_levels, feedback)
 
         # Process each vector file
         total_files = len(vector_files)
@@ -601,7 +617,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                 _, dbf_path = vector_item
                 layer_uri = str(dbf_path)
                 base_layer_name = self._generate_directory_aware_name(
-                    dbf_path, input_root, directory_naming, directory_depth)
+                    dbf_path, input_root, directory_naming, directory_depth, directory_levels)
                 layer_name = self._ensure_unique_layer_name(base_layer_name, used_layer_names)
                 source_description = f"dBase table: {dbf_path.name}"
                 style_source_path = dbf_path
@@ -615,7 +631,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                     layer_uri = f"{container_path}|layername={container_layer_name}"
                     # For container layers, use container path for directory naming
                     container_base_name = self._generate_directory_aware_name(
-                        container_path, input_root, directory_naming, directory_depth)
+                        container_path, input_root, directory_naming, directory_depth, directory_levels)
                     base_layer_name = self._generate_layer_name(f"{container_base_name}_{container_layer_name}")
                     layer_name = self._ensure_unique_layer_name(base_layer_name, used_layer_names)
 
@@ -627,7 +643,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                     # Load container as single file
                     layer_uri = str(container_path)
                     base_layer_name = self._generate_directory_aware_name(
-                        container_path, input_root, directory_naming, directory_depth)
+                        container_path, input_root, directory_naming, directory_depth, directory_levels)
                     layer_name = self._ensure_unique_layer_name(base_layer_name, used_layer_names)
                     source_description = str(container_path.name)
 
@@ -637,7 +653,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
             vector_path = vector_item
             layer_uri = str(vector_path)
             base_layer_name = self._generate_directory_aware_name(
-                vector_path, input_root, directory_naming, directory_depth)
+                vector_path, input_root, directory_naming, directory_depth, directory_levels)
             layer_name = self._ensure_unique_layer_name(base_layer_name, used_layer_names)
             source_description = str(vector_path.name)
             style_source_path = vector_path
@@ -742,7 +758,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                 return fallback_name
 
     def _generate_directory_aware_name(self, vector_path: Path, input_root: Path,
-                                     naming_strategy: int, directory_depth: int) -> str:
+                                     naming_strategy: int, directory_depth: int, directory_levels: str) -> str:
         """Generate layer name incorporating directory structure based on strategy."""
 
         # Strategy 0: Filename only (current behavior)
@@ -762,9 +778,13 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
             return self._parent_directory_strategy(vector_path, path_parts)
         elif naming_strategy == 2:  # Last N directories + filename
             return self._last_n_directories_strategy(vector_path, path_parts, directory_depth)
-        elif naming_strategy == 3:  # Smart path (auto-detect important directories)
+        elif naming_strategy == 3:  # First N directories + filename
+            return self._first_n_directories_strategy(vector_path, path_parts, directory_depth)
+        elif naming_strategy == 4:  # Selected levels (specify directory levels)
+            return self._selected_levels_strategy(vector_path, path_parts, directory_levels)
+        elif naming_strategy == 5:  # Smart path (auto-detect important directories)
             return self._smart_path_strategy(vector_path, path_parts)
-        elif naming_strategy == 4:  # Full relative path (truncated if needed)
+        elif naming_strategy == 6:  # Full relative path (truncated if needed)
             return self._full_relative_path_strategy(vector_path, path_parts)
         else:
             # Fallback to filename only
@@ -792,8 +812,50 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
         else:
             return self._generate_layer_name(vector_path.stem)
 
+    def _first_n_directories_strategy(self, vector_path: Path, path_parts: tuple, depth: int) -> str:
+        """Strategy 3: First N directories + filename."""
+        if path_parts:
+            # Take the first N directories from the top-level containing folder
+            relevant_parts = path_parts[:depth] if len(path_parts) >= depth else path_parts
+            dir_parts = [self._sanitize_directory_name(part) for part in relevant_parts]
+            filename = self._generate_layer_name(vector_path.stem)
+            combined = "_".join(dir_parts + [filename])
+            return self._generate_layer_name(combined)
+        else:
+            return self._generate_layer_name(vector_path.stem)
+
+    def _selected_levels_strategy(self, vector_path: Path, path_parts: tuple, directory_levels: str) -> str:
+        """Strategy 4: Selected levels (specify directory levels)."""
+        if not path_parts:
+            return self._generate_layer_name(vector_path.stem)
+
+        try:
+            # Parse comma-separated level numbers
+            levels = [int(level.strip()) for level in directory_levels.split(',') if level.strip()]
+            if not levels:
+                # Fallback to filename only if no valid levels provided
+                return self._generate_layer_name(vector_path.stem)
+
+            # Filter levels to only include valid indices (0-based)
+            valid_levels = [level for level in levels if 0 <= level < len(path_parts)]
+
+            if not valid_levels:
+                # No valid levels, fallback to filename only
+                return self._generate_layer_name(vector_path.stem)
+
+            # Extract directories at specified levels
+            selected_parts = [path_parts[level] for level in sorted(valid_levels)]
+            dir_parts = [self._sanitize_directory_name(part) for part in selected_parts]
+            filename = self._generate_layer_name(vector_path.stem)
+            combined = "_".join(dir_parts + [filename])
+            return self._generate_layer_name(combined)
+
+        except (ValueError, IndexError):
+            # Fallback to filename only if parsing fails
+            return self._generate_layer_name(vector_path.stem)
+
     def _smart_path_strategy(self, vector_path: Path, path_parts: tuple) -> str:
-        """Strategy 3: Smart path (auto-detect important directories)."""
+        """Strategy 5: Smart path (auto-detect important directories)."""
         if not path_parts:
             return self._generate_layer_name(vector_path.stem)
 
@@ -843,7 +905,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
             return self._generate_layer_name(vector_path.stem)
 
     def _full_relative_path_strategy(self, vector_path: Path, path_parts: tuple) -> str:
-        """Strategy 4: Full relative path (truncated if needed)."""
+        """Strategy 6: Full relative path (truncated if needed)."""
         if not path_parts:
             return self._generate_layer_name(vector_path.stem)
 
@@ -873,7 +935,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
         return sanitized
 
     def _perform_dry_run(self, vector_files: list, input_root: Path, directory_naming: int,
-                        directory_depth: int, feedback) -> dict:
+                        directory_depth: int, directory_levels: str, feedback) -> dict:
         """Perform dry run - generate layer names without processing data."""
 
         feedback.pushInfo("\n" + "="*80)
@@ -884,8 +946,8 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
         total_files = len(vector_files)
 
         # Headers for the output table
-        feedback.pushInfo(f"{'No.':<4} {'Original Path':<50} {'Layer/Table Name':<30}")
-        feedback.pushInfo("-" * 84)
+        feedback.pushInfo(f"{'No.':<4} | {'Original Path':<50} | {'Layer/Table Name'}")
+        feedback.pushInfo("-" * 90)
 
         for i, vector_item in enumerate(vector_files):
             if feedback.isCanceled():
@@ -901,23 +963,23 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
 
                 # Generate the final layer name that would be used
                 final_layer_name = self._generate_dry_run_layer_name(
-                    vector_item, input_root, directory_naming, directory_depth, used_layer_names)
+                    vector_item, input_root, directory_naming, directory_depth, directory_levels, used_layer_names)
 
                 # Format and display the result
                 row_num = f"{i+1:>3}."
                 path_display = str(original_path)
-                if len(path_display) > 47:
-                    path_display = "..." + path_display[-44:]
+                if len(path_display) > 50:
+                    path_display = "..." + path_display[-47:]
 
                 layer_display = f"{final_layer_name} ({layer_type})"
 
-                feedback.pushInfo(f"{row_num:<4} {path_display:<50} {layer_display:<30}")
+                feedback.pushInfo(f"{row_num:<4} | {path_display:<50} | {layer_display}")
 
             except Exception as e:
                 feedback.pushWarning(f"Error processing {vector_item}: {str(e)}")
                 continue
 
-        feedback.pushInfo("-" * 84)
+        feedback.pushInfo("-" * 90)
         feedback.pushInfo(f"Total files that would be processed: {len(vector_files)}")
         feedback.pushInfo(f"Unique layer names generated: {len(used_layer_names)}")
 
@@ -926,12 +988,16 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
             "Filename only (current behavior)",
             "Parent directory + filename",
             "Last N directories + filename",
+            "First N directories + filename",
+            "Selected levels (specify directory levels)",
             "Smart path (auto-detect important directories)",
             "Full relative path (truncated if needed)"
         ]
         feedback.pushInfo(f"Directory naming strategy: {strategy_names[directory_naming]}")
-        if directory_naming == 2:  # Last N directories
+        if directory_naming == 2 or directory_naming == 3:  # Last N directories or First N directories
             feedback.pushInfo(f"Directory depth: {directory_depth}")
+        elif directory_naming == 4:  # Selected levels
+            feedback.pushInfo(f"Directory levels: {directory_levels}")
 
         feedback.pushInfo("\nNote: This was a dry run. No data was processed.")
         feedback.pushInfo("="*80)
@@ -957,7 +1023,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
             return vector_item, "vector file"
 
     def _generate_dry_run_layer_name(self, vector_item, input_root: Path, directory_naming: int,
-                                   directory_depth: int, used_layer_names: set) -> str:
+                                   directory_depth: int, directory_levels: str, used_layer_names: set) -> str:
         """Generate layer name for dry run preview."""
 
         # Generate base layer name using the same logic as actual processing
@@ -966,23 +1032,23 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                 # Standalone dBase file
                 _, dbf_path = vector_item
                 base_layer_name = self._generate_directory_aware_name(
-                    dbf_path, input_root, directory_naming, directory_depth)
+                    dbf_path, input_root, directory_naming, directory_depth, directory_levels)
             else:
                 # Container layer
                 container_path, container_layer_name = vector_item
                 if container_layer_name:
                     # Specific layer from container
                     container_base_name = self._generate_directory_aware_name(
-                        container_path, input_root, directory_naming, directory_depth)
+                        container_path, input_root, directory_naming, directory_depth, directory_levels)
                     base_layer_name = self._generate_layer_name(f"{container_base_name}_{container_layer_name}")
                 else:
                     # Container as single file
                     base_layer_name = self._generate_directory_aware_name(
-                        container_path, input_root, directory_naming, directory_depth)
+                        container_path, input_root, directory_naming, directory_depth, directory_levels)
         else:
             # Regular vector file
             base_layer_name = self._generate_directory_aware_name(
-                vector_item, input_root, directory_naming, directory_depth)
+                vector_item, input_root, directory_naming, directory_depth, directory_levels)
 
         # Apply duplicate handling
         final_layer_name = self._ensure_unique_layer_name(base_layer_name, used_layer_names)
