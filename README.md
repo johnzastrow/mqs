@@ -113,6 +113,32 @@ See `docs/batchvectorrename/README.md` for detailed documentation.
 
 ---
 
+#### inventory_miner
+Location: `docs/inventory_miner/`
+Script: `Scripts/inventory_miner.py`
+
+A QGIS Processing Toolbox script that recursively scans directories for all GDAL/OGR-supported geospatial files and creates a comprehensive spatial inventory stored in a GeoPackage database. Automatically discovers georeferenced data and creates extent polygons in EPSG:4326 for visualization. Perfect for cataloging large geospatial data collections and understanding your data holdings.
+
+**Features:**
+- **Automatic discovery**: Uses GDAL/OGR to find all georeferenced files (vectors, rasters, containers)
+- **Georeference detection**: Recognizes coordinates in file headers, data bodies, and sidecar files (.prj, world files, .aux.xml)
+- **GeoPackage output**: Creates spatial inventory layer with extent bounding box polygons in EPSG:4326
+- **61+ metadata fields**: File system info, spatial metadata, vector/raster specifics, GIS metadata, quality indicators
+- **Comprehensive metadata extraction**:
+  - Vector: Geometry type, CRS, extent, feature count, field information, Z/M dimensions
+  - Raster: Dimensions, band count, pixel size, data types, NoData values, compression
+  - GIS metadata: Title, abstract, keywords, URL, ISO categories, contact info, links (from ISO 19115, FGDC, ESRI metadata)
+- **Container format support**: Enumerates layers within GeoPackage, File Geodatabase, SpatiaLite databases
+- **Non-spatial table detection**: Identifies attribute-only tables associated with spatial layers
+- **Sidecar file tracking**: Reports presence of .prj, world files, .aux.xml, metadata .xml
+- **Optional validation**: Thorough data integrity checking (reads actual features/pixels to verify data)
+- **Extent transformation**: All extents transformed to EPSG:4326 for consistent visualization
+- **Quality indicators**: Flags missing CRS, empty datasets, corrupted files, invalid geometries
+
+See `docs/inventory_miner/README.md` for detailed documentation and usage examples.
+
+---
+
 #### Resources
 
 Files that I might want to reuse and you might find useful
@@ -129,3 +155,4 @@ Usually python scripts that correspond to the subprojects listed above. The rest
 2. **Scripts\vectors2gpkg.py** - see vectors2gpkg above
 3. **Scripts\rasters2gpkg.py** - ⚠️ ABANDONED - see rasters2gpkg above for explanation
 4. **Scripts\batchvectorrename.py** - see batchvectorrename above
+5. **Scripts\inventory_miner.py** - see inventory_miner above
