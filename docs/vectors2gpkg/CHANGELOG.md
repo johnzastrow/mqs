@@ -1,0 +1,58 @@
+# Changelog
+
+All notable changes to the vectors2gpkg subproject will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [0.4.0] - 2025-10-04
+
+### Added
+- File Geodatabase (.gdb) support - can now copy layers from ESRI File Geodatabases
+- Standalone dBase (.dbf) file support - loads dBase files without corresponding shapefiles as non-spatial tables
+- Non-spatial table handling - properly loads attribute-only data into GeoPackage
+- Enhanced file type selection with 8 total supported formats
+
+### Changed
+- Updated vector file discovery to distinguish between shapefile-associated and standalone dBase files
+- Improved layer naming for File Geodatabase sources
+- Enhanced processing logic to handle both spatial and non-spatial data
+- Updated user interface with additional file type options
+
+## [0.3.0] - 2025-10-04
+
+### Added
+- GeoPackage input support - can now copy layers from existing GeoPackage files
+- Multi-select parameter for choosing which vector file types to process
+- Support for selectively processing only desired vector formats
+- Enhanced layer naming for GeoPackage sources (includes source file name)
+
+### Changed
+- Vector file discovery now respects user-selected file types
+- Improved error handling for GeoPackage layer enumeration
+- Updated processing logic to handle both regular files and GeoPackage layers
+
+## [0.2.0] - 2025-10-04
+
+### Changed
+- Renamed subproject from "shapefiles2gpkg" to "vectors2gpkg"
+- Expanded support to multiple vector formats (GeoJSON, KML, GPX, GML) in addition to shapefiles
+- Updated all documentation and script names to reflect broader vector file support
+- Updated script class name from `Shapefiles2GpkgAlgorithm` to `Vectors2GpkgAlgorithm`
+
+## [0.1.1] - 2025-10-04
+
+### Fixed
+- Fixed GeoPackage writing logic to properly handle first layer creation vs subsequent layer appends
+- Resolved "Opening of data source in update mode failed" error when writing multiple layers
+
+## [0.1.0] - 2025-10-04
+
+### Added
+- Initial project structure for vectors2gpkg subproject
+- REQUIREMENTS.md outlining functionality to load vector files into GeoPackage
+- CHANGELOG.md for version tracking
+- Testing directory structure
+- Complete QGIS Processing Toolbox script for converting vector files to GeoPackage

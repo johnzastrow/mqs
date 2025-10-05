@@ -39,13 +39,18 @@ This repository contains multiple QGIS-related subprojects, each organized in it
 ```
 mqs/
 ├── Scripts/                    # Executable QGIS scripts
-│   └── extract_styles_from_projects.py
+│   ├── extract_styles_from_projects.py
+│   └── vectors2gpkg.py
 ├── docs/                       # Subproject documentation
-│   └── ExtractStylesfromDirectoriesForStyleManager/
+│   ├── ExtractStylesfromDirectoriesForStyleManager/
+│   │   ├── REQUIREMENTS.md
+│   │   ├── CHANGELOG.md
+│   │   ├── testing/
+│   │   └── [example files]
+│   └── vectors2gpkg/
 │       ├── REQUIREMENTS.md
 │       ├── CHANGELOG.md
-│       ├── testing/
-│       └── [example files]
+│       └── testing/
 └── testing/                    # Repository-level tests
 ```
 
@@ -63,6 +68,11 @@ Each subproject should have:
    - Script: `Scripts/extract_styles_from_projects.py`
    - Docs: `docs/ExtractStylesfromDirectoriesForStyleManager/`
    - Purpose: Extract styles from QGIS project files into XML format
+
+2. **vectors2gpkg** (v0.4.0)
+   - Script: `Scripts/vectors2gpkg.py`
+   - Docs: `docs/vectors2gpkg/`
+   - Purpose: Load vector files from directory trees into GeoPackage with metadata preservation
 
 ## Technical Details
 
