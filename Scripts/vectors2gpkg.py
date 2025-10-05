@@ -13,10 +13,10 @@ Vector Files to GeoPackage Converter
 Recursively searches a directory for vector files (shapefiles, GeoJSON, etc.) and loads them into a
 GeoPackage with metadata preservation and optional style application.
 
-Version: 0.8.2
+Version: 0.8.3
 """
 
-__version__ = "0.8.2"
+__version__ = "0.8.3"
 
 import os
 import re
@@ -312,6 +312,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
                     input_path,
                     directory_naming,
                     directory_depth,
+                    directory_levels,
                     feedback
                 )
                 processed_count += 1
@@ -605,7 +606,7 @@ class Vectors2GpkgAlgorithm(QgsProcessingAlgorithm):
     def _process_vector_file(self, vector_item, output_gpkg: str,
                           apply_styles: bool, create_spatial_index: bool,
                           is_first_layer: bool, used_layer_names: set, input_root: Path,
-                          directory_naming: int, directory_depth: int, feedback) -> str:
+                          directory_naming: int, directory_depth: int, directory_levels: str, feedback) -> str:
         """Process a single vector file or GeoPackage layer into the GeoPackage."""
 
         # Check the type of vector item and handle accordingly

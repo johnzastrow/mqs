@@ -89,6 +89,30 @@ See `docs/rasters2gpkg/README.md` for detailed explanation of abandonment reason
 
 ---
 
+#### batchvectorrename
+Location: `docs/batchvectorrename/`
+Script: `Scripts/batchvectorrename.py`
+
+A QGIS Processing Toolbox script that allows safe and efficient batch renaming of layers in vector files and databases that support layer renaming. Perfect for standardizing layer naming conventions, adding organizational prefixes/suffixes, and cleaning up messy layer names.
+
+**Features:**
+- Recursive directory scanning: automatically processes entire directory trees
+- Multi-format vector file support: handles 9 different vector file formats
+- Selective file type processing: user can choose which vector formats to process
+- **9 rename operations**: Replace Text (find/replace with text removal), Trim Beginning, Trim End, Add Prefix, Add Suffix, Clean Names, Convert to Lowercase, Convert to Uppercase, Convert to Title Case
+- Dry run mode to preview changes before applying them
+- Automatic backup creation with timestamped filenames
+- Automatic duplicate resolution: prevents conflicts with incremental numbering (_1, _2, _3)
+- Name validation for database compatibility
+- Atomic transactions with rollback capability for databases
+- Comprehensive logging system using QgsMessageLog with Info, Warning, and Critical levels
+- Progress reporting during file discovery and processing phases
+- Enhanced error handling and recovery guidance
+
+See `docs/batchvectorrename/README.md` for detailed documentation.
+
+---
+
 #### Resources
 
 Files that I might want to reuse and you might find useful
@@ -104,3 +128,4 @@ Usually python scripts that correspond to the subprojects listed above. The rest
 1. **Scripts\extract_styles_from_projects.py** - see ExtractStylesfromDirectoriesForStyleManager above
 2. **Scripts\vectors2gpkg.py** - see vectors2gpkg above
 3. **Scripts\rasters2gpkg.py** - ⚠️ ABANDONED - see rasters2gpkg above for explanation
+4. **Scripts\batchvectorrename.py** - see batchvectorrename above

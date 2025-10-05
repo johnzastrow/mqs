@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.3] - 2025-10-05
+
+### Fixed
+- **Critical bug fix**: Fixed `directory_levels` undefined error in `_process_vector_file()` method
+- Added missing `directory_levels` parameter to function signature and function call
+- Resolves processing failures when using directory-aware naming strategies
+
+### Technical
+- Updated `_process_vector_file()` method signature to include `directory_levels: str` parameter
+- Fixed parameter passing in main processing loop to include `directory_levels` variable
+
 ## [0.8.2] - 2025-10-05
 
 ### Added

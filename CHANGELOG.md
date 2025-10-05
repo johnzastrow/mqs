@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.8.0] - 2025-10-05
+
+### Added
+- batchvectorrename subproject (v0.2.0) - Batch Vector Layer Rename Tool
+- **Recursive directory scanning** - automatically processes entire directory trees
+- **Multi-format vector file support** - handles 9 different vector file formats
+- **Selective file type processing** - user can choose which vector formats to process
+- **9 rename operations**: Replace Text (find/replace with text removal), Trim Beginning, Trim End, Add Prefix, Add Suffix, Clean Names, Convert to Lowercase, Convert to Uppercase, Convert to Title Case
+- **Comprehensive logging system** using QgsMessageLog with Info, Warning, and Critical levels
+- **Enhanced dry run display** with formatted table showing file, original name, and new name
+- **Automatic duplicate resolution** with incremental numbering for conflicting names
+- **Progress reporting** during file discovery and processing phases
+- Comprehensive safety features: dry run mode, automatic backups, conflict detection
+- Atomic transactions with rollback capability for database operations
+- Comprehensive documentation for batchvectorrename in docs/batchvectorrename/
+
+### Changed
+- Updated main README.md to include batchvectorrename subproject overview
+- Updated Scripts section to reference batchvectorrename.py
+
 ## [0.7.0] - 2025-10-05
 
 ### Added

@@ -7,7 +7,8 @@
       "WebFetch(domain:docs.qgis.org)",
       "WebSearch",
       "WebFetch(domain:api.qgis.org)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
