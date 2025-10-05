@@ -1,52 +1,145 @@
-.mxd
-.shp
-,dbf
-.prj
-.sbn
-.sbx
-.ain
-.ixs
-.mxd.xml
-.sld
-.lyr
-.qix
-.geodatabase
-.gdb
-.gdbtable
-.gdbtabx
-.gdbindexes
-.gdbtypes
-.gdbtemplates
-.gdbtools
-.tif
-.tfw
-.tiff
-.sid
-.jpg
-.jgw
-.jpeg
-.j2k
-.jp2
-.csv
-.xslx
-.gpkg
-.kml
-.kmz
-.vrt
-.ovr
-.cache
-.aux
-.aux.xml
-.rst
-.cpg
-.dbf.xml
-.atx
-.ind
-.shx
-.flt
-.rrd
-.msk
-.sld.xml
-.lyr
+# Spatial Data Files
+# ===================
+
+# ESRI Shapefile components
+*.shp
+*.dbf
+*.prj
+*.shx
+*.sbn
+*.sbx
+*.ain
+*.ixs
+*.cpg
+*.atx
+*.ind
+
+# ESRI File Geodatabase
+*.gdb/
+*.geodatabase
+*.gdbtable
+*.gdbtabx
+*.gdbindexes
+*.gdbtypes
+*.gdbtemplates
+*.gdbtools
+
+# ESRI Personal Geodatabase
+*.mdb
+
+# ESRI ArcMap/ArcGIS files
+*.mxd
+*.mxd.xml
+*.lyr
+*.sld
+*.sld.xml
+
+# GeoPackage
+*.gpkg
+*.gpkg-wal
+*.gpkg-shm
+
+# SpatiaLite
+*.sqlite
+*.db
+*.sqlite3
+
+# KML/KMZ (Google Earth)
+*.kml
+*.kmz
+
+# MapInfo
+*.tab
+*.dat
+*.map
+*.id
+*.mif
+*.mid
+
+# GPS Exchange Format
+*.gpx
+
+# Geography Markup Language
+*.gml
+
+# GeoJSON
+*.geojson
+*.json
+
+# AutoCAD DXF
+*.dxf
+
+# Microstation DGN
+*.dgn
+
+# Spatial Index files
+*.qix
+*.qpj
+
+# Virtual datasets
+*.vrt
+
+# Raster files
+*.tif
+*.tiff
+*.tfw
+*.tifw
+*.sid
+*.jpg
+*.jpeg
+*.jgw
+*.jpgw
+*.j2k
+*.jp2
+*.png
+*.pgw
+*.gif
+*.gfw
+*.bmp
+*.bpw
+*.rst
+*.rrd
+*.img
+*.hdr
+*.bil
+*.blw
+*.ecw
+*.ers
+
+# Raster auxiliary files
+*.ovr
+*.aux
+*.aux.xml
+*.msk
+*.flt
+*.hdr
+*.prj
+*.xml
+
+# Cache and temporary files
+*.cache
+*.tmp
+.tmp/
+
+# Other data files
+*.csv
+*.xlsx
+*.xls
+*.htm
+*.html
+
+
+# QGIS project and related files
+*.qgz
+*.qgs
+*.qgs~
+*.qwc
+*.qwc~
+*.qpt
+*.qpt~
+*.txt
+*qlr
+*.qml
+*.qmd
 
 

@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2025-10-04
+
+### Added
+- KML file support (.kml) - loads KML files with full metadata preservation
+- SpatiaLite database support (.sqlite/.db) - can now copy layers from SpatiaLite databases
+- MapInfo file support (.tab/.mif) - loads MapInfo files with metadata and style preservation
+- Enhanced container format detection for SpatiaLite databases (spatial vs non-spatial tables)
+- Additional vector file types in multi-select parameter (now supports 10 total formats)
+
+### Changed
+- Updated vector file discovery to handle KML files, SpatiaLite databases, and MapInfo files
+- Enhanced layer naming for SpatiaLite sources (includes source database name)
+- Improved processing logic to handle all new container and file formats
+- Updated user interface with additional file type options for the new formats
+
+## [0.4.2] - 2025-10-04
+
+### Enhanced
+- Enhanced non-spatial table detection from GeoPackages and File Geodatabases
+- Improved debug feedback to distinguish between spatial layers and non-spatial tables
+- Better identification of feature classes vs. attribute tables in File Geodatabases
+- More comprehensive support for all table types within container formats
+
+## [0.4.1] - 2025-10-04
+
+### Fixed
+- Fixed TypeError when sorting mixed file types (Path objects and tuples) in vector file discovery
+- Improved custom sorting logic to handle all supported data source types correctly
+
 ## [0.4.0] - 2025-10-04
 
 ### Added

@@ -111,6 +111,8 @@ The script provides a multi-select parameter allowing you to choose which vector
 - **GML files (.gml)**: Geography Markup Language
 - **GeoPackage files (.gpkg)**: OGC GeoPackage format
 - **File Geodatabases (.gdb)**: ESRI File Geodatabase format
+- **SpatiaLite databases (.sqlite/.db)**: SQLite spatial database format
+- **MapInfo files (.tab/.mif)**: MapInfo native formats
 - **Standalone dBase files (.dbf)**: dBase tables without corresponding shapefiles
 
 By default, all types are selected. You can deselect specific types if you only want to process certain formats. This is useful when you have mixed directories and only want to consolidate specific file types.
@@ -126,27 +128,43 @@ By default, all types are selected. You can deselect specific types if you only 
 
 When GeoPackage files are found in the input directory, the script will:
 
-1. **Enumerate Layers**: Detect all vector layers within each GeoPackage
-2. **Copy Layers**: Copy each layer individually to the output GeoPackage
-3. **Preserve Layer Names**: Maintain original layer names with source file prefix
-4. **Handle Errors**: Continue processing if some layers cannot be accessed
+1. **Enumerate All Tables**: Detect both spatial layers and non-spatial tables within each GeoPackage
+2. **Copy All Content**: Copy each layer and table individually to the output GeoPackage
+3. **Preserve Data Types**: Maintain spatial geometry for layers and attribute-only structure for tables
+4. **Preserve Layer Names**: Maintain original layer/table names with source file prefix
+5. **Handle Errors**: Continue processing if some layers cannot be accessed
 
 **Layer Naming for GeoPackage Sources**:
-- Input: `legacy_data.gpkg` with layers `roads`, `buildings`
-- Output: `legacy_data_roads`, `legacy_data_buildings`
+- Input: `legacy_data.gpkg` with spatial layers `roads`, `buildings` and non-spatial table `codes`
+- Output: `legacy_data_roads` (spatial), `legacy_data_buildings` (spatial), `legacy_data_codes` (non-spatial table)
 
 ## File Geodatabase Input Support
 
 When File Geodatabase (.gdb) directories are found in the input directory, the script will:
 
-1. **Enumerate Layers**: Detect all feature classes within each File Geodatabase
-2. **Copy Layers**: Copy each feature class individually to the output GeoPackage
-3. **Preserve Layer Names**: Maintain original feature class names with source database prefix
-4. **Handle Errors**: Continue processing if some feature classes cannot be accessed
+1. **Enumerate All Content**: Detect both feature classes (spatial) and tables (non-spatial) within each File Geodatabase
+2. **Copy All Content**: Copy each feature class and table individually to the output GeoPackage
+3. **Preserve Data Types**: Maintain spatial geometry for feature classes and attribute-only structure for tables
+4. **Preserve Names**: Maintain original feature class/table names with source database prefix
+5. **Handle Errors**: Continue processing if some feature classes or tables cannot be accessed
 
 **Layer Naming for File Geodatabase Sources**:
-- Input: `spatial_data.gdb` with feature classes `parcels`, `utilities`
-- Output: `spatial_data_parcels`, `spatial_data_utilities`
+- Input: `spatial_data.gdb` with feature classes `parcels`, `utilities` and table `lookup_codes`
+- Output: `spatial_data_parcels` (spatial), `spatial_data_utilities` (spatial), `spatial_data_lookup_codes` (non-spatial table)
+
+## SpatiaLite Database Input Support
+
+When SpatiaLite database files (.sqlite/.db) are found in the input directory, the script will:
+
+1. **Enumerate All Tables**: Detect both spatial tables and non-spatial tables within each SpatiaLite database
+2. **Copy All Content**: Copy each spatial table and attribute table individually to the output GeoPackage
+3. **Preserve Data Types**: Maintain spatial geometry for tables with geometry and attribute-only structure for non-spatial tables
+4. **Preserve Table Names**: Maintain original table names with source database prefix
+5. **Handle Errors**: Continue processing if some tables cannot be accessed
+
+**Layer Naming for SpatiaLite Sources**:
+- Input: `survey_data.sqlite` with spatial tables `points`, `boundaries` and non-spatial table `metadata`
+- Output: `survey_data_points` (spatial), `survey_data_boundaries` (spatial), `survey_data_metadata` (non-spatial table)
 
 ## Standalone dBase File Support
 

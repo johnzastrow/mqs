@@ -69,7 +69,7 @@ Each subproject should have:
    - Docs: `docs/ExtractStylesfromDirectoriesForStyleManager/`
    - Purpose: Extract styles from QGIS project files into XML format
 
-2. **vectors2gpkg** (v0.4.0)
+2. **vectors2gpkg** (v0.5.0)
    - Script: `Scripts/vectors2gpkg.py`
    - Docs: `docs/vectors2gpkg/`
    - Purpose: Load vector files from directory trees into GeoPackage with metadata preservation

@@ -53,6 +53,25 @@ See `docs/ExtractStylesfromDirectoriesForStyleManager/REQUIREMENTS.md` for detai
 
 ---
 
+#### vectors2gpkg
+Location: `docs/vectors2gpkg/`
+Script: `Scripts/vectors2gpkg.py`
+
+A QGIS Processing Toolbox script that recursively searches directories for vector files and loads them into a single GeoPackage with metadata preservation and optional style application. Consolidates scattered vector data from complex directory structures into a modern, portable GeoPackage format.
+
+**Features:**
+- Supports 10 vector formats: shapefiles, GeoJSON, KML, GPX, GML, GeoPackages, File Geodatabases, SpatiaLite, MapInfo, standalone dBase files
+- Container format support: copies all layers from GeoPackages, File Geodatabases, and SpatiaLite databases
+- Non-spatial table handling: loads attribute-only tables from container formats and standalone dBase files
+- User-selectable file types with multi-select controls
+- Spatial indexing and metadata preservation
+- QML style file application
+- Smart layer naming with invalid character replacement
+
+See `docs/vectors2gpkg/README.md` for detailed documentation.
+
+---
+
 #### Resources
 
 Files that I might want to reuse and you might find useful
@@ -66,3 +85,4 @@ Files that I might want to reuse and you might find useful
 Usually python scripts that correspond to the subprojects listed above. The rest of the development files for these scripts will be found under the `docs` directory -- and you don't likely need to look at that stuff unless you want to learn more. Just grab scripts from this directory.
 
 1. **Scripts\extract_styles_from_projects.py** - see ExtractStylesfromDirectoriesForStyleManager above
+2. **Scripts\vectors2gpkg.py** - see vectors2gpkg above

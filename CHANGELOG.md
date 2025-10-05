@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2025-10-04
+
+### Added
+- vectors2gpkg subproject (v0.5.0) - Vector Files to GeoPackage Converter
+- Support for 10 vector file formats including container formats (GeoPackages, File Geodatabases, SpatiaLite)
+- Non-spatial table handling and user-selectable file type processing
+- Comprehensive documentation for vectors2gpkg in docs/vectors2gpkg/
+
+### Changed
+- Updated main README.md to include vectors2gpkg subproject overview
+- Updated Scripts section to reference vectors2gpkg.py
+
 ## [0.2.0] - 2025-10-04
 
 ### Changed
