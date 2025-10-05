@@ -139,6 +139,38 @@ See `docs/inventory_miner/README.md` for detailed documentation and usage exampl
 
 ---
 
+#### metadata_manager ⚙️ IN DEVELOPMENT
+Location: `docs/metadata_manager/`
+Plugin: `Plugins/metadata_manager/`
+
+A QGIS Plugin that helps users create, manage, and apply metadata to layers following QGIS and ISO 19115 standards. Features reusable metadata component libraries, guided workflow wizards, template system for bulk application, and integration with inventory databases to identify layers lacking metadata. Perfect for data managers who need to create comprehensive metadata for large geospatial data collections.
+
+**Features:**
+- **Guided metadata creation**: Step-by-step wizard for creating QGIS/ISO 19115 compliant metadata
+- **Reusable libraries**: Store and reuse organizations, contacts, keywords, and templates
+- **Template system**: Create templates for bulk metadata application across multiple layers
+- **Inventory integration**: Connect to inventory GeoPackage (from inventory_miner) to identify layers needing metadata
+- **Auto-population**: Pre-fill metadata from layer properties (CRS, extent, geometry type, etc.)
+- **Validation**: Check metadata completeness and validate required fields
+- **Batch processing**: Apply metadata templates to multiple layers from inventory
+- **Export formats**: Export to QGIS XML, ISO 19115/19139 XML, and FGDC XML
+- **Wizard and expert modes**: Choose between guided workflow or full-form interface
+- **Metadata gap analysis**: Identify and prioritize layers missing metadata
+
+**Installation** (QGIS Plugin - different from Processing scripts):
+1. Copy `Plugins/metadata_manager` to your QGIS plugins folder:
+   - Windows: `C:\Users\<username>\AppData\Roaming\QGIS\QGIS3\profiles\<profile>\python\plugins\`
+   - Linux: `~/.local/share/QGIS/QGIS3/profiles/<profile>/python/plugins/`
+   - macOS: `~/Library/Application Support/QGIS/QGIS3/profiles/<profile>/python/plugins/`
+2. Compile resources: `cd metadata_manager && make` (or `pyrcc5 -o resources.py resources.qrc`)
+3. Enable in QGIS: Plugins → Manage and Install Plugins → Enable "Metadata Manager"
+
+**Current Status (v0.1.0)**: Plugin structure created with QGIS Plugin Builder. Core functionality implementation in progress.
+
+See `docs/metadata_manager/README.md` for installation details and `docs/metadata_manager/REQUIREMENTS.md` for specifications.
+
+---
+
 #### Resources
 
 Files that I might want to reuse and you might find useful
@@ -149,10 +181,18 @@ Files that I might want to reuse and you might find useful
 
 #### Scripts
 
-Usually python scripts that correspond to the subprojects listed above. The rest of the development files for these scripts will be found under the `docs` directory -- and you don't likely need to look at that stuff unless you want to learn more. Just grab scripts from this directory.
+Python scripts for the QGIS Processing Toolbox. These correspond to most subprojects listed above. Development files for these scripts are in the `docs/` directory. Just grab scripts from this directory and add to QGIS Processing Toolbox.
 
 1. **Scripts\extract_styles_from_projects.py** - see ExtractStylesfromDirectoriesForStyleManager above
 2. **Scripts\vectors2gpkg.py** - see vectors2gpkg above
 3. **Scripts\rasters2gpkg.py** - ⚠️ ABANDONED - see rasters2gpkg above for explanation
 4. **Scripts\batchvectorrename.py** - see batchvectorrename above
 5. **Scripts\inventory_miner.py** - see inventory_miner above
+
+---
+
+#### Plugins
+
+QGIS Plugins (installed differently from Processing scripts). Copy entire plugin directory to your QGIS plugins folder, compile resources, then enable in QGIS Plugin Manager.
+
+1. **Plugins\metadata_manager** - ⚙️ IN DEVELOPMENT - see metadata_manager above for installation instructions

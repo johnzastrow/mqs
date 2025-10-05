@@ -75,11 +75,11 @@ class InventoryMinerAlgorithm(QgsProcessingAlgorithm):
 
     def group(self):
         """Return the name of the group this algorithm belongs to."""
-        return self.tr("Data Management")
+        return self.tr("MQS Tools")
 
     def groupId(self):
         """Return the unique ID of the group this algorithm belongs to."""
-        return "datamanagement"
+        return "mqstools"
 
     def shortHelpString(self):
         """Return a short help string for the algorithm."""

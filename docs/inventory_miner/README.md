@@ -89,7 +89,7 @@ This tool creates a searchable, spatial catalog of your geospatial data holdings
 
 2. Restart QGIS or refresh the Processing Toolbox (click the refresh icon)
 
-3. Look for "Inventory Miner" under "Scripts" → "Data Management" in the Processing Toolbox
+3. Look for "Inventory Miner" under "Scripts" → "MQS Tools" in the Processing Toolbox
 
 ## Usage
 
@@ -110,7 +110,7 @@ This tool creates a searchable, spatial catalog of your geospatial data holdings
 ### Basic Workflow
 
 1. **Open QGIS** and access the Processing Toolbox (Processing menu → Toolbox)
-2. Navigate to **Scripts** → **Data Management** → **Inventory Miner**
+2. Navigate to **Scripts** → **MQS Tools** → **Inventory Miner**
 3. **Select input directory** containing geospatial data
 4. **Choose output GeoPackage** path (can be new or existing)
 5. **Configure options** as needed
