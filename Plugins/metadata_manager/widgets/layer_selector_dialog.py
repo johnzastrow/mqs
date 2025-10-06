@@ -113,11 +113,11 @@ class LayerSelectorDialog(QtWidgets.QDialog):
             query = """
                 SELECT
                     layer_name,
-                    layer_path,
+                    file_path,
                     COALESCE(metadata_status, 'none') as status,
                     data_type,
-                    file_format,
-                    directory_path
+                    format,
+                    parent_directory
                 FROM geospatial_inventory
                 WHERE retired_datetime IS NULL
                 ORDER BY layer_name
@@ -134,11 +134,11 @@ class LayerSelectorDialog(QtWidgets.QDialog):
             for row in rows:
                 self.all_layers.append({
                     'name': row['layer_name'] or 'Unknown',
-                    'path': row['layer_path'],
+                    'path': row['file_path'],
                     'status': row['status'],
                     'data_type': row['data_type'] or 'Unknown',
-                    'format': row['file_format'] or 'Unknown',
-                    'directory': row['directory_path'] or 'Unknown'
+                    'format': row['format'] or 'Unknown',
+                    'directory': row['parent_directory'] or 'Root'
                 })
 
             self.apply_filter()

@@ -4,7 +4,7 @@
 name=Metadata Manager
 qgisMinimumVersion=3.40
 description=Create and manage QGIS layer metadata with reusable templates, organizations, and keywords. Integrates with inventory databases to identify and process layers lacking metadata.
-version=0.3.1
+version=0.3.2
 author=John Zastrow
 email=br8kwall@gmail.com
 
@@ -17,6 +17,18 @@ repository=https://github.com/johnzastrow/mqs
 # Recommended items:
 hasProcessingProvider=no
 changelog=
+    0.3.2 - Critical Bug Fix: Dashboard Statistics
+    - Fixed database column name mismatches
+      * parent_directory (was incorrectly using directory_path)
+      * format (was incorrectly using file_format)
+      * crs_authid (was incorrectly using crs)
+      * file_path (was incorrectly using layer_path in WHERE clause)
+    - All dashboard drill-down tabs now work correctly
+      * By Directory tab now shows statistics
+      * By File Format tab now shows statistics
+      * By CRS tab now shows statistics
+    - Fixed layer selector dialog column names
+    - Fixed inventory update query (metadata status now saves correctly)
     0.3.1 - Flexible Database Selection
     - Plugin now loads without requiring database selection
     - Dashboard database selection controls

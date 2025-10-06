@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2025-10-06
+
+### Fixed
+- **Critical: Dashboard statistics tabs now work** - Fixed database column name mismatches that prevented drill-down tabs from displaying data
+  - `parent_directory` (was incorrectly querying `directory_path`) - **By Directory tab now works**
+  - `format` (was incorrectly querying `file_format`) - **By File Format tab now works**
+  - `crs_authid` (was incorrectly querying `crs`) - **By CRS tab now works**
+  - `file_path` in WHERE clause (was incorrectly using `layer_path`) - **Metadata status updates now work correctly**
+- Layer selector dialog now uses correct column names (`file_path`, `format`, `parent_directory`)
+- Inventory metadata status updates now correctly identify layers in database
+
+### Impact
+- Dashboard drill-down views now populate correctly for all tabs (previously only Data Type worked)
+- Metadata saves now properly update the inventory table tracking fields
+- Layer selection dialog displays correct format and directory information
+
 ## [0.3.1] - 2025-10-06
 
 ### Added
