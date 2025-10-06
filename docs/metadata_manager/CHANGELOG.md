@@ -11,8 +11,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - SQLite multi-statement error during table initialization
   - Fixed `get_metadata_cache_schema()` to return list of statements instead of multi-statement string
   - Database initialization now works correctly without "You can only execute one statement at a time" error
+- QFlowLayout import error in metadata wizard
+  - Moved QFlowLayout class definition before classes that use it
+  - Changed reference from QtWidgets.QFlowLayout to QFlowLayout
+  - Removed duplicate class definition
+- Keyword tags layout - only one tag visible at a time
+  - Separated keyword input and tags display into separate rows
+  - Added scrollable area for tags with proper wrapping
+  - Improved QFlowLayout spacing and wrapping logic
 
 ### Added
+- **Metadata Quality Dashboard** (Phase 2 - v0.2.0 COMPLETE):
+  - Dashboard widget showing metadata completion statistics with progress bar
+  - Color-coded visual feedback (green/orange/red)
+  - Four drill-down views: by Directory, Data Type, File Format, and CRS
+  - Priority recommendations showing highest-impact areas needing metadata
+  - Refresh functionality for real-time updates
+  - Five new statistics methods in DatabaseManager
+  - Test infrastructure with unit tests and testing guide
+  - Comprehensive Phase 2 documentation
+
+- **Metadata Wizard** (Phase 3 - v0.3.0 in development):
+  - Progressive disclosure wizard architecture
+  - Step 1: Essential fields (COMPLETE)
+    * Title field (required)
+    * Abstract field (required, minimum 10 characters)
+    * Keywords with tag-based input and removal
+    * Category dropdown (ISO 19115 topic categories)
+  - Navigation system (Next/Previous/Skip/Save buttons)
+  - Validation with error messages
+  - Progress indicator showing current step
+  - Tab-based interface (Dashboard + Metadata Editor)
+  - Steps 2-4 placeholders (pending implementation)
+
+- **Installation Scripts**:
+  - install.bat for Windows
+  - install.sh for Linux/Mac
+  - INSTALL.md installation guide
+
 - **Unified Database Architecture** (v0.2.0 in development):
   - Database management module (`db/manager.py`) with connection, validation, and initialization
   - Database schema definitions (`db/schema.py`) for all Metadata Manager tables
