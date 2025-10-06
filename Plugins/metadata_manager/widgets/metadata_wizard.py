@@ -315,6 +315,359 @@ class Step1Essential(StepWidget):
             self.category_combo.setCurrentIndex(index)
 
 
+class Step2Common(StepWidget):
+    """Step 2: Common metadata fields (contacts, license, constraints)."""
+
+    def __init__(self, db_manager, parent=None):
+        """Initialize common fields step."""
+        super().__init__(parent)
+        self.db_manager = db_manager
+        self.contacts = []  # List of contact dicts
+        self.setup_ui()
+
+    def setup_ui(self):
+        """Set up the user interface."""
+        layout = QtWidgets.QVBoxLayout(self)
+
+        # Main scroll area for all fields
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll_widget = QtWidgets.QWidget()
+        scroll_layout = QtWidgets.QVBoxLayout(scroll_widget)
+
+        # Title
+        title_group = QtWidgets.QGroupBox("Step 2: Common Fields")
+        main_layout = QtWidgets.QVBoxLayout()
+
+        # Contacts section
+        contacts_label = QtWidgets.QLabel("<b>Contacts</b> (recommended)")
+        main_layout.addWidget(contacts_label)
+
+        # Contacts table
+        self.contacts_table = QtWidgets.QTableWidget(0, 3)
+        self.contacts_table.setHorizontalHeaderLabels(["Role", "Name", "Organization"])
+        self.contacts_table.horizontalHeader().setStretchLastSection(True)
+        self.contacts_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.contacts_table.setMaximumHeight(150)
+        main_layout.addWidget(self.contacts_table)
+
+        # Contact buttons
+        contact_btn_layout = QtWidgets.QHBoxLayout()
+        self.add_contact_btn = QtWidgets.QPushButton("Add Contact")
+        self.add_contact_btn.clicked.connect(self.add_contact)
+        contact_btn_layout.addWidget(self.add_contact_btn)
+
+        self.edit_contact_btn = QtWidgets.QPushButton("Edit")
+        self.edit_contact_btn.clicked.connect(self.edit_contact)
+        self.edit_contact_btn.setEnabled(False)
+        contact_btn_layout.addWidget(self.edit_contact_btn)
+
+        self.remove_contact_btn = QtWidgets.QPushButton("Remove")
+        self.remove_contact_btn.clicked.connect(self.remove_contact)
+        self.remove_contact_btn.setEnabled(False)
+        contact_btn_layout.addWidget(self.remove_contact_btn)
+
+        contact_btn_layout.addStretch()
+        main_layout.addLayout(contact_btn_layout)
+
+        # Enable/disable edit/remove buttons based on selection
+        self.contacts_table.itemSelectionChanged.connect(self.update_contact_buttons)
+
+        main_layout.addSpacing(10)
+
+        # License section
+        form_layout = QtWidgets.QFormLayout()
+
+        self.license_combo = QtWidgets.QComboBox()
+        self.license_combo.addItems([
+            "-- Select License --",
+            "Public Domain",
+            "CC0-1.0 (Creative Commons Zero)",
+            "CC-BY-4.0 (Attribution)",
+            "CC-BY-SA-4.0 (Attribution-ShareAlike)",
+            "ODbL (Open Database License)",
+            "Proprietary",
+            "Custom (specify below)"
+        ])
+        self.license_combo.currentTextChanged.connect(self.license_changed)
+        form_layout.addRow("License:", self.license_combo)
+
+        # Custom license text
+        self.custom_license_edit = QtWidgets.QLineEdit()
+        self.custom_license_edit.setPlaceholderText("Enter custom license text")
+        self.custom_license_edit.setEnabled(False)
+        form_layout.addRow("  Custom:", self.custom_license_edit)
+
+        # Use constraints
+        self.use_constraints_edit = QtWidgets.QPlainTextEdit()
+        self.use_constraints_edit.setPlaceholderText(
+            "Describe any limitations on use (e.g., 'Attribute City GIS when using this data')"
+        )
+        self.use_constraints_edit.setMaximumHeight(60)
+        form_layout.addRow("Use Constraints:", self.use_constraints_edit)
+
+        # Access constraints
+        self.access_constraints_edit = QtWidgets.QPlainTextEdit()
+        self.access_constraints_edit.setPlaceholderText(
+            "Describe any access restrictions (e.g., 'Public', 'Internal use only')"
+        )
+        self.access_constraints_edit.setMaximumHeight(60)
+        form_layout.addRow("Access Constraints:", self.access_constraints_edit)
+
+        # Language
+        self.language_combo = QtWidgets.QComboBox()
+        self.language_combo.addItems([
+            "English",
+            "Spanish",
+            "French",
+            "German",
+            "Italian",
+            "Portuguese",
+            "Chinese",
+            "Japanese",
+            "Other"
+        ])
+        form_layout.addRow("Language:", self.language_combo)
+
+        # Attribution
+        self.attribution_edit = QtWidgets.QLineEdit()
+        self.attribution_edit.setPlaceholderText("How to cite this data (e.g., 'City GIS Department, 2025')")
+        form_layout.addRow("Attribution:", self.attribution_edit)
+
+        main_layout.addLayout(form_layout)
+
+        title_group.setLayout(main_layout)
+        scroll_layout.addWidget(title_group)
+        scroll_layout.addStretch()
+
+        scroll.setWidget(scroll_widget)
+        layout.addWidget(scroll)
+
+        # Error display
+        self.error_label = QtWidgets.QLabel()
+        self.error_label.setStyleSheet("color: red; font-weight: bold;")
+        self.error_label.setWordWrap(True)
+        self.error_label.hide()
+        layout.addWidget(self.error_label)
+
+    def license_changed(self, text):
+        """Enable custom license field if Custom is selected."""
+        self.custom_license_edit.setEnabled("Custom" in text)
+
+    def update_contact_buttons(self):
+        """Enable/disable edit and remove buttons based on selection."""
+        has_selection = len(self.contacts_table.selectedItems()) > 0
+        self.edit_contact_btn.setEnabled(has_selection)
+        self.remove_contact_btn.setEnabled(has_selection)
+
+    def add_contact(self):
+        """Show dialog to add a contact."""
+        dialog = ContactDialog(self.db_manager, self)
+        if dialog.exec_():
+            contact = dialog.get_contact()
+            self.contacts.append(contact)
+            self.refresh_contacts_table()
+
+    def edit_contact(self):
+        """Edit selected contact."""
+        row = self.contacts_table.currentRow()
+        if row < 0:
+            return
+
+        contact = self.contacts[row]
+        dialog = ContactDialog(self.db_manager, self, contact)
+        if dialog.exec_():
+            updated_contact = dialog.get_contact()
+            self.contacts[row] = updated_contact
+            self.refresh_contacts_table()
+
+    def remove_contact(self):
+        """Remove selected contact."""
+        row = self.contacts_table.currentRow()
+        if row < 0:
+            return
+
+        reply = QtWidgets.QMessageBox.question(
+            self,
+            "Remove Contact",
+            "Remove this contact?",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        )
+
+        if reply == QtWidgets.QMessageBox.Yes:
+            del self.contacts[row]
+            self.refresh_contacts_table()
+
+    def refresh_contacts_table(self):
+        """Refresh the contacts table display."""
+        self.contacts_table.setRowCount(len(self.contacts))
+        for i, contact in enumerate(self.contacts):
+            self.contacts_table.setItem(i, 0, QtWidgets.QTableWidgetItem(contact.get('role', '')))
+            self.contacts_table.setItem(i, 1, QtWidgets.QTableWidgetItem(contact.get('name', '')))
+            self.contacts_table.setItem(i, 2, QtWidgets.QTableWidgetItem(contact.get('organization', '')))
+
+    def validate(self) -> tuple[bool, List[str]]:
+        """Validate common fields."""
+        errors = []
+        warnings = []
+
+        # Contacts are recommended but not required
+        if len(self.contacts) == 0:
+            warnings.append("At least one contact is recommended")
+
+        # License is recommended but not required
+        license_text = self.license_combo.currentText()
+        if license_text == "-- Select License --":
+            warnings.append("License information is recommended")
+
+        # Show warnings as info (not blocking)
+        if warnings:
+            self.error_label.setText("Recommendations:\n• " + "\n• ".join(warnings))
+            self.error_label.setStyleSheet("color: orange; font-weight: bold;")
+            self.error_label.show()
+        else:
+            self.error_label.hide()
+
+        return True, errors  # Step 2 has no required fields
+
+    def get_data(self) -> Dict:
+        """Get data from common fields."""
+        license_text = self.license_combo.currentText()
+        if "Custom" in license_text:
+            license_text = self.custom_license_edit.text().strip()
+
+        return {
+            'contacts': self.contacts.copy(),
+            'license': license_text if license_text != "-- Select License --" else "",
+            'use_constraints': self.use_constraints_edit.toPlainText().strip(),
+            'access_constraints': self.access_constraints_edit.toPlainText().strip(),
+            'language': self.language_combo.currentText(),
+            'attribution': self.attribution_edit.text().strip()
+        }
+
+    def set_data(self, data: Dict):
+        """Populate common fields from data."""
+        # Contacts
+        self.contacts = data.get('contacts', []).copy()
+        self.refresh_contacts_table()
+
+        # License
+        license_text = data.get('license', '')
+        index = self.license_combo.findText(license_text)
+        if index >= 0:
+            self.license_combo.setCurrentIndex(index)
+        elif license_text:
+            # Custom license
+            self.license_combo.setCurrentText("Custom (specify below)")
+            self.custom_license_edit.setText(license_text)
+
+        # Constraints
+        self.use_constraints_edit.setPlainText(data.get('use_constraints', ''))
+        self.access_constraints_edit.setPlainText(data.get('access_constraints', ''))
+
+        # Language
+        language = data.get('language', 'English')
+        index = self.language_combo.findText(language)
+        if index >= 0:
+            self.language_combo.setCurrentIndex(index)
+
+        # Attribution
+        self.attribution_edit.setText(data.get('attribution', ''))
+
+
+class ContactDialog(QtWidgets.QDialog):
+    """Dialog for adding/editing contact information."""
+
+    def __init__(self, db_manager, parent=None, contact=None):
+        """Initialize contact dialog."""
+        super().__init__(parent)
+        self.db_manager = db_manager
+        self.contact = contact or {}
+        self.setWindowTitle("Contact Information")
+        self.setMinimumWidth(400)
+        self.setup_ui()
+
+    def setup_ui(self):
+        """Set up the user interface."""
+        layout = QtWidgets.QVBoxLayout(self)
+
+        form_layout = QtWidgets.QFormLayout()
+
+        # Role
+        self.role_combo = QtWidgets.QComboBox()
+        self.role_combo.addItems([
+            "Point of Contact",
+            "Author",
+            "Custodian",
+            "Distributor",
+            "Originator",
+            "Owner",
+            "Publisher",
+            "User"
+        ])
+        form_layout.addRow("Role *:", self.role_combo)
+
+        # Name
+        self.name_edit = QtWidgets.QLineEdit()
+        self.name_edit.setPlaceholderText("Contact name")
+        form_layout.addRow("Name *:", self.name_edit)
+
+        # Organization
+        self.org_edit = QtWidgets.QLineEdit()
+        self.org_edit.setPlaceholderText("Organization name")
+        form_layout.addRow("Organization:", self.org_edit)
+
+        # Email
+        self.email_edit = QtWidgets.QLineEdit()
+        self.email_edit.setPlaceholderText("email@example.com")
+        form_layout.addRow("Email:", self.email_edit)
+
+        # Phone
+        self.phone_edit = QtWidgets.QLineEdit()
+        self.phone_edit.setPlaceholderText("Phone number")
+        form_layout.addRow("Phone:", self.phone_edit)
+
+        layout.addLayout(form_layout)
+
+        # Load existing contact data
+        if self.contact:
+            role = self.contact.get('role', '')
+            index = self.role_combo.findText(role)
+            if index >= 0:
+                self.role_combo.setCurrentIndex(index)
+            self.name_edit.setText(self.contact.get('name', ''))
+            self.org_edit.setText(self.contact.get('organization', ''))
+            self.email_edit.setText(self.contact.get('email', ''))
+            self.phone_edit.setText(self.contact.get('phone', ''))
+
+        # Buttons
+        button_box = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+        layout.addWidget(button_box)
+
+    def accept(self):
+        """Validate and accept dialog."""
+        name = self.name_edit.text().strip()
+        if not name:
+            QtWidgets.QMessageBox.warning(self, "Required", "Contact name is required")
+            return
+
+        super().accept()
+
+    def get_contact(self) -> Dict:
+        """Get contact data from dialog."""
+        return {
+            'role': self.role_combo.currentText(),
+            'name': self.name_edit.text().strip(),
+            'organization': self.org_edit.text().strip(),
+            'email': self.email_edit.text().strip(),
+            'phone': self.phone_edit.text().strip()
+        }
+
+
 class MetadataWizard(QtWidgets.QWidget):
     """Main metadata wizard widget with progressive disclosure."""
 
@@ -360,9 +713,7 @@ class MetadataWizard(QtWidgets.QWidget):
         self.step1 = Step1Essential(self.db_manager, self)
         self.step_container.addWidget(self.step1)
 
-        # Placeholder for other steps
-        self.step2 = QtWidgets.QLabel("Step 2: Common Fields\n(Coming next)")
-        self.step2.setAlignment(Qt.AlignCenter)
+        self.step2 = Step2Common(self.db_manager, self)
         self.step_container.addWidget(self.step2)
 
         self.step3 = QtWidgets.QLabel("Step 3: Optional Fields\n(Coming next)")
@@ -491,8 +842,10 @@ class MetadataWizard(QtWidgets.QWidget):
         metadata = {}
         if hasattr(self.step1, 'get_data'):
             metadata.update(self.step1.get_data())
+        if hasattr(self.step2, 'get_data'):
+            metadata.update(self.step2.get_data())
 
-        # TODO: Collect from other steps when implemented
+        # TODO: Collect from step3 and step4 when implemented
 
         # Save to database
         # TODO: Implement save_metadata_to_cache method in DatabaseManager

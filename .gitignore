@@ -137,9 +137,9 @@
 *.qwc~
 *.qpt
 *.qpt~
-*.txt
-*qlr
-*.qml
-*.qmd
+# *.txt
+# *.qlr
+# *.qml
+# *.qmd
 
 
