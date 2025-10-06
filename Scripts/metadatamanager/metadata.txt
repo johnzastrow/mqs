@@ -1,0 +1,49 @@
+# This file contains metadata for your plugin.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
+[general]
+name=MetadataManager
+qgisMinimumVersion=3.0
+description=Helps users create metadata for layers following the QGIS
+standards. It will persist and allow reuse of information that may be applied to more than one layer, and guide
+users through creating layer-specific metadata elements for those layers in an inventory that does not have it
+version=0.1
+author=John Zastrow
+email=br8kwall@gmail.com
+
+about=MetadataManager - Helps users create metadata for layers following the QGIS standards. It will persist and allow reuse of information that may be applied to more than one layer, and guide users through creating layer-specific metadata elements for those layers in an inventory that does not have it.
+
+tracker=https://github.com/johnzastrow/mqs/issues
+repository=https://github.com/johnzastrow/mqs/issues
+# End of mandatory metadata
+
+# Recommended items:
+
+hasProcessingProvider=no
+# Uncomment the following line and add your changelog:
+# changelog=
+
+# Tags are comma separated with spaces allowed
+tags=python, metadata, batch
+
+homepage=https://github.com/johnzastrow/mqs/issues
+category=Plugins
+icon=icon.png
+# experimental flag
+experimental=True
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
+# Since QGIS 3.8, a comma separated list of plugins to be installed
+# (or upgraded) can be specified.
+# Check the documentation for more information.
+# plugin_dependencies=
+
+Category of the plugin: Raster, Vector, Database or Web
+# category=
+
+# If the plugin can run on QGIS Server.
+server=False
+

@@ -1,0 +1,58 @@
+# This file contains metadata for your plugin.
+
+[general]
+name=Metadata Manager
+qgisMinimumVersion=3.40
+description=Create and manage QGIS layer metadata with reusable templates, organizations, and keywords. Integrates with inventory databases to identify and process layers lacking metadata.
+version=0.2.0
+author=John Zastrow
+email=br8kwall@gmail.com
+
+about=Metadata Manager is a QGIS plugin that simplifies the process of creating and managing layer metadata following QGIS metadata standards. It provides a guided wizard for metadata creation, libraries for reusable components (organizations, contacts, keywords), template system for bulk application, and integration with inventory databases created by the Inventory Miner tool. All persistent data is stored in a user-selected metadatamanager.gpkg GeoPackage database with automatic version tracking and schema upgrades. Supports exporting to QGIS XML format and direct association with GeoPackage layers. Perfect for data managers who need to create comprehensive metadata for large collections of geospatial data.
+
+tracker=https://github.com/johnzastrow/mqs/issues
+repository=https://github.com/johnzastrow/mqs
+# End of mandatory metadata
+
+# Recommended items:
+hasProcessingProvider=no
+changelog=
+    0.2.0 - Phase 1 & 2 Implementation
+    - Phase 1: Core Database Architecture
+      * Database management module with connection, validation, and initialization
+      * Dual version tracking (inventory + metadata schemas)
+      * Schema migration system
+      * Automatic database selection and persistence
+      * Integration with Inventory Miner v0.2.0+
+    - Phase 2: Metadata Quality Dashboard
+      * Dashboard widget with overall completion statistics
+      * Progress bar showing completion percentage
+      * Four drill-down views (Directory, Data Type, Format, CRS)
+      * Priority recommendations
+      * Color-coded visual feedback (green/orange/red)
+      * Refresh functionality
+    0.1.0 - Initial release
+    - Dockable widget interface
+    - Plugin Builder standard structure
+    - Ready for metadata management implementation
+
+# Tags are comma separated with spaces allowed
+tags=metadata, documentation, data management, catalog, inventory, geopackage
+
+homepage=https://github.com/johnzastrow/mqs
+category=Vector
+icon=icon.png
+# experimental flag
+experimental=True
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
+# Since QGIS 3.8, a comma separated list of plugins to be installed
+# (or upgraded) can be specified.
+# Check the documentation for more information.
+# plugin_dependencies=
+
+# If the plugin can run on QGIS Server.
+server=False
+

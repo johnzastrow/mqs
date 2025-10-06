@@ -137,7 +137,8 @@
 *.qwc~
 *.qpt
 *.qpt~
-# *.txt
+*.txt
+!metadata.txt
 # *.qlr
 # *.qml
 # *.qmd
