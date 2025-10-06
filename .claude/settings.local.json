@@ -8,7 +8,10 @@
       "WebSearch",
       "WebFetch(domain:api.qgis.org)",
       "Bash(tree:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Read(//mnt/c/Users/br8kw/AppData/Roaming/QGIS/QGIS3/profiles/AdvancedUser/python/plugins/**)",
+      "Bash(chmod:*)",
+      "Bash(cmd.exe:*)"
     ],
     "deny": [],
     "ask": []

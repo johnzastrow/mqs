@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Metadata Manager Plugin**: SQLite multi-statement error during database initialization
+  - Fixed schema.py to properly split CREATE TABLE and CREATE INDEX statements
+  - Plugin now initializes tables successfully without errors
+
+### Added
+- **Metadata Manager Plugin - Phase 2: Metadata Quality Dashboard** (v0.2.0 in development)
+  - Dashboard widget showing metadata completion statistics with progress bar
+  - Four drill-down views: by Directory, Data Type, File Format, and CRS
+  - Priority recommendations for high-impact metadata work
+  - Five new statistics methods in DatabaseManager
+  - Color-coded visual feedback (green/orange/red)
+  - Refresh functionality for real-time updates
+  - Test infrastructure with unit tests and testing guide
+  - Comprehensive Phase 2 documentation
+
+### Changed
+- Extended Metadata Manager DatabaseManager with 240+ lines of statistics methods
+- Updated MetadataManager dockwidget to display dashboard on startup
+- Enhanced plugin with automatic dashboard initialization and refresh
+
 ## [0.8.0] - 2025-10-05
 
 ### Added

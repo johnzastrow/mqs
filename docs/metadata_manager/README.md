@@ -7,11 +7,13 @@ A QGIS Plugin that helps users create, manage, and apply metadata to layers foll
 ## Overview
 
 Metadata Manager simplifies the process of creating and managing layer metadata by providing:
+- **Unified database with Inventory Miner**: Uses the same GeoPackage database (e.g., `geospatial_catalog.gpkg`)
 - Reusable metadata component libraries (organizations, contacts, keywords)
 - Template system for bulk metadata application
-- Integration with inventory databases to identify layers lacking metadata
-- Guided workflow for metadata creation
-- Export to multiple standards (QGIS XML, ISO 19115/19139, FGDC)
+- Direct integration with inventory table to identify layers lacking metadata
+- Guided workflow for metadata creation with Next/Previous navigation
+- Export to QGIS XML format and direct association with GeoPackage layers
+- Real-time metadata status tracking in inventory table
 
 ## Installation
 
@@ -61,6 +63,12 @@ Metadata Manager simplifies the process of creating and managing layer metadata 
    - Look for the Metadata Manager icon in the toolbar
    - Or go to Plugins menu → Metadata Manager
 
+6. **First run setup:**
+   - **IMPORTANT**: Run Inventory Miner first to create your inventory database
+   - Plugin will prompt you to select your existing inventory database (e.g., `geospatial_catalog.gpkg`)
+   - Plugin adds its own tables to the existing database (organizations, keywords, templates, metadata_cache)
+   - Both tools share the same database for seamless integration
+
 ## Development Setup
 
 ### Prerequisites
@@ -98,6 +106,10 @@ Plugins/metadata_manager/
 ├── icon.png                             # Plugin icon
 ├── resources.qrc                        # Qt resources file
 ├── resources.py                         # Compiled resources (generated)
+├── db/                                  # Database management (planned)
+│   ├── schema.py                        # Database schema definitions
+│   ├── migrations.py                    # Schema upgrade scripts
+│   └── manager.py                       # Database operations
 ├── Makefile                             # Build automation
 ├── pb_tool.cfg                          # pb_tool configuration
 ├── pylintrc                             # Code quality configuration
@@ -105,15 +117,28 @@ Plugins/metadata_manager/
 ├── help/                                # Help documentation
 ├── test/                                # Unit tests
 └── scripts/                             # Helper scripts
+
+User Data:
+metadatamanager.gpkg                     # User-created database (not in repo)
 ```
 
 ## Planned Features
 
-### v0.2.0 - Core Metadata Management
-- [ ] Metadata editor interface
+### v0.2.0 - Database and Core Metadata Management
+- [ ] Unified GeoPackage database integration with Inventory Miner
+- [ ] Database selection dialog (browse for existing inventory database)
+- [ ] Database validation (check for geospatial_inventory table)
+- [ ] Add Metadata Manager tables to existing database
+- [ ] Dual version tracking (inventory_schema_version + metadata_schema_version)
+- [ ] Automatic schema upgrades for Metadata Manager tables only
+- [ ] Inventory Miner integration (run from within plugin)
+- [ ] **Metadata Quality Dashboard**: Statistics by directory, data type, format, age, CRS with priority recommendations
+- [ ] **Progressive Disclosure Wizard**: Required → Common → Optional fields with skip navigation
+- [ ] **Smart Defaults from Inventory**: Auto-populate title, CRS, extent, geometry type, field list, etc.
+- [ ] Metadata editor interface (wizard and expert modes)
 - [ ] QGIS layer metadata integration
 - [ ] Basic validation
-- [ ] Save/load metadata from layers
+- [ ] Save/load metadata from layers and update inventory.metadata_status
 
 ### v0.3.0 - Reusable Libraries
 - [ ] Organization library (SQLite database)
@@ -133,11 +158,11 @@ Plugins/metadata_manager/
 - [ ] Filter layers by metadata status
 - [ ] Batch template application
 
-### v0.6.0 - Export Formats
-- [ ] Export to QGIS XML
-- [ ] Export to ISO 19115/19139 XML
-- [ ] Export to FGDC XML
-- [ ] Batch export
+### v0.6.0 - Export and GeoPackage Integration
+- [ ] Export to QGIS XML format
+- [ ] Write metadata directly to GeoPackage layers
+- [ ] Read metadata from GeoPackage layers
+- [ ] Batch export and GeoPackage metadata operations
 
 ### v1.0.0 - Production Release
 - [ ] Guided wizard mode

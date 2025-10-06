@@ -143,29 +143,46 @@ See `docs/inventory_miner/README.md` for detailed documentation and usage exampl
 Location: `docs/metadata_manager/`
 Plugin: `Plugins/metadata_manager/`
 
-A QGIS Plugin that helps users create, manage, and apply metadata to layers following QGIS and ISO 19115 standards. Features reusable metadata component libraries, guided workflow wizards, template system for bulk application, and integration with inventory databases to identify layers lacking metadata. Perfect for data managers who need to create comprehensive metadata for large geospatial data collections.
+A QGIS Plugin that helps users create, manage, and apply metadata to layers following QGIS metadata standards. Uses a **unified GeoPackage database** shared with Inventory Miner for seamless integration - single database contains both file catalog AND metadata management. Features reusable metadata component libraries, guided workflow wizards, template system for bulk application, and real-time metadata status tracking. Perfect for data managers who need to create comprehensive metadata for large geospatial data collections.
 
 **Features:**
-- **Guided metadata creation**: Step-by-step wizard for creating QGIS/ISO 19115 compliant metadata
+- **Unified database architecture**: Shares GeoPackage with Inventory Miner (e.g., `geospatial_catalog.gpkg`) - single source of truth
+- **Direct inventory integration**: Reads file catalog from geospatial_inventory table, writes metadata status updates directly
+- **Real-time status tracking**: Metadata completeness tracked in inventory table (none/partial/complete)
+- **Run Inventory Miner from plugin**: Create/update file catalog without leaving Metadata Manager
+
+**Time-Saving Features:**
+- **Metadata Quality Dashboard** ✅ (Phase 2 - IMPLEMENTED): Statistics by directory, data type, format, CRS with priority recommendations and visual progress. Dashboard shows completion percentage, color-coded status, four drill-down views, and top 5 priority recommendations. Auto-refreshes on startup.
+- **Progressive Disclosure Wizard** (Phase 3 - Planned): Required fields → Common fields → Optional fields with skip navigation and expert mode
+- **Smart Defaults from Inventory** (Phase 4 - Planned): Auto-populate title, CRS, extent, geometry type, field list - user refines instead of entering from scratch
+- **Batch template application** (Phase 5 - Planned): Apply templates to multiple layers at once, watch dashboard update in real-time
+
+**Core Features:**
+- **Guided metadata creation**: Step-by-step wizard for creating QGIS-compliant metadata with Next/Previous navigation
 - **Reusable libraries**: Store and reuse organizations, contacts, keywords, and templates
 - **Template system**: Create templates for bulk metadata application across multiple layers
-- **Inventory integration**: Connect to inventory GeoPackage (from inventory_miner) to identify layers needing metadata
-- **Auto-population**: Pre-fill metadata from layer properties (CRS, extent, geometry type, etc.)
+- **Smart metadata destination**: Automatically writes to .qmd sidecar files or embedded GeoPackage metadata
 - **Validation**: Check metadata completeness and validate required fields
-- **Batch processing**: Apply metadata templates to multiple layers from inventory
-- **Export formats**: Export to QGIS XML, ISO 19115/19139 XML, and FGDC XML
-- **Wizard and expert modes**: Choose between guided workflow or full-form interface
-- **Metadata gap analysis**: Identify and prioritize layers missing metadata
+- **Metadata caching**: All metadata backed up in metadata_cache table for recovery
+- **Dual version tracking**: Independent schema versions for Inventory Miner and Metadata Manager
+- **Versioning support**: Tracks retired inventory records when files deleted/moved
 
 **Installation** (QGIS Plugin - different from Processing scripts):
-1. Copy `Plugins/metadata_manager` to your QGIS plugins folder:
+1. **Prerequisites**: Install Inventory Miner script first (from Scripts/ directory)
+2. Copy `Plugins/metadata_manager` to your QGIS plugins folder:
    - Windows: `C:\Users\<username>\AppData\Roaming\QGIS\QGIS3\profiles\<profile>\python\plugins\`
    - Linux: `~/.local/share/QGIS/QGIS3/profiles/<profile>/python/plugins/`
    - macOS: `~/Library/Application Support/QGIS/QGIS3/profiles/<profile>/python/plugins/`
-2. Compile resources: `cd metadata_manager && make` (or `pyrcc5 -o resources.py resources.qrc`)
-3. Enable in QGIS: Plugins → Manage and Install Plugins → Enable "Metadata Manager"
+3. Compile resources: `cd metadata_manager && make` (or `pyrcc5 -o resources.py resources.qrc`)
+4. Enable in QGIS: Plugins → Manage and Install Plugins → Enable "Metadata Manager"
+5. **First use**: Run Inventory Miner to create database, then select that database in Metadata Manager
 
-**Current Status (v0.1.0)**: Plugin structure created with QGIS Plugin Builder. Core functionality implementation in progress.
+**Workflow**: Inventory Miner creates `geospatial_catalog.gpkg` → Metadata Manager adds its tables to same database → both tools share single unified database
+
+**Current Status (v0.2.0 in development)**:
+- ✅ Phase 1 (COMPLETE): Core database architecture with validation, initialization, and schema upgrades
+- ✅ Phase 2 (COMPLETE): Metadata Quality Dashboard with statistics and drill-down views
+- 🚧 Phase 3-5 (In Progress): Wizard, Smart Defaults, Inventory Panel
 
 See `docs/metadata_manager/README.md` for installation details and `docs/metadata_manager/REQUIREMENTS.md` for specifications.
 

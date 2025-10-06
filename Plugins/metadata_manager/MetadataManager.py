@@ -31,11 +31,17 @@ from .resources import *
 
 # Import the code for the DockWidget
 from .MetadataManager_dockwidget import MetadataManagerDockWidget
+from .db.manager import DatabaseManager
+from .db.migrations import MigrationManager
 import os.path
+from qgis.PyQt.QtWidgets import QFileDialog, QMessageBox
+from qgis.core import QgsMessageLog, Qgis
 
 
 class MetadataManager:
     """QGIS Plugin Implementation."""
+
+    __version__ = "0.1.0"
 
     def __init__(self, iface):
         """Constructor.
@@ -65,15 +71,17 @@ class MetadataManager:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&MetadataManager')
-        # TODO: We are going to let the user set this up in a future iteration
-        self.toolbar = self.iface.addToolBar(u'MetadataManager')
+        self.menu = self.tr(u'&Metadata Manager')
+        self.toolbar = self.iface.addToolBar(u'Metadata Manager')
         self.toolbar.setObjectName(u'MetadataManager')
-
-        #print "** INITIALIZING MetadataManager"
 
         self.pluginIsActive = False
         self.dockwidget = None
+
+        # Database management
+        self.db_manager = DatabaseManager()
+        self.migration_manager = MigrationManager()
+        self.db_path = None
 
 
     # noinspection PyMethodMayBeStatic
@@ -198,11 +206,13 @@ class MetadataManager:
     def unload(self):
         """Removes the plugin menu item and icon from QGIS GUI."""
 
-        #print "** UNLOAD MetadataManager"
+        # Disconnect database
+        if self.db_manager:
+            self.db_manager.disconnect()
 
         for action in self.actions:
             self.iface.removePluginMenu(
-                self.tr(u'&MetadataManager'),
+                self.tr(u'&Metadata Manager'),
                 action)
             self.iface.removeToolBarIcon(action)
         # remove the toolbar
@@ -210,13 +220,154 @@ class MetadataManager:
 
     #--------------------------------------------------------------------------
 
+    def select_database(self):
+        """Prompt user to select inventory database."""
+        settings = QSettings()
+        last_db = settings.value('MetadataManager/last_database', '')
+
+        # If we have a last database, try to use it
+        if last_db and os.path.exists(last_db):
+            if self.connect_to_database(last_db):
+                return True
+
+        # Show file dialog to select database
+        db_path, _ = QFileDialog.getOpenFileName(
+            self.iface.mainWindow(),
+            self.tr("Select Inventory Database"),
+            os.path.dirname(last_db) if last_db else os.path.expanduser('~'),
+            self.tr("GeoPackage (*.gpkg);;All Files (*.*)")
+        )
+
+        if not db_path:
+            return False
+
+        return self.connect_to_database(db_path)
+
+    def connect_to_database(self, db_path: str) -> bool:
+        """
+        Connect to database and initialize if needed.
+
+        Args:
+            db_path: Path to GeoPackage database
+
+        Returns:
+            True if connected successfully
+        """
+        # Connect to database
+        if not self.db_manager.connect(db_path):
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                self.tr("Database Error"),
+                self.tr("Failed to connect to database:\n{}").format(db_path)
+            )
+            return False
+
+        # Validate it was created by Inventory Miner
+        is_valid, message = self.db_manager.validate_inventory_database()
+        if not is_valid:
+            QMessageBox.critical(
+                self.iface.mainWindow(),
+                self.tr("Invalid Database"),
+                message
+            )
+            self.db_manager.disconnect()
+            return False
+
+        # Check if Metadata Manager tables exist
+        tables_exist = self.db_manager.check_metadata_manager_tables_exist()
+
+        if not tables_exist:
+            # First time using this database with Metadata Manager
+            reply = QMessageBox.question(
+                self.iface.mainWindow(),
+                self.tr("Initialize Database"),
+                self.tr(
+                    "This database does not have Metadata Manager tables.\n\n"
+                    "Would you like to initialize them now?"
+                ),
+                QMessageBox.Yes | QMessageBox.No
+            )
+
+            if reply == QMessageBox.Yes:
+                success, msg = self.db_manager.initialize_metadata_manager_tables()
+                if not success:
+                    QMessageBox.critical(
+                        self.iface.mainWindow(),
+                        self.tr("Initialization Error"),
+                        msg
+                    )
+                    self.db_manager.disconnect()
+                    return False
+                QMessageBox.information(
+                    self.iface.mainWindow(),
+                    self.tr("Success"),
+                    self.tr("Database initialized successfully!")
+                )
+            else:
+                self.db_manager.disconnect()
+                return False
+
+        # Check for schema upgrades
+        current_version = self.db_manager.get_schema_version('metadata_schema_version')
+
+        if self.migration_manager.needs_upgrade(current_version):
+            reply = QMessageBox.question(
+                self.iface.mainWindow(),
+                self.tr("Upgrade Database"),
+                self.tr(
+                    "Database schema needs upgrade from version {} to {}.\n\n"
+                    "Would you like to upgrade now?\n\n"
+                    "Recommendation: Back up your database first."
+                ).format(current_version or "Unknown", DatabaseManager.__version__),
+                QMessageBox.Yes | QMessageBox.No
+            )
+
+            if reply == QMessageBox.Yes:
+                success, msg = self.migration_manager.perform_upgrade(
+                    self.db_manager,
+                    current_version
+                )
+                if not success:
+                    QMessageBox.critical(
+                        self.iface.mainWindow(),
+                        self.tr("Upgrade Error"),
+                        msg
+                    )
+                    self.db_manager.disconnect()
+                    return False
+                QMessageBox.information(
+                    self.iface.mainWindow(),
+                    self.tr("Success"),
+                    msg
+                )
+            else:
+                self.db_manager.disconnect()
+                return False
+
+        # Save database path to settings
+        settings = QSettings()
+        settings.setValue('MetadataManager/last_database', db_path)
+        self.db_path = db_path
+
+        QgsMessageLog.logMessage(
+            f"Connected to database: {db_path}",
+            "Metadata Manager",
+            Qgis.Success
+        )
+
+        return True
+
     def run(self):
         """Run method that loads and starts the plugin"""
 
         if not self.pluginIsActive:
             self.pluginIsActive = True
 
-            #print "** STARTING MetadataManager"
+            # Connect to database if not already connected
+            if not self.db_manager.is_connected:
+                if not self.select_database():
+                    self.pluginIsActive = False
+                    return
 
             # dockwidget may not exist if:
             #    first run of plugin
@@ -224,11 +375,12 @@ class MetadataManager:
             if self.dockwidget == None:
                 # Create the dockwidget (after translation) and keep reference
                 self.dockwidget = MetadataManagerDockWidget()
+                # Pass database manager to dockwidget
+                self.dockwidget.set_database_manager(self.db_manager)
 
             # connect to provide cleanup on closing of dockwidget
             self.dockwidget.closingPlugin.connect(self.onClosePlugin)
 
             # show the dockwidget
-            # TODO: fix to allow choice of dock location
             self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
             self.dockwidget.show()

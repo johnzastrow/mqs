@@ -29,6 +29,8 @@ import os
 from qgis.PyQt import QtGui, QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 
+from .widgets import DashboardWidget, MetadataWizard
+
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'MetadataManager_dockwidget_base.ui'))
 
@@ -46,6 +48,44 @@ class MetadataManagerDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # http://doc.qt.io/qt-5/designer-using-a-ui-file.html
         # #widgets-and-dialogs-with-auto-connect
         self.setupUi(self)
+
+        # Database manager (set by main plugin)
+        self.db_manager = None
+        self.dashboard_widget = None
+        self.wizard_widget = None
+        self.tab_widget = None
+
+    def set_database_manager(self, db_manager):
+        """
+        Set database manager instance.
+
+        Args:
+            db_manager: DatabaseManager instance
+        """
+        self.db_manager = db_manager
+
+        # Remove placeholder label
+        if hasattr(self, 'label'):
+            self.label.hide()
+
+        # Create tab widget
+        self.tab_widget = QtWidgets.QTabWidget(self)
+
+        # Create dashboard widget
+        self.dashboard_widget = DashboardWidget(db_manager, self)
+
+        # Create wizard widget
+        self.wizard_widget = MetadataWizard(db_manager, self)
+
+        # Add tabs
+        self.tab_widget.addTab(self.dashboard_widget, "Dashboard")
+        self.tab_widget.addTab(self.wizard_widget, "Metadata Editor")
+
+        # Add tab widget to the grid layout
+        self.gridLayout.addWidget(self.tab_widget, 0, 0)
+
+        # Initial refresh of statistics
+        self.dashboard_widget.refresh_statistics()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

@@ -9,7 +9,7 @@ Author: QGIS User
 License: MIT
 """
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
 from qgis.core import (
     QgsProcessing,
@@ -50,6 +50,7 @@ class InventoryMinerAlgorithm(QgsProcessingAlgorithm):
     INPUT_DIRECTORY = "INPUT_DIRECTORY"
     OUTPUT_GPKG = "OUTPUT_GPKG"
     LAYER_NAME = "LAYER_NAME"
+    UPDATE_MODE = "UPDATE_MODE"
     INCLUDE_RASTERS = "INCLUDE_RASTERS"
     INCLUDE_VECTORS = "INCLUDE_VECTORS"
     INCLUDE_TABLES = "INCLUDE_TABLES"
@@ -88,6 +89,8 @@ class InventoryMinerAlgorithm(QgsProcessingAlgorithm):
             <p>Recursively scans directories for all geospatial data files and creates a comprehensive
             inventory in a GeoPackage database with extent polygons in EPSG:4326.</p>
 
+            <p><b>This database can be used with the Metadata Manager plugin to create and manage layer metadata.</b></p>
+
             <h3>Features</h3>
             <ul>
                 <li>Automatic detection of all GDAL/OGR-supported georeferenced files</li>
@@ -98,6 +101,8 @@ class InventoryMinerAlgorithm(QgsProcessingAlgorithm):
                 <li>Identifies non-spatial tables and supporting data</li>
                 <li>Parses GIS metadata files (ISO 19115, FGDC, ESRI)</li>
                 <li>All extents transformed to EPSG:4326 for consistent visualization</li>
+                <li><b>Update Mode</b>: Preserves metadata status when rescanning directories</li>
+                <li><b>Versioning</b>: Tracks retired records when files are deleted or moved</li>
             </ul>
 
             <h3>Parameters</h3>
@@ -150,6 +155,15 @@ class InventoryMinerAlgorithm(QgsProcessingAlgorithm):
                 self.LAYER_NAME,
                 self.tr("Inventory Layer Name"),
                 defaultValue="geospatial_inventory",
+            )
+        )
+
+        # Update mode parameter
+        self.addParameter(
+            QgsProcessingParameterBoolean(
+                self.UPDATE_MODE,
+                self.tr("Update Mode (preserve existing metadata status)"),
+                defaultValue=False,
             )
         )
 
@@ -209,6 +223,7 @@ class InventoryMinerAlgorithm(QgsProcessingAlgorithm):
         input_dir = self.parameterAsFile(parameters, self.INPUT_DIRECTORY, context)
         output_gpkg = self.parameterAsOutputLayer(parameters, self.OUTPUT_GPKG, context)
         layer_name = self.parameterAsString(parameters, self.LAYER_NAME, context)
+        update_mode = self.parameterAsBoolean(parameters, self.UPDATE_MODE, context)
         include_rasters = self.parameterAsBoolean(parameters, self.INCLUDE_RASTERS, context)
         include_vectors = self.parameterAsBoolean(parameters, self.INCLUDE_VECTORS, context)
         include_tables = self.parameterAsBoolean(parameters, self.INCLUDE_TABLES, context)
@@ -225,6 +240,12 @@ class InventoryMinerAlgorithm(QgsProcessingAlgorithm):
 
         feedback.pushInfo(self.tr(f"Scanning directory: {input_dir}"))
         feedback.pushInfo(self.tr(f"Output GeoPackage: {output_gpkg}"))
+        feedback.pushInfo(self.tr(f"Mode: {'Update (preserve metadata status)' if update_mode else 'Create new'}"))
+
+        # Load existing inventory if update mode
+        existing_inventory = {}
+        if update_mode and Path(output_gpkg).exists():
+            existing_inventory = self._load_existing_inventory(output_gpkg, layer_name, feedback)
 
         # Create field structure for inventory layer
         fields = self._create_fields()
@@ -282,6 +303,7 @@ class InventoryMinerAlgorithm(QgsProcessingAlgorithm):
                 validate_files,
                 parse_metadata,
                 include_sidecar,
+                existing_inventory if update_mode else {},
                 feedback
             )
 
@@ -397,6 +419,13 @@ class InventoryMinerAlgorithm(QgsProcessingAlgorithm):
         fields.append(QgsField("issues", QVariant.String))
         fields.append(QgsField("scan_timestamp", QVariant.String))
 
+        # Metadata Manager Integration Fields
+        fields.append(QgsField("metadata_status", QVariant.String))  # 'none', 'partial', 'complete'
+        fields.append(QgsField("metadata_last_updated", QVariant.String))  # When metadata was last edited
+        fields.append(QgsField("metadata_target", QVariant.String))  # Path to .qmd or "embedded in gpkg"
+        fields.append(QgsField("metadata_cached", QVariant.Bool))  # True if in metadata_cache table
+        fields.append(QgsField("retired_datetime", QVariant.String))  # When record was retired (versioning)
+
         return fields
 
     def _discover_geospatial_files(self, root_path, include_vectors, include_rasters, include_tables, feedback):
@@ -457,7 +486,7 @@ class InventoryMinerAlgorithm(QgsProcessingAlgorithm):
 
     def _extract_layer_metadata(self, data_source, root_path, fields, wgs84_crs,
                                  scan_timestamp, validate, parse_metadata,
-                                 include_sidecar, feedback):
+                                 include_sidecar, existing_inventory, feedback):
         """Extract comprehensive metadata for a data source."""
         try:
             feature = QgsFeature(fields)
@@ -491,6 +520,20 @@ class InventoryMinerAlgorithm(QgsProcessingAlgorithm):
             feature.setAttribute("parent_directory", file_path.parent.name)
             feature.setAttribute("data_type", data_type)
             feature.setAttribute("scan_timestamp", scan_timestamp)
+
+            # Apply metadata status from existing inventory (for update mode)
+            file_modified_str = feature.attribute("file_modified")
+            if self._should_preserve_metadata_status(str(file_path), file_modified_str, existing_inventory):
+                self._apply_preserved_metadata_status(feature, str(file_path), existing_inventory)
+            else:
+                # New file or modified file - initialize metadata status
+                feature.setAttribute("metadata_status", "none")
+                feature.setAttribute("metadata_last_updated", None)
+                feature.setAttribute("metadata_target", None)
+                feature.setAttribute("metadata_cached", False)
+
+            # Retired datetime is NULL for active records
+            feature.setAttribute("retired_datetime", None)
 
             # Calculate directory depth
             try:
@@ -968,6 +1011,110 @@ class InventoryMinerAlgorithm(QgsProcessingAlgorithm):
         except Exception as e:
             feedback.pushDebugInfo(self.tr(f"Could not parse metadata XML: {str(e)}"))
             feature.setAttribute("metadata_present", False)
+
+    def _load_existing_inventory(self, gpkg_path, layer_name, feedback):
+        """Load existing inventory to preserve metadata status during updates."""
+        existing = {}
+        try:
+            feedback.pushInfo(self.tr("Loading existing inventory for update..."))
+            layer_uri = f"{gpkg_path}|layername={layer_name}"
+            layer = QgsVectorLayer(layer_uri, "existing", "ogr")
+
+            if not layer.isValid():
+                feedback.pushWarning(self.tr("Could not load existing inventory layer, creating new"))
+                return existing
+
+            # Build dictionary of existing records keyed by file_path
+            for feature in layer.getFeatures():
+                file_path = feature.attribute("file_path")
+                file_modified = feature.attribute("file_modified")
+                metadata_status = feature.attribute("metadata_status")
+                metadata_last_updated = feature.attribute("metadata_last_updated")
+                metadata_target = feature.attribute("metadata_target")
+                metadata_cached = feature.attribute("metadata_cached")
+
+                existing[file_path] = {
+                    "file_modified": file_modified,
+                    "metadata_status": metadata_status if metadata_status else "none",
+                    "metadata_last_updated": metadata_last_updated,
+                    "metadata_target": metadata_target,
+                    "metadata_cached": metadata_cached if metadata_cached else False,
+                }
+
+            feedback.pushInfo(self.tr(f"Loaded {len(existing)} existing inventory records"))
+
+        except Exception as e:
+            feedback.pushWarning(self.tr(f"Error loading existing inventory: {str(e)}"))
+
+        return existing
+
+    def _should_preserve_metadata_status(self, file_path, file_modified, existing_inventory):
+        """Determine if metadata status should be preserved for this file."""
+        if file_path not in existing_inventory:
+            return False
+
+        existing = existing_inventory[file_path]
+
+        # Preserve if file hasn't been modified
+        if existing["file_modified"] == file_modified:
+            return True
+
+        return False
+
+    def _apply_preserved_metadata_status(self, feature, file_path, existing_inventory):
+        """Apply preserved metadata status fields to feature."""
+        if file_path in existing_inventory:
+            existing = existing_inventory[file_path]
+            feature.setAttribute("metadata_status", existing["metadata_status"])
+            feature.setAttribute("metadata_last_updated", existing["metadata_last_updated"])
+            feature.setAttribute("metadata_target", existing["metadata_target"])
+            feature.setAttribute("metadata_cached", existing["metadata_cached"])
+        else:
+            # New file - initialize metadata status as 'none'
+            feature.setAttribute("metadata_status", "none")
+            feature.setAttribute("metadata_last_updated", None)
+            feature.setAttribute("metadata_target", None)
+            feature.setAttribute("metadata_cached", False)
+
+    def _retire_old_records(self, existing_inventory, current_file_paths, output_gpkg, layer_name, feedback):
+        """Mark records as retired if files no longer exist (versioning)."""
+        retired_count = 0
+        current_timestamp = datetime.now().isoformat()
+
+        # Find file paths that existed before but not in current scan
+        retired_paths = set(existing_inventory.keys()) - set(current_file_paths)
+
+        if not retired_paths:
+            return retired_count
+
+        try:
+            feedback.pushInfo(self.tr(f"Retiring {len(retired_paths)} records for deleted/moved files..."))
+
+            # Load layer for editing
+            layer_uri = f"{output_gpkg}|layername={layer_name}"
+            layer = QgsVectorLayer(layer_uri, "inventory", "ogr")
+
+            if not layer.isValid():
+                feedback.pushWarning(self.tr("Could not load layer to retire records"))
+                return retired_count
+
+            layer.startEditing()
+
+            # Update retired_datetime for missing files
+            for feature in layer.getFeatures():
+                file_path = feature.attribute("file_path")
+                if file_path in retired_paths:
+                    feature.setAttribute("retired_datetime", current_timestamp)
+                    layer.updateFeature(feature)
+                    retired_count += 1
+
+            layer.commitChanges()
+            feedback.pushInfo(self.tr(f"Retired {retired_count} records"))
+
+        except Exception as e:
+            feedback.pushWarning(self.tr(f"Error retiring records: {str(e)}"))
+
+        return retired_count
 
     def _write_geopackage(self, output_path, layer_name, fields, features, crs, feedback):
         """Write features to GeoPackage."""
