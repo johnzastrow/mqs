@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.6] - 2025-10-06
+
+### Fixed
+- **CRITICAL: "no such function: ST_IsEmpty" error** - Database connection now loads SpatiaLite extension
+  - GeoPackage tables have triggers that use spatial functions (ST_IsEmpty, etc.)
+  - Plain sqlite3 connection doesn't have these functions by default
+  - Now attempts to load SpatiaLite extension on connection:
+    - Tries `mod_spatialite` (common on Linux/Mac)
+    - Falls back to `libspatialite`
+    - On Windows, checks QGIS install path
+  - **Result**: Inventory status updates now work, dashboard statistics update correctly
+  - Graceful warning if extension can't be loaded (logs to console)
+
+### Impact
+- **Before**: All metadata saves appeared to succeed, but inventory status never updated (ERROR: "no such function: ST_IsEmpty")
+- **After**: Inventory status updates correctly, dashboard shows complete/partial counts
+
 ## [0.3.5] - 2025-10-06
 
 ### Added

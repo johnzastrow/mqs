@@ -4,7 +4,7 @@
 name=Metadata Manager
 qgisMinimumVersion=3.40
 description=Create and manage QGIS layer metadata with reusable templates, organizations, and keywords. Integrates with inventory databases to identify and process layers lacking metadata.
-version=0.3.5
+version=0.3.6
 author=John Zastrow
 email=br8kwall@gmail.com
 
@@ -17,6 +17,15 @@ repository=https://github.com/johnzastrow/mqs
 # Recommended items:
 hasProcessingProvider=no
 changelog=
+    0.3.6 - Critical Fix: Load SpatiaLite Extension
+    - CRITICAL: Fixed "no such function: ST_IsEmpty" error on metadata save
+      * Database connection now loads SpatiaLite extension
+      * Enables spatial functions required by GeoPackage triggers
+      * Tries multiple extension names (mod_spatialite, libspatialite)
+      * Falls back to QGIS install path on Windows
+    - Inventory status updates now work correctly
+    - Dashboard statistics can update after save
+    - Graceful warning if SpatiaLite can't be loaded
     0.3.5 - Auto-Refresh Dashboard After Save
     - Dashboard now automatically refreshes when metadata is saved
       * Connected wizard metadata_saved signal to dashboard refresh

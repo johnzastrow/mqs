@@ -132,13 +132,18 @@ class LayerSelectorDialog(QtWidgets.QDialog):
             # Store all rows for filtering
             self.all_layers = []
             for row in rows:
+                # Extract full directory path from file_path
+                import os
+                file_path = row['file_path']
+                directory = os.path.dirname(file_path) if file_path else 'Unknown'
+
                 self.all_layers.append({
                     'name': row['layer_name'] or 'Unknown',
-                    'path': row['file_path'],
+                    'path': file_path,
                     'status': row['status'],
                     'data_type': row['data_type'] or 'Unknown',
                     'format': row['format'] or 'Unknown',
-                    'directory': row['parent_directory'] or 'Root'
+                    'directory': directory
                 })
 
             self.apply_filter()

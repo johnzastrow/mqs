@@ -802,20 +802,6 @@ class DatabaseManager:
 
         try:
             cursor = self.connection.cursor()
-
-            # Check if we need to disable triggers (if SpatiaLite not available)
-            # Triggers on geospatial_inventory may use spatial functions
-            disable_triggers = False
-            try:
-                # Test if spatial functions are available
-                cursor.execute("SELECT InitSpatialMetadata(1)")
-            except:
-                disable_triggers = True
-
-            if disable_triggers:
-                # Temporarily disable triggers to avoid ST_IsEmpty errors
-                cursor.execute("PRAGMA recursive_triggers = OFF")
-
             cursor.execute(
                 """
                 UPDATE geospatial_inventory
@@ -828,10 +814,6 @@ class DatabaseManager:
                 """,
                 (status, target, 1 if cached else 0, layer_path)
             )
-
-            if disable_triggers:
-                # Re-enable triggers
-                cursor.execute("PRAGMA recursive_triggers = ON")
 
             self.connection.commit()
 
