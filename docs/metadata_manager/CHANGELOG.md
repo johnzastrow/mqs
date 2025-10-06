@@ -7,6 +7,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.5] - 2025-10-06
+
+### Added
+- **Auto-refresh dashboard after save** - Dashboard statistics now update immediately when metadata is saved
+  - Connected wizard's `metadata_saved` signal to dashboard `refresh_statistics()` method
+  - No need to manually click "Refresh Statistics" button after saving
+  - Complete/Partial status changes appear instantly in dashboard
+
+### Changed
+- **Enhanced inventory update logging** for better debugging
+  - Success messages now use `Qgis.Success` level with ✅ emoji
+  - Failure messages show similar paths from inventory to help diagnose path mismatches
+  - Clearer indication of what status was set (complete/partial)
+
+### Fixed
+- Dashboard not showing updated statistics after metadata save (user had to manually refresh)
+
+## [0.3.4] - 2025-10-06
+
+### Fixed
+- **CRITICAL: Metadata save failure** - Fixed column name mismatches in `metadata_cache` table INSERT statement
+  - Schema uses `created_date` and `last_edited_date`
+  - Save method was incorrectly using `created_datetime` and `modified_datetime`
+  - Added `layer_name` column to INSERT (was missing, schema requires it)
+  - **Result**: Metadata now saves successfully to cache
+
+- **Priority recommendations column names** - Fixed `get_priority_recommendations()` query
+  - Changed `directory_path` → `parent_directory`
+  - Changed `file_format` → `format`
+  - **Result**: Recommendations widget now displays correctly
+
+### Impact
+- **Before Fix**: All metadata saves failed with "table metadata_cache has no column named created_datetime" error
+- **After Fix**: Metadata saves successfully, recommendations display correctly
+
+## [0.3.3] - 2025-10-06
+
+### Changed
+- **Dashboard table row height reduced to 16px** for more compact display
+  - All drill-down tables (Directory, Data Type, Format, CRS) now use 16px rows
+  - Vertical header hidden for cleaner appearance
+  - Consistent with wizard table styling (contacts/links use 18px)
+  - Allows more data visible without scrolling
+
 ## [0.3.2] - 2025-10-06
 
 ### Fixed

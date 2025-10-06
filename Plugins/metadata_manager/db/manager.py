@@ -55,6 +55,38 @@ class DatabaseManager:
             self.db_path = db_path
             self.connection = sqlite3.connect(db_path)
             self.connection.row_factory = sqlite3.Row
+
+            # Load SpatiaLite extension (required for GeoPackage operations)
+            # This enables spatial functions like ST_IsEmpty used by inventory triggers
+            self.connection.enable_load_extension(True)
+            try:
+                # Try loading SpatiaLite (path varies by platform)
+                try:
+                    self.connection.load_extension("mod_spatialite")
+                except:
+                    try:
+                        self.connection.load_extension("libspatialite")
+                    except:
+                        # On Windows, might be in QGIS install
+                        import platform
+                        if platform.system() == "Windows":
+                            import os
+                            qgis_prefix = os.environ.get('QGIS_PREFIX_PATH', '')
+                            if qgis_prefix:
+                                spatialite_path = os.path.join(qgis_prefix, 'bin', 'mod_spatialite')
+                                self.connection.load_extension(spatialite_path)
+                        else:
+                            raise
+            except Exception as ext_error:
+                QgsMessageLog.logMessage(
+                    f"Warning: Could not load SpatiaLite extension: {ext_error}\n"
+                    f"Spatial functions may not work in triggers.",
+                    "Metadata Manager",
+                    Qgis.Warning
+                )
+            finally:
+                self.connection.enable_load_extension(False)
+
             self.is_connected = True
 
             QgsMessageLog.logMessage(
@@ -618,13 +650,13 @@ class DatabaseManager:
             # Get directories with most layers lacking metadata
             cursor.execute("""
                 SELECT
-                    directory_path,
-                    file_format,
+                    parent_directory,
+                    format,
                     COUNT(*) as count
                 FROM geospatial_inventory
                 WHERE retired_datetime IS NULL
                   AND (metadata_status IS NULL OR metadata_status = 'none')
-                GROUP BY directory_path, file_format
+                GROUP BY parent_directory, format
                 ORDER BY count DESC
                 LIMIT ?
             """, (limit,))
@@ -632,10 +664,10 @@ class DatabaseManager:
             results = []
             for row in cursor.fetchall():
                 results.append({
-                    'directory': row['directory_path'],
-                    'file_format': row['file_format'] or 'Unknown',
+                    'directory': row['parent_directory'] or 'Root',
+                    'file_format': row['format'] or 'Unknown',
                     'count': row['count'],
-                    'recommendation': f"{row['count']} {row['file_format'] or 'files'} in {row['directory_path']} need metadata"
+                    'recommendation': f"{row['count']} {row['format'] or 'files'} in {row['parent_directory'] or 'Root'} need metadata"
                 })
 
             return results
@@ -674,17 +706,18 @@ class DatabaseManager:
                 """
                 INSERT OR REPLACE INTO metadata_cache (
                     layer_path,
+                    layer_name,
                     metadata_json,
-                    created_datetime,
-                    modified_datetime,
+                    created_date,
+                    last_edited_date,
                     in_sync
-                ) VALUES (?, ?,
-                    COALESCE((SELECT created_datetime FROM metadata_cache WHERE layer_path = ?), datetime('now')),
+                ) VALUES (?, ?, ?,
+                    COALESCE((SELECT created_date FROM metadata_cache WHERE layer_path = ?), datetime('now')),
                     datetime('now'),
                     ?
                 )
                 """,
-                (layer_path, metadata_json, layer_path, 1 if in_sync else 0)
+                (layer_path, metadata.get('title', 'Unknown'), metadata_json, layer_path, 1 if in_sync else 0)
             )
 
             self.connection.commit()
@@ -769,6 +802,20 @@ class DatabaseManager:
 
         try:
             cursor = self.connection.cursor()
+
+            # Check if we need to disable triggers (if SpatiaLite not available)
+            # Triggers on geospatial_inventory may use spatial functions
+            disable_triggers = False
+            try:
+                # Test if spatial functions are available
+                cursor.execute("SELECT InitSpatialMetadata(1)")
+            except:
+                disable_triggers = True
+
+            if disable_triggers:
+                # Temporarily disable triggers to avoid ST_IsEmpty errors
+                cursor.execute("PRAGMA recursive_triggers = OFF")
+
             cursor.execute(
                 """
                 UPDATE geospatial_inventory
@@ -782,18 +829,26 @@ class DatabaseManager:
                 (status, target, 1 if cached else 0, layer_path)
             )
 
+            if disable_triggers:
+                # Re-enable triggers
+                cursor.execute("PRAGMA recursive_triggers = ON")
+
             self.connection.commit()
 
             if cursor.rowcount > 0:
                 QgsMessageLog.logMessage(
-                    f"Inventory updated for: {layer_path} (status: {status})",
+                    f"✅ Inventory updated: {layer_path} → status={status}",
                     "Metadata Manager",
-                    Qgis.Info
+                    Qgis.Success
                 )
                 return True
             else:
+                # Try to find similar paths for debugging
+                cursor.execute("SELECT file_path FROM geospatial_inventory WHERE file_path LIKE ? LIMIT 5", (f"%{layer_path.split('/')[-1]}%",))
+                similar = [row['file_path'] for row in cursor.fetchall()]
                 QgsMessageLog.logMessage(
-                    f"Layer not found in inventory: {layer_path}",
+                    f"⚠ Layer not found in inventory: {layer_path}\n"
+                    f"Similar paths in inventory: {similar[:3] if similar else 'none found'}",
                     "Metadata Manager",
                     Qgis.Warning
                 )

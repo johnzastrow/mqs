@@ -77,6 +77,9 @@ class MetadataManagerDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Create wizard widget
         self.wizard_widget = MetadataWizard(db_manager, self)
 
+        # Connect wizard save signal to dashboard refresh
+        self.wizard_widget.metadata_saved.connect(self.on_metadata_saved)
+
         # Add tabs
         self.tab_widget.addTab(self.dashboard_widget, "Dashboard")
         self.tab_widget.addTab(self.wizard_widget, "Metadata Editor")
@@ -89,6 +92,20 @@ class MetadataManagerDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         # Only refresh statistics if database is connected
         if self.db_manager and self.db_manager.is_connected:
+            self.dashboard_widget.refresh_statistics()
+
+    def on_metadata_saved(self, layer_path, metadata):
+        """
+        Handle metadata saved event.
+
+        Refreshes dashboard statistics when metadata is saved.
+
+        Args:
+            layer_path: Path to the layer that was updated
+            metadata: Metadata dictionary (not currently used)
+        """
+        # Refresh dashboard to show updated statistics
+        if self.dashboard_widget:
             self.dashboard_widget.refresh_statistics()
 
     def closeEvent(self, event):

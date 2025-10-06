@@ -4,7 +4,7 @@
 name=Metadata Manager
 qgisMinimumVersion=3.40
 description=Create and manage QGIS layer metadata with reusable templates, organizations, and keywords. Integrates with inventory databases to identify and process layers lacking metadata.
-version=0.3.2
+version=0.3.5
 author=John Zastrow
 email=br8kwall@gmail.com
 
@@ -17,6 +17,29 @@ repository=https://github.com/johnzastrow/mqs
 # Recommended items:
 hasProcessingProvider=no
 changelog=
+    0.3.5 - Auto-Refresh Dashboard After Save
+    - Dashboard now automatically refreshes when metadata is saved
+      * Connected wizard metadata_saved signal to dashboard refresh
+      * No need to manually click "Refresh Statistics" after save
+      * Complete/Partial status updates immediately visible
+    - Enhanced logging for inventory updates
+      * Shows success with ✅ emoji and status
+      * Shows similar paths if layer not found (debugging aid)
+      * Uses SUCCESS level for successful updates
+    0.3.4 - Critical Bug Fix: Metadata Save Failure
+    - Fixed metadata_cache column name mismatches (CRITICAL - prevented all saves)
+      * created_date (was using created_datetime)
+      * last_edited_date (was using modified_datetime)
+      * Added layer_name to INSERT statement
+    - Fixed get_priority_recommendations column names
+      * parent_directory (was using directory_path)
+      * format (was using file_format)
+    - Metadata now saves successfully to cache
+    - Recommendations widget now works correctly
+    0.3.3 - UI Polish: Compact Dashboard Tables
+    - Dashboard table row height reduced to 16px for more compact display
+    - Vertical header hidden for cleaner appearance
+    - Consistent with wizard table styling (18px rows)
     0.3.2 - Critical Bug Fix: Dashboard Statistics
     - Fixed database column name mismatches
       * parent_directory (was incorrectly using directory_path)

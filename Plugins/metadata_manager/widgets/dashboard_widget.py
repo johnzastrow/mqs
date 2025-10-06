@@ -152,6 +152,10 @@ class DashboardWidget(QtWidgets.QWidget):
         table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         table.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
 
+        # Set compact row height
+        table.verticalHeader().setDefaultSectionSize(16)
+        table.verticalHeader().setVisible(False)
+
         layout.addWidget(table)
         widget.setLayout(layout)
 
