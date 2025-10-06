@@ -84,8 +84,12 @@ class MetadataManagerDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Add tab widget to the grid layout
         self.gridLayout.addWidget(self.tab_widget, 0, 0)
 
-        # Initial refresh of statistics
-        self.dashboard_widget.refresh_statistics()
+        # Update dashboard display (shows connection status)
+        self.dashboard_widget.update_database_display()
+
+        # Only refresh statistics if database is connected
+        if self.db_manager and self.db_manager.is_connected:
+            self.dashboard_widget.refresh_statistics()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

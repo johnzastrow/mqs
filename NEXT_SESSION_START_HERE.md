@@ -1,130 +1,171 @@
 # 🚀 Next Session - Start Here
 
-**Last Session**: October 5, 2025
-**Current Version**: 0.2.0 → 0.3.0 (in progress)
+**Last Session**: October 6, 2025
+**Current Version**: 0.3.0 ✅ RELEASED
 
 ---
 
-## ✅ What's Complete
+## ✅ Phase 3 Complete!
 
-### Phase 1: Database Architecture ✅
+**Metadata Wizard - ALL 4 STEPS IMPLEMENTED**
+
+### What's Complete
+
+#### Phase 1: Database Architecture ✅
 - All database tables created
 - Validation and initialization working
 - Schema migrations framework ready
 
-### Phase 2: Dashboard ✅
+#### Phase 2: Dashboard ✅
 - Statistics display functional
 - Four drill-down views working
 - Priority recommendations showing
 - **Status**: Fully tested and working
 
-### Phase 3: Wizard Step 1 ✅
-- Essential fields (Title, Abstract, Keywords, Category)
-- Navigation (Next/Previous/Skip/Save)
-- Validation with error messages
-- Keyword tags with add/remove
-- **Status**: Fully tested and working
+#### Phase 3: Wizard - ALL STEPS ✅
+- **Step 1: Essential Fields**
+  - Title, Abstract, Keywords, Category
+  - Validation with error messages
+  - Tag-based keyword input
+- **Step 2: Common Fields**
+  - Contacts table with add/edit/remove
+  - License dropdown with custom option
+  - Constraints fields (use/access)
+  - Language and attribution
+- **Step 3: Optional Fields**
+  - Lineage, purpose, supplemental info
+  - Links table with add/edit/remove
+  - Update frequency, spatial resolution
+- **Step 4: Review & Save**
+  - HTML-formatted summary
+  - Completeness status (Complete/Partial)
+  - Auto-refresh on navigation
+
+#### Database Persistence ✅
+- `save_metadata_to_cache()` - Saves JSON to database
+- `load_metadata_from_cache()` - Auto-loads on layer selection
+- `update_inventory_metadata_status()` - Updates tracking fields
+- Automatic save/load workflow functional
+- Status determination (complete vs partial)
 
 ---
 
-## 🚧 What's In Progress
+## 🎯 What's Next: Phase 4 - Smart Defaults & Layer Selection
 
-### Phase 3: Wizard Steps 2-4 (PENDING)
-Need to implement:
-- **Step 2**: Common fields (contacts, license, constraints)
-- **Step 3**: Optional fields (lineage, links, updates)
-- **Step 4**: Review & Save
+### Priority 1: Layer Selection Widget
 
-### Database Methods (PENDING)
-Need to add:
-- `save_metadata_to_cache()`
-- `load_metadata_from_cache()`
-- `update_inventory_metadata_status()`
+**File**: Create `Plugins/metadata_manager/widgets/layer_list_widget.py`
+
+Features needed:
+1. **Layer List View**
+   - Table showing layers from geospatial_inventory
+   - Columns: Layer Name, Path, Status, Last Updated
+   - Filter by metadata_status (All / None / Partial / Complete)
+   - Sort by directory, status, name
+   - Search/filter by layer name
+
+2. **Integration with Wizard**
+   - Click layer → auto-load in wizard
+   - Save → return to list, update status
+   - "Next" button to go to next layer needing metadata
+   - Progress tracking
+
+3. **UI Layout**
+   ```
+   ┌─────────────────────────────────────┐
+   │ Layers Needing Metadata             │
+   │                                     │
+   │ Filter: [⚪ All ○ None ○ Partial]  │
+   │ Search: [_______________] 🔍       │
+   │                                     │
+   │ ╔═══════════════════════════════╗  │
+   │ ║ Name     │ Status  │ Directory║  │
+   │ ║──────────┼─────────┼──────────║  │
+   │ ║ roads    │ ⚠ None  │ /data/   ║  │
+   │ ║ parcels  │ ⚠ Part. │ /gis/    ║  │
+   │ ║ rivers   │ ✓ Compl.│ /water/  ║  │
+   │ ╚═══════════════════════════════╝  │
+   │                                     │
+   │ [Edit Metadata] [Refresh] [Next]   │
+   └─────────────────────────────────────┘
+   ```
+
+### Priority 2: Smart Defaults from Inventory
+
+**File**: Update `Plugins/metadata_manager/widgets/metadata_wizard.py`
+
+Auto-populate from `geospatial_inventory`:
+- Title: Use `layer_name` (user can edit)
+- Extent: Load from `bbox_*` fields (read-only display)
+- CRS: Load from `crs` field
+- Geometry Type: Load from `geometry_type`
+- Feature Count: Load from `feature_count`
+- File Format: Load from `file_format`
+- Creation Date: Load from `created_datetime`
+
+Add new section in Step 1 or Step 3 showing these auto-populated fields.
+
+### Priority 3: Template System
+
+**File**: Create `Plugins/metadata_manager/widgets/template_widget.py`
+
+Features:
+1. Save current metadata as template
+2. Load template to apply to new layers
+3. Template library management
+4. Apply template to multiple layers at once
+
+### Priority 4: Export to File
+
+**File**: Create `Plugins/metadata_manager/export/` module
+
+Features:
+1. Export to QGIS XML (.qmd sidecar file)
+2. Export to ISO 19115 XML
+3. Write directly to GeoPackage metadata table
+4. Update `in_sync` flag after export
+5. Batch export for all layers
 
 ---
 
-## 📋 Next Tasks (In Order)
+## 📋 Immediate Next Tasks
 
-### 1. Implement Step 2: Common Fields
-**File**: `Plugins/metadata_manager/widgets/metadata_wizard.py`
+1. **Layer List Widget** (Highest Priority)
+   - Design table layout
+   - Implement filter/search
+   - Connect to wizard
+   - Add "Next layer" navigation
 
-Create `Step2Common` class with:
-- Contacts table (add/edit/delete)
-- License dropdown + custom text
-- Use constraints (multiline)
-- Access constraints (multiline)
-- Language dropdown (default: English)
-- Attribution text
+2. **Smart Defaults**
+   - Add inventory data display to wizard
+   - Auto-populate title from layer_name
+   - Show technical metadata (CRS, extent, etc.)
 
-**Reference**: See `docs/metadata_manager/PHASE3_DESIGN.md` for detailed specs
-
-### 2. Implement Step 3: Optional Fields
-Create `Step3Optional` class with:
-- Lineage (multiline)
-- Purpose (multiline)
-- Supplemental info (multiline)
-- Links table (URL, name, description, type)
-- Update frequency (dropdown)
-- Spatial resolution (text)
-
-### 3. Implement Step 4: Review & Save
-Create `Step4Review` class with:
-- Summary display of all metadata
-- Validation status (Complete/Partial)
-- Save button functionality
-- Database persistence
-
-### 4. Add Database Methods
-**File**: `Plugins/metadata_manager/db/manager.py`
-
-Add methods to save/load metadata JSON to/from `metadata_cache` table
-
-### 5. Test Complete Workflow
-- Test all 4 steps
-- Test save/load
-- Test with real inventory data
+3. **Testing**
+   - Test complete workflow: Select layer → Edit → Save → Next
+   - Test with real inventory database
+   - Test bulk metadata creation
 
 ---
 
-## 📁 Key Files to Work On
+## 📁 Key Files Reference
 
-### Primary
-1. `Plugins/metadata_manager/widgets/metadata_wizard.py`
-   - Add Step2Common class
-   - Add Step3Optional class
-   - Add Step4Review class
-   - Wire up save functionality
+### Core Files
+- `Plugins/metadata_manager/MetadataManager.py` - Main plugin
+- `Plugins/metadata_manager/MetadataManager_dockwidget.py` - Dock widget with tabs
+- `Plugins/metadata_manager/widgets/metadata_wizard.py` - Wizard (v0.3.0) ✅
+- `Plugins/metadata_manager/widgets/dashboard_widget.py` - Dashboard ✅
+- `Plugins/metadata_manager/db/manager.py` - Database methods ✅
 
-2. `Plugins/metadata_manager/db/manager.py`
-   - Add `save_metadata_to_cache()` method
-   - Add `load_metadata_from_cache()` method
-   - Add `update_inventory_metadata_status()` method
+### Next Files to Create
+- `Plugins/metadata_manager/widgets/layer_list_widget.py` - Layer selection (NEW)
+- `Plugins/metadata_manager/widgets/template_widget.py` - Templates (NEW)
+- `Plugins/metadata_manager/export/metadata_exporter.py` - File export (NEW)
 
-### Testing
-3. `docs/metadata_manager/testing/WIZARD_TESTING_GUIDE.md`
-   - Add tests for Steps 2-4 when implemented
-
----
-
-## 📚 Documentation to Reference
-
-### Design Documents
-- `docs/metadata_manager/PHASE3_DESIGN.md` - **READ THIS FIRST**
-  - Complete wizard architecture
-  - Field specifications for all steps
-  - Validation rules
-  - Data storage format
-
-### Session History
-- `docs/metadata_manager/SESSION_SUMMARY_2025-10-05.md`
-  - Complete summary of last session
-  - Bugs fixed
-  - Testing results
-  - Next steps details
-
-### Build Status
-- `BUILD_SUMMARY.md` - Overall project status
-- `docs/metadata_manager/CHANGELOG.md` - Detailed changes
+### Documentation
+- `docs/metadata_manager/CHANGELOG.md` - Updated to v0.3.0 ✅
+- `docs/metadata_manager/README.md` - Usage guide
+- `docs/metadata_manager/PHASE4_DESIGN.md` - Design for next phase (CREATE THIS)
 
 ---
 
@@ -136,100 +177,81 @@ cd /mnt/c/Users/br8kw/Github/mqs/Plugins/metadata_manager
 cmd.exe /c install.bat
 ```
 
-### Test Plugin
+### Test Current Features
 1. Restart QGIS
 2. Open Metadata Manager
-3. Click "Metadata Editor" tab
-4. Test wizard interface
+3. **Dashboard Tab**: View statistics
+4. **Metadata Editor Tab**: Create metadata for a layer
+5. Fill all 4 steps
+6. Save → Check database for cached metadata
+7. Reopen → Should auto-load
 
 ---
 
-## 💡 Design Notes for Step 2
+## 🎨 Design Decisions for Phase 4
 
-### Contacts Widget
-Consider making a reusable contact selector:
-
-```python
-class ContactSelector(QtWidgets.QWidget):
-    """Widget for managing metadata contacts."""
-
-    def __init__(self, db_manager, parent=None):
-        # Table showing: Role | Name | Organization
-        # Buttons: Add, Edit, Delete
-        # Dialog for contact details
+### Layer List Integration
+Add new tab "Layer List" or integrate into left sidebar:
+```
+Tabs: [Dashboard] [Layer List] [Metadata Editor]
 ```
 
-### License Field
-Predefined options + custom:
-```python
-licenses = [
-    "-- Select License --",
-    "Public Domain",
-    "CC-BY-4.0",
-    "CC-BY-SA-4.0",
-    "CC0-1.0",
-    "Proprietary",
-    "Custom (specify below)"
-]
+Or:
+```
+┌─────────────┬──────────────────────┐
+│ Layer List  │  Metadata Editor     │
+│             │                      │
+│ [list...]   │  [wizard steps...]   │
+│             │                      │
+└─────────────┴──────────────────────┘
 ```
 
----
-
-## ⚠️ Known Issues (All Fixed)
-- ✅ QFlowLayout import error - **FIXED**
-- ✅ Keyword tags layout - **FIXED**
-- ✅ SQLite multi-statement error - **FIXED**
-
-No outstanding bugs! 🎉
-
----
-
-## 🎯 Session Goals
-
-**Minimum Goal**: Implement Step 2 (Common Fields)
-
-**Target Goal**: Implement Steps 2 and 3
-
-**Stretch Goal**: Complete all Steps 2-4 + database save/load
-
----
-
-## 📝 Testing Checklist (For When Done)
-
-- [ ] Step 2 fields display correctly
-- [ ] Contacts can be added/edited/removed
-- [ ] License selection works
-- [ ] Step 3 fields display correctly
-- [ ] Links can be added/edited/removed
-- [ ] Step 4 review shows all data
-- [ ] Save writes to database
-- [ ] Load reads from database
-- [ ] Validation across all steps works
-- [ ] Navigation between all steps works
-
----
-
-## 🚀 Quick Start
-
-```bash
-# 1. Review design
-cat docs/metadata_manager/PHASE3_DESIGN.md
-
-# 2. Open code
-code Plugins/metadata_manager/widgets/metadata_wizard.py
-
-# 3. Start with Step2Common class (around line 300)
-# Copy Step1Essential as template
-# Replace fields per PHASE3_DESIGN.md
-
-# 4. Test frequently
-./install.bat
-# Restart QGIS
-# Test in plugin
+### Smart Defaults Display
+Show inventory data in collapsible section at top of Step 1:
+```
+╔═══════════════════════════════════╗
+║ Auto-populated from Inventory     ║
+║                                   ║
+║ CRS: EPSG:4326                   ║
+║ Extent: -122.5, 37.7, -122.3, 38║
+║ Features: 1,234                   ║
+║ Format: Shapefile                 ║
+╚═══════════════════════════════════╝
 ```
 
 ---
 
-**Ready to continue! 🎉**
+## 📊 Current Status
 
-Read `SESSION_SUMMARY_2025-10-05.md` for complete context, then start coding Step 2!
+| Phase | Status | Version |
+|-------|--------|---------|
+| Phase 1: Database Architecture | ✅ Complete | 0.2.0 |
+| Phase 2: Dashboard | ✅ Complete | 0.2.0 |
+| Phase 3: Metadata Wizard | ✅ Complete | 0.3.0 |
+| Phase 4: Smart Defaults & Layer Selection | 🔄 Next | 0.4.0 |
+| Phase 5: Templates & Bulk | ⏳ Planned | 0.5.0 |
+| Phase 6: Export & File Writing | ⏳ Planned | 0.6.0 |
+
+---
+
+## 💡 Session Goals for Phase 4
+
+**Minimum Goal**: Layer list widget with basic filtering
+
+**Target Goal**: Layer list + smart defaults from inventory
+
+**Stretch Goal**: Layer list + smart defaults + template system
+
+---
+
+## 🚀 Ready to Start Phase 4!
+
+When you're ready:
+1. Review `docs/metadata_manager/PHASE3_DESIGN.md` for reference
+2. Create `docs/metadata_manager/PHASE4_DESIGN.md` for new features
+3. Start with layer_list_widget.py
+4. Test with real inventory database
+
+**Congratulations on completing Phase 3!** 🎉
+
+The wizard is fully functional with save/load capability. Time to make it even more user-friendly with smart defaults and layer selection!

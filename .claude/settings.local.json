@@ -11,7 +11,13 @@
       "Bash(mkdir:*)",
       "Read(//mnt/c/Users/br8kw/AppData/Roaming/QGIS/QGIS3/profiles/AdvancedUser/python/plugins/**)",
       "Bash(chmod:*)",
-      "Bash(cmd.exe:*)"
+      "Bash(cmd.exe:*)",
+      "Bash(make:*)",
+      "Bash(pyrcc5:*)",
+      "Bash(for line in 110 298 553 877 1206)",
+      "Bash(do echo \"=== Line $line ===\")",
+      "Bash(done)",
+      "Read(///**)"
     ],
     "deny": [],
     "ask": []

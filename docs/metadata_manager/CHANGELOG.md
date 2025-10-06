@@ -7,6 +7,100 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2025-10-06
+
+### Added
+- **Flexible Database Selection**:
+  - Dashboard now has "Select Database..." button with file dialog
+  - Visual connection status display (green background when connected, red when disconnected)
+  - Ability to change databases during active session without restarting plugin
+  - Auto-connect to last used database on startup (optional, not required)
+
+- **Wizard State Management**:
+  - Added `clear_layer()` method to wizard to reset when database changes
+  - Added `clear_data()` methods to all wizard steps (Step1-4) for proper cleanup
+  - Wizard auto-clears when database is changed in dashboard
+
+### Changed
+- Plugin now **loads without requiring database selection** (was blocking before)
+  - Shows "No database selected" message on dashboard
+  - User can work with plugin and select database when ready
+  - Prevents forced workflow interruption on startup
+
+- **Improved User Experience**:
+  - Wizard shows helpful message when trying to select layer without database connection
+  - Message directs user to Dashboard → Select Database...
+  - Prevents confusing error states
+
+### Fixed
+- Database selection workflow was backwards (required on startup, couldn't change)
+- Wizard could hold stale data when database was changed
+- No visual indication of which database was currently connected
+
+## [0.3.0] - 2025-10-06
+
+### Added
+- **Metadata Wizard - All Steps Complete** (Phase 3 COMPLETE):
+  - **Step 1: Essential Fields**
+    * Title field (required)
+    * Abstract field (required, minimum 10 characters)
+    * Keywords with tag-based input and removal
+    * Category dropdown (ISO 19115 topic categories)
+    * Validation with error messages
+  - **Step 2: Common Fields**
+    * Contacts management (add/edit/remove with dialog)
+    * Contact table with Role, Name, Organization columns
+    * License dropdown with common licenses + custom option
+    * Use constraints and access constraints (multiline)
+    * Language dropdown (default: English)
+    * Attribution text field
+    * Validation with warnings for recommended fields
+  - **Step 3: Optional Fields**
+    * Lineage, purpose, and supplemental info (multiline)
+    * Links management (add/edit/remove with dialog)
+    * Links table with Name, URL, Type columns
+    * Update frequency dropdown
+    * Spatial resolution text field
+    * All fields optional
+  - **Step 4: Review & Save**
+    * HTML-formatted summary of all metadata
+    * Completeness status indicator (Complete/Partial)
+    * Auto-refresh summary when navigating to step
+    * Three sections: Essential, Common, Optional fields
+    * Read-only review interface
+  - **Navigation System**
+    * Next/Previous/Skip/Save buttons on all steps
+    * Progress indicator (step X of 4)
+    * Progress bar visualization
+    * Validation before Next (skip validation with Skip button)
+    * Save works from any step
+  - **UI Polish**
+    * Compact table rows (18px) for contacts and links
+    * Scrollable areas for all steps
+    * Color-coded status (green=complete, yellow=partial, orange=warnings)
+    * Tab-based interface (Dashboard + Metadata Editor)
+
+- **Database Persistence** (Phase 3):
+  - `save_metadata_to_cache()` method in DatabaseManager
+    * Saves metadata as JSON to metadata_cache table
+    * Preserves created_datetime on updates
+    * Tracks in_sync status (whether written to file)
+  - `load_metadata_from_cache()` method in DatabaseManager
+    * Loads metadata JSON from cache
+    * Automatically populates all wizard steps
+  - `update_inventory_metadata_status()` method in DatabaseManager
+    * Updates geospatial_inventory tracking fields
+    * Sets metadata_status (complete/partial/none)
+    * Updates metadata_last_updated timestamp
+    * Tracks metadata_target location (cache/file/database)
+  - **Automatic Load on Layer Selection**
+    * Wizard automatically loads cached metadata when layer selected
+    * All fields populated across all steps
+  - **Status Determination**
+    * Complete: Title + Abstract (10+) + Category + Contact + License
+    * Partial: Missing any recommended fields
+    * Status shown in Step 4 review
+
 ### Fixed
 - SQLite multi-statement error during table initialization
   - Fixed `get_metadata_cache_schema()` to return list of statements instead of multi-statement string
@@ -20,29 +114,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added scrollable area for tags with proper wrapping
   - Improved QFlowLayout spacing and wrapping logic
 
-### Added
-- **Metadata Quality Dashboard** (Phase 2 - v0.2.0 COMPLETE):
-  - Dashboard widget showing metadata completion statistics with progress bar
-  - Color-coded visual feedback (green/orange/red)
-  - Four drill-down views: by Directory, Data Type, File Format, and CRS
-  - Priority recommendations showing highest-impact areas needing metadata
-  - Refresh functionality for real-time updates
-  - Five new statistics methods in DatabaseManager
-  - Test infrastructure with unit tests and testing guide
-  - Comprehensive Phase 2 documentation
-
-- **Metadata Wizard** (Phase 3 - v0.3.0 in development):
-  - Progressive disclosure wizard architecture
-  - Step 1: Essential fields (COMPLETE)
-    * Title field (required)
-    * Abstract field (required, minimum 10 characters)
-    * Keywords with tag-based input and removal
-    * Category dropdown (ISO 19115 topic categories)
-  - Navigation system (Next/Previous/Skip/Save buttons)
-  - Validation with error messages
-  - Progress indicator showing current step
-  - Tab-based interface (Dashboard + Metadata Editor)
-  - Steps 2-4 placeholders (pending implementation)
+### Changed
+- Wizard now fully functional with save/load capability
+- Dashboard statistics update when metadata is saved
+- metadata_wizard.py version updated to 0.3.0
 
 - **Installation Scripts**:
   - install.bat for Windows

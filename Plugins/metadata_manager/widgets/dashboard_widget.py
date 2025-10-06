@@ -39,10 +39,36 @@ class DashboardWidget(QtWidgets.QWidget):
         title_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(title_label)
 
-        # Refresh button
+        # Database selection section
+        db_group = QtWidgets.QGroupBox("Inventory Database")
+        db_layout = QtWidgets.QVBoxLayout()
+
+        # Current database display
+        db_info_layout = QtWidgets.QHBoxLayout()
+        db_info_layout.addWidget(QtWidgets.QLabel("<b>Current Database:</b>"))
+
+        self.db_path_label = QtWidgets.QLabel("No database selected")
+        self.db_path_label.setWordWrap(True)
+        self.db_path_label.setStyleSheet("padding: 5px; background: #f0f0f0; border: 1px solid #ccc;")
+        db_info_layout.addWidget(self.db_path_label, 1)
+        db_layout.addLayout(db_info_layout)
+
+        # Database action buttons
+        db_btn_layout = QtWidgets.QHBoxLayout()
+
+        select_db_btn = QtWidgets.QPushButton("Select Database...")
+        select_db_btn.clicked.connect(self.select_database)
+        db_btn_layout.addWidget(select_db_btn)
+
         refresh_btn = QtWidgets.QPushButton("Refresh Statistics")
         refresh_btn.clicked.connect(self.refresh_statistics)
-        layout.addWidget(refresh_btn)
+        db_btn_layout.addWidget(refresh_btn)
+
+        db_btn_layout.addStretch()
+        db_layout.addLayout(db_btn_layout)
+
+        db_group.setLayout(db_layout)
+        layout.addWidget(db_group)
 
         # Overall statistics group
         self.overall_group = self._create_overall_statistics_group()
@@ -145,6 +171,97 @@ class DashboardWidget(QtWidgets.QWidget):
 
         group.setLayout(layout)
         return group
+
+    def select_database(self):
+        """Open file dialog to select inventory database."""
+        file_path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Select Inventory Database (GeoPackage)",
+            "",
+            "GeoPackage (*.gpkg);;All Files (*.*)"
+        )
+
+        if not file_path:
+            return
+
+        # Try to connect to selected database
+        if not self.db_manager.connect(file_path):
+            QtWidgets.QMessageBox.critical(
+                self,
+                "Connection Failed",
+                f"Failed to connect to database:\n{file_path}\n\nCheck the QGIS log for details."
+            )
+            return
+
+        # Validate it's an inventory database
+        is_valid, message = self.db_manager.validate_inventory_database()
+        if not is_valid:
+            QtWidgets.QMessageBox.critical(
+                self,
+                "Invalid Database",
+                f"This database is not a valid Inventory Miner database:\n\n{message}\n\n"
+                f"Please run Inventory Miner first to create the database."
+            )
+            self.db_manager.disconnect()
+            return
+
+        # Check/initialize Metadata Manager tables
+        if not self.db_manager.check_metadata_manager_tables_exist():
+            reply = QtWidgets.QMessageBox.question(
+                self,
+                "Initialize Tables",
+                "This database doesn't have Metadata Manager tables yet.\n\n"
+                "Do you want to initialize them now?",
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+            )
+
+            if reply == QtWidgets.QMessageBox.Yes:
+                success, msg = self.db_manager.initialize_metadata_manager_tables()
+                if not success:
+                    QtWidgets.QMessageBox.critical(
+                        self,
+                        "Initialization Failed",
+                        f"Failed to initialize tables:\n\n{msg}"
+                    )
+                    self.db_manager.disconnect()
+                    return
+            else:
+                self.db_manager.disconnect()
+                return
+
+        # Success! Update UI
+        self.update_database_display(file_path)
+        self.refresh_statistics()
+
+        # Clear wizard state since database changed
+        # (wizard is sibling widget in parent dockwidget)
+        if self.parent() and hasattr(self.parent(), 'wizard_widget'):
+            if hasattr(self.parent().wizard_widget, 'clear_layer'):
+                self.parent().wizard_widget.clear_layer()
+
+        QtWidgets.QMessageBox.information(
+            self,
+            "Database Connected",
+            f"Successfully connected to:\n{file_path}"
+        )
+
+    def update_database_display(self, db_path: str = None):
+        """
+        Update the database path display.
+
+        Args:
+            db_path: Database path to display, or None to show current connection
+        """
+        if db_path is None:
+            if self.db_manager and self.db_manager.is_connected and self.db_manager.db_path:
+                db_path = self.db_manager.db_path
+            else:
+                self.db_path_label.setText("No database selected")
+                self.db_path_label.setStyleSheet("padding: 5px; background: #ffcccc; border: 1px solid #cc0000;")
+                return
+
+        self.db_path_label.setText(db_path)
+        self.db_path_label.setStyleSheet("padding: 5px; background: #ccffcc; border: 1px solid #00cc00;")
 
     def refresh_statistics(self):
         """Refresh all statistics from database."""

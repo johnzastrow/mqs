@@ -41,7 +41,7 @@ from qgis.core import QgsMessageLog, Qgis
 class MetadataManager:
     """QGIS Plugin Implementation."""
 
-    __version__ = "0.1.0"
+    __version__ = "0.3.1"
 
     def __init__(self, iface):
         """Constructor.
@@ -363,11 +363,14 @@ class MetadataManager:
         if not self.pluginIsActive:
             self.pluginIsActive = True
 
-            # Connect to database if not already connected
+            # Try to connect to last database if available (but don't require it)
             if not self.db_manager.is_connected:
-                if not self.select_database():
-                    self.pluginIsActive = False
-                    return
+                settings = QSettings()
+                last_db = settings.value('MetadataManager/last_database', '')
+                if last_db and os.path.exists(last_db):
+                    self.connect_to_database(last_db)
+                # If no last database or connection failed, that's OK
+                # User can select database from the dashboard
 
             # dockwidget may not exist if:
             #    first run of plugin

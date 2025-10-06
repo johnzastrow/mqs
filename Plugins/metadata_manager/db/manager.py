@@ -9,6 +9,7 @@ License: MIT
 """
 
 import sqlite3
+import json
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, List, Tuple
@@ -646,6 +647,166 @@ class DatabaseManager:
                 Qgis.Warning
             )
             return None
+
+    def save_metadata_to_cache(self, layer_path: str, metadata: Dict, in_sync: bool = False) -> bool:
+        """
+        Save metadata to metadata_cache table.
+
+        Args:
+            layer_path: Full path to the layer file
+            metadata: Dictionary containing metadata fields
+            in_sync: Whether metadata has been written to target (file/database)
+
+        Returns:
+            True if saved successfully
+        """
+        if not self.is_connected:
+            return False
+
+        try:
+            cursor = self.connection.cursor()
+
+            # Convert metadata dict to JSON
+            metadata_json = json.dumps(metadata, indent=2)
+
+            # Insert or replace metadata cache entry
+            cursor.execute(
+                """
+                INSERT OR REPLACE INTO metadata_cache (
+                    layer_path,
+                    metadata_json,
+                    created_datetime,
+                    modified_datetime,
+                    in_sync
+                ) VALUES (?, ?,
+                    COALESCE((SELECT created_datetime FROM metadata_cache WHERE layer_path = ?), datetime('now')),
+                    datetime('now'),
+                    ?
+                )
+                """,
+                (layer_path, metadata_json, layer_path, 1 if in_sync else 0)
+            )
+
+            self.connection.commit()
+
+            QgsMessageLog.logMessage(
+                f"Metadata cached for: {layer_path}",
+                "Metadata Manager",
+                Qgis.Info
+            )
+            return True
+
+        except Exception as e:
+            self.connection.rollback()
+            QgsMessageLog.logMessage(
+                f"Error saving metadata to cache: {str(e)}",
+                "Metadata Manager",
+                Qgis.Critical
+            )
+            return False
+
+    def load_metadata_from_cache(self, layer_path: str) -> Optional[Dict]:
+        """
+        Load metadata from metadata_cache table.
+
+        Args:
+            layer_path: Full path to the layer file
+
+        Returns:
+            Dictionary containing metadata or None if not found
+        """
+        if not self.is_connected:
+            return None
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                "SELECT metadata_json FROM metadata_cache WHERE layer_path = ?",
+                (layer_path,)
+            )
+
+            row = cursor.fetchone()
+            if row:
+                metadata = json.loads(row['metadata_json'])
+                QgsMessageLog.logMessage(
+                    f"Metadata loaded from cache: {layer_path}",
+                    "Metadata Manager",
+                    Qgis.Info
+                )
+                return metadata
+            else:
+                return None
+
+        except Exception as e:
+            QgsMessageLog.logMessage(
+                f"Error loading metadata from cache: {str(e)}",
+                "Metadata Manager",
+                Qgis.Warning
+            )
+            return None
+
+    def update_inventory_metadata_status(
+        self,
+        layer_path: str,
+        status: str,
+        target: str = 'file',
+        cached: bool = True
+    ) -> bool:
+        """
+        Update metadata tracking fields in geospatial_inventory table.
+
+        Args:
+            layer_path: Full path to the layer file
+            status: Metadata status ('complete', 'partial', 'none')
+            target: Metadata target location ('file', 'database', 'sidecar')
+            cached: Whether metadata is cached (default True)
+
+        Returns:
+            True if updated successfully
+        """
+        if not self.is_connected:
+            return False
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                """
+                UPDATE geospatial_inventory
+                SET
+                    metadata_status = ?,
+                    metadata_last_updated = datetime('now'),
+                    metadata_target = ?,
+                    metadata_cached = ?
+                WHERE layer_path = ?
+                """,
+                (status, target, 1 if cached else 0, layer_path)
+            )
+
+            self.connection.commit()
+
+            if cursor.rowcount > 0:
+                QgsMessageLog.logMessage(
+                    f"Inventory updated for: {layer_path} (status: {status})",
+                    "Metadata Manager",
+                    Qgis.Info
+                )
+                return True
+            else:
+                QgsMessageLog.logMessage(
+                    f"Layer not found in inventory: {layer_path}",
+                    "Metadata Manager",
+                    Qgis.Warning
+                )
+                return False
+
+        except Exception as e:
+            self.connection.rollback()
+            QgsMessageLog.logMessage(
+                f"Error updating inventory: {str(e)}",
+                "Metadata Manager",
+                Qgis.Critical
+            )
+            return False
 
     def __enter__(self):
         """Context manager entry."""

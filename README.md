@@ -152,9 +152,10 @@ A QGIS Plugin that helps users create, manage, and apply metadata to layers foll
 - **Run Inventory Miner from plugin**: Create/update file catalog without leaving Metadata Manager
 
 **Time-Saving Features:**
-- **Metadata Quality Dashboard** ✅ (Phase 2 - IMPLEMENTED): Statistics by directory, data type, format, CRS with priority recommendations and visual progress. Dashboard shows completion percentage, color-coded status, four drill-down views, and top 5 priority recommendations. Auto-refreshes on startup.
-- **Progressive Disclosure Wizard** (Phase 3 - Planned): Required fields → Common fields → Optional fields with skip navigation and expert mode
+- **Metadata Quality Dashboard** ✅ (Phase 2 - COMPLETE): Statistics by directory, data type, format, CRS with priority recommendations and visual progress. Dashboard shows completion percentage, color-coded status, four drill-down views, and top 5 priority recommendations. Auto-refreshes on startup.
+- **Progressive Disclosure Wizard** ✅ (Phase 3 - COMPLETE): 4-step wizard (Essential → Common → Optional → Review) with skip navigation, validation, contact/link management, and HTML summary. Auto-saves to database cache. Completeness tracking (Complete/Partial status).
 - **Smart Defaults from Inventory** (Phase 4 - Planned): Auto-populate title, CRS, extent, geometry type, field list - user refines instead of entering from scratch
+- **Layer List Widget** (Phase 4 - Planned): Browse and select layers from inventory, filter by status, "Next layer" navigation
 - **Batch template application** (Phase 5 - Planned): Apply templates to multiple layers at once, watch dashboard update in real-time
 
 **Core Features:**
@@ -179,10 +180,11 @@ A QGIS Plugin that helps users create, manage, and apply metadata to layers foll
 
 **Workflow**: Inventory Miner creates `geospatial_catalog.gpkg` → Metadata Manager adds its tables to same database → both tools share single unified database
 
-**Current Status (v0.2.0 in development)**:
+**Current Status (v0.3.0 - October 6, 2025)**:
 - ✅ Phase 1 (COMPLETE): Core database architecture with validation, initialization, and schema upgrades
 - ✅ Phase 2 (COMPLETE): Metadata Quality Dashboard with statistics and drill-down views
-- 🚧 Phase 3-5 (In Progress): Wizard, Smart Defaults, Inventory Panel
+- ✅ Phase 3 (COMPLETE): 4-step metadata wizard with database persistence, contact/link management, and completeness tracking
+- 🚧 Phase 4-6 (Planned): Smart Defaults, Layer List Widget, Templates, Export to File
 
 See `docs/metadata_manager/README.md` for installation details and `docs/metadata_manager/REQUIREMENTS.md` for specifications.
 

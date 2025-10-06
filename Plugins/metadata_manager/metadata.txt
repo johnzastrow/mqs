@@ -4,11 +4,11 @@
 name=Metadata Manager
 qgisMinimumVersion=3.40
 description=Create and manage QGIS layer metadata with reusable templates, organizations, and keywords. Integrates with inventory databases to identify and process layers lacking metadata.
-version=0.2.0
+version=0.3.1
 author=John Zastrow
 email=br8kwall@gmail.com
 
-about=Metadata Manager is a QGIS plugin that simplifies the process of creating and managing layer metadata following QGIS metadata standards. It provides a guided wizard for metadata creation, libraries for reusable components (organizations, contacts, keywords), template system for bulk application, and integration with inventory databases created by the Inventory Miner tool. All persistent data is stored in a user-selected metadatamanager.gpkg GeoPackage database with automatic version tracking and schema upgrades. Supports exporting to QGIS XML format and direct association with GeoPackage layers. Perfect for data managers who need to create comprehensive metadata for large collections of geospatial data.
+about=Metadata Manager is a QGIS plugin that simplifies the process of creating and managing layer metadata following QGIS metadata standards. It provides a 4-step guided wizard for metadata creation (Essential, Common, Optional, Review), with support for contacts, links, keywords, and comprehensive metadata fields. Features automatic save/load from database cache, completeness tracking, and integration with inventory databases created by the Inventory Miner tool. All persistent data is stored in a unified GeoPackage database with automatic version tracking and schema upgrades. Perfect for data managers who need to create comprehensive metadata for large collections of geospatial data.
 
 tracker=https://github.com/johnzastrow/mqs/issues
 repository=https://github.com/johnzastrow/mqs
@@ -17,6 +17,32 @@ repository=https://github.com/johnzastrow/mqs
 # Recommended items:
 hasProcessingProvider=no
 changelog=
+    0.3.1 - Flexible Database Selection
+    - Plugin now loads without requiring database selection
+    - Dashboard database selection controls
+      * "Select Database..." button with file dialog
+      * Visual connection status (green=connected, red=disconnected)
+      * Ability to change databases during session
+    - Wizard improvements
+      * Helpful message when trying to select layer without database
+      * Auto-clear when database changes
+      * Prevents invalid state
+    - Added clear_data() methods to all wizard steps
+    0.3.0 - Phase 3: Complete Wizard Implementation
+    - 4-Step Metadata Wizard (Essential, Common, Optional, Review)
+      * Step 1: Title, abstract, keywords, category
+      * Step 2: Contacts, license, constraints, language, attribution
+      * Step 3: Lineage, purpose, links, update frequency, spatial resolution
+      * Step 4: HTML summary with completeness status (Complete/Partial)
+    - Database Persistence
+      * Save metadata to cache as JSON
+      * Load metadata automatically when layer selected
+      * Update inventory tracking fields (status, last_updated)
+    - UI Enhancements
+      * Contact and link management dialogs
+      * Compact 18px table rows
+      * Color-coded status indicators
+      * Navigation with Next/Previous/Skip/Save
     0.2.0 - Phase 1 & 2 Implementation
     - Phase 1: Core Database Architecture
       * Database management module with connection, validation, and initialization

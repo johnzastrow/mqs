@@ -14,6 +14,8 @@ from qgis.PyQt.QtCore import Qt, pyqtSignal
 from typing import Optional, Dict, List
 import json
 
+from .layer_selector_dialog import LayerSelectorDialog
+
 
 class QFlowLayout(QtWidgets.QLayout):
     """Flow layout for keyword tags."""
@@ -314,6 +316,21 @@ class Step1Essential(StepWidget):
         if index >= 0:
             self.category_combo.setCurrentIndex(index)
 
+    def clear_data(self):
+        """Clear all fields."""
+        self.title_edit.clear()
+        self.abstract_edit.clear()
+        self.keywords.clear()
+
+        # Remove all keyword tags
+        while self.keyword_tags_layout.count():
+            item = self.keyword_tags_layout.takeAt(0)
+            if item.widget():
+                item.widget().deleteLater()
+
+        # Reset category to first item (usually empty/Select)
+        self.category_combo.setCurrentIndex(0)
+
 
 class Step2Common(StepWidget):
     """Step 2: Common metadata fields (contacts, license, constraints)."""
@@ -349,6 +366,9 @@ class Step2Common(StepWidget):
         self.contacts_table.horizontalHeader().setStretchLastSection(True)
         self.contacts_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         self.contacts_table.setMaximumHeight(150)
+        # Make rows more compact
+        self.contacts_table.verticalHeader().setDefaultSectionSize(18)
+        self.contacts_table.verticalHeader().setVisible(False)
         main_layout.addWidget(self.contacts_table)
 
         # Contact buttons
@@ -574,6 +594,18 @@ class Step2Common(StepWidget):
         # Attribution
         self.attribution_edit.setText(data.get('attribution', ''))
 
+    def clear_data(self):
+        """Clear all fields."""
+        self.contacts.clear()
+        self.refresh_contacts_table()
+        self.license_combo.setCurrentIndex(0)
+        self.custom_license_edit.clear()
+        self.use_constraints_edit.clear()
+        self.access_constraints_edit.clear()
+        # Reset language to English (index 0)
+        self.language_combo.setCurrentIndex(0)
+        self.attribution_edit.clear()
+
 
 class ContactDialog(QtWidgets.QDialog):
     """Dialog for adding/editing contact information."""
@@ -668,6 +700,556 @@ class ContactDialog(QtWidgets.QDialog):
         }
 
 
+class Step3Optional(StepWidget):
+    """Step 3: Optional metadata fields (lineage, links, updates)."""
+
+    def __init__(self, db_manager, parent=None):
+        """Initialize optional fields step."""
+        super().__init__(parent)
+        self.db_manager = db_manager
+        self.links = []  # List of link dicts
+        self.setup_ui()
+
+    def setup_ui(self):
+        """Set up the user interface."""
+        layout = QtWidgets.QVBoxLayout(self)
+
+        # Main scroll area for all fields
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+        scroll_widget = QtWidgets.QWidget()
+        scroll_layout = QtWidgets.QVBoxLayout(scroll_widget)
+
+        # Title
+        title_group = QtWidgets.QGroupBox("Step 3: Optional Fields")
+        main_layout = QtWidgets.QVBoxLayout()
+
+        form_layout = QtWidgets.QFormLayout()
+
+        # Lineage
+        self.lineage_edit = QtWidgets.QPlainTextEdit()
+        self.lineage_edit.setPlaceholderText(
+            "Describe the data processing history and sources (e.g., 'Digitized from 2024 aerial imagery at 1:2400 scale')"
+        )
+        self.lineage_edit.setMaximumHeight(70)
+        form_layout.addRow("Lineage:", self.lineage_edit)
+
+        # Purpose
+        self.purpose_edit = QtWidgets.QPlainTextEdit()
+        self.purpose_edit.setPlaceholderText(
+            "Why was this data created? (e.g., 'Support emergency services routing and planning')"
+        )
+        self.purpose_edit.setMaximumHeight(60)
+        form_layout.addRow("Purpose:", self.purpose_edit)
+
+        # Supplemental info
+        self.supplemental_edit = QtWidgets.QPlainTextEdit()
+        self.supplemental_edit.setPlaceholderText(
+            "Any additional information about the dataset"
+        )
+        self.supplemental_edit.setMaximumHeight(60)
+        form_layout.addRow("Supplemental Info:", self.supplemental_edit)
+
+        main_layout.addLayout(form_layout)
+        main_layout.addSpacing(10)
+
+        # Links section
+        links_label = QtWidgets.QLabel("<b>Links</b> (optional)")
+        main_layout.addWidget(links_label)
+
+        # Links table
+        self.links_table = QtWidgets.QTableWidget(0, 3)
+        self.links_table.setHorizontalHeaderLabels(["Name", "URL", "Type"])
+        self.links_table.horizontalHeader().setStretchLastSection(True)
+        self.links_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        self.links_table.setMaximumHeight(120)
+        # Make rows compact
+        self.links_table.verticalHeader().setDefaultSectionSize(18)
+        self.links_table.verticalHeader().setVisible(False)
+        main_layout.addWidget(self.links_table)
+
+        # Link buttons
+        link_btn_layout = QtWidgets.QHBoxLayout()
+        self.add_link_btn = QtWidgets.QPushButton("Add Link")
+        self.add_link_btn.clicked.connect(self.add_link)
+        link_btn_layout.addWidget(self.add_link_btn)
+
+        self.edit_link_btn = QtWidgets.QPushButton("Edit")
+        self.edit_link_btn.clicked.connect(self.edit_link)
+        self.edit_link_btn.setEnabled(False)
+        link_btn_layout.addWidget(self.edit_link_btn)
+
+        self.remove_link_btn = QtWidgets.QPushButton("Remove")
+        self.remove_link_btn.clicked.connect(self.remove_link)
+        self.remove_link_btn.setEnabled(False)
+        link_btn_layout.addWidget(self.remove_link_btn)
+
+        link_btn_layout.addStretch()
+        main_layout.addLayout(link_btn_layout)
+
+        # Enable/disable edit/remove buttons based on selection
+        self.links_table.itemSelectionChanged.connect(self.update_link_buttons)
+
+        main_layout.addSpacing(10)
+
+        # Additional metadata
+        form_layout2 = QtWidgets.QFormLayout()
+
+        # Update frequency
+        self.update_freq_combo = QtWidgets.QComboBox()
+        self.update_freq_combo.addItems([
+            "Unknown",
+            "As Needed",
+            "Continually",
+            "Daily",
+            "Weekly",
+            "Fortnightly",
+            "Monthly",
+            "Quarterly",
+            "Biannually",
+            "Annually",
+            "Not Planned"
+        ])
+        form_layout2.addRow("Update Frequency:", self.update_freq_combo)
+
+        # Spatial resolution
+        self.spatial_res_edit = QtWidgets.QLineEdit()
+        self.spatial_res_edit.setPlaceholderText("e.g., '1:24000' or '10 meters'")
+        form_layout2.addRow("Spatial Resolution:", self.spatial_res_edit)
+
+        main_layout.addLayout(form_layout2)
+
+        title_group.setLayout(main_layout)
+        scroll_layout.addWidget(title_group)
+        scroll_layout.addStretch()
+
+        scroll.setWidget(scroll_widget)
+        layout.addWidget(scroll)
+
+        # Error display (optional fields have no errors)
+        self.error_label = QtWidgets.QLabel()
+        self.error_label.setStyleSheet("color: blue; font-weight: bold;")
+        self.error_label.setWordWrap(True)
+        self.error_label.setText("All fields in this step are optional")
+        layout.addWidget(self.error_label)
+
+    def update_link_buttons(self):
+        """Enable/disable edit and remove buttons based on selection."""
+        has_selection = len(self.links_table.selectedItems()) > 0
+        self.edit_link_btn.setEnabled(has_selection)
+        self.remove_link_btn.setEnabled(has_selection)
+
+    def add_link(self):
+        """Show dialog to add a link."""
+        dialog = LinkDialog(self)
+        if dialog.exec_():
+            link = dialog.get_link()
+            self.links.append(link)
+            self.refresh_links_table()
+
+    def edit_link(self):
+        """Edit selected link."""
+        row = self.links_table.currentRow()
+        if row < 0:
+            return
+
+        link = self.links[row]
+        dialog = LinkDialog(self, link)
+        if dialog.exec_():
+            updated_link = dialog.get_link()
+            self.links[row] = updated_link
+            self.refresh_links_table()
+
+    def remove_link(self):
+        """Remove selected link."""
+        row = self.links_table.currentRow()
+        if row < 0:
+            return
+
+        reply = QtWidgets.QMessageBox.question(
+            self,
+            "Remove Link",
+            "Remove this link?",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        )
+
+        if reply == QtWidgets.QMessageBox.Yes:
+            del self.links[row]
+            self.refresh_links_table()
+
+    def refresh_links_table(self):
+        """Refresh the links table display."""
+        self.links_table.setRowCount(len(self.links))
+        for i, link in enumerate(self.links):
+            self.links_table.setItem(i, 0, QtWidgets.QTableWidgetItem(link.get('name', '')))
+            self.links_table.setItem(i, 1, QtWidgets.QTableWidgetItem(link.get('url', '')))
+            self.links_table.setItem(i, 2, QtWidgets.QTableWidgetItem(link.get('type', '')))
+
+    def validate(self) -> tuple[bool, List[str]]:
+        """Validate optional fields."""
+        # All fields are optional, so always valid
+        return True, []
+
+    def get_data(self) -> Dict:
+        """Get data from optional fields."""
+        return {
+            'lineage': self.lineage_edit.toPlainText().strip(),
+            'purpose': self.purpose_edit.toPlainText().strip(),
+            'supplemental_info': self.supplemental_edit.toPlainText().strip(),
+            'links': self.links.copy(),
+            'update_frequency': self.update_freq_combo.currentText(),
+            'spatial_resolution': self.spatial_res_edit.text().strip()
+        }
+
+    def set_data(self, data: Dict):
+        """Populate optional fields from data."""
+        # Text fields
+        self.lineage_edit.setPlainText(data.get('lineage', ''))
+        self.purpose_edit.setPlainText(data.get('purpose', ''))
+        self.supplemental_edit.setPlainText(data.get('supplemental_info', ''))
+
+        # Links
+        self.links = data.get('links', []).copy()
+        self.refresh_links_table()
+
+        # Update frequency
+        update_freq = data.get('update_frequency', 'Unknown')
+        index = self.update_freq_combo.findText(update_freq)
+        if index >= 0:
+            self.update_freq_combo.setCurrentIndex(index)
+
+        # Spatial resolution
+        self.spatial_res_edit.setText(data.get('spatial_resolution', ''))
+
+    def clear_data(self):
+        """Clear all fields."""
+        self.lineage_edit.clear()
+        self.purpose_edit.clear()
+        self.supplemental_edit.clear()
+        self.links.clear()
+        self.refresh_links_table()
+        # Reset to Unknown (index 0)
+        self.update_freq_combo.setCurrentIndex(0)
+        self.spatial_res_edit.clear()
+
+
+class LinkDialog(QtWidgets.QDialog):
+    """Dialog for adding/editing link information."""
+
+    def __init__(self, parent=None, link=None):
+        """Initialize link dialog."""
+        super().__init__(parent)
+        self.link = link or {}
+        self.setWindowTitle("Link Information")
+        self.setMinimumWidth(500)
+        self.setup_ui()
+
+    def setup_ui(self):
+        """Set up the user interface."""
+        layout = QtWidgets.QVBoxLayout(self)
+
+        form_layout = QtWidgets.QFormLayout()
+
+        # Name
+        self.name_edit = QtWidgets.QLineEdit()
+        self.name_edit.setPlaceholderText("Descriptive name for the link")
+        form_layout.addRow("Name *:", self.name_edit)
+
+        # URL
+        self.url_edit = QtWidgets.QLineEdit()
+        self.url_edit.setPlaceholderText("https://example.com")
+        form_layout.addRow("URL *:", self.url_edit)
+
+        # Type
+        self.type_combo = QtWidgets.QComboBox()
+        self.type_combo.addItems([
+            "Homepage",
+            "Download",
+            "Documentation",
+            "Web Service",
+            "REST API",
+            "WMS Service",
+            "WFS Service",
+            "Metadata",
+            "Related",
+            "Other"
+        ])
+        form_layout.addRow("Type:", self.type_combo)
+
+        # Description
+        self.description_edit = QtWidgets.QPlainTextEdit()
+        self.description_edit.setPlaceholderText("Brief description of this link")
+        self.description_edit.setMaximumHeight(60)
+        form_layout.addRow("Description:", self.description_edit)
+
+        layout.addLayout(form_layout)
+
+        # Load existing link data
+        if self.link:
+            self.name_edit.setText(self.link.get('name', ''))
+            self.url_edit.setText(self.link.get('url', ''))
+            link_type = self.link.get('type', 'Homepage')
+            index = self.type_combo.findText(link_type)
+            if index >= 0:
+                self.type_combo.setCurrentIndex(index)
+            self.description_edit.setPlainText(self.link.get('description', ''))
+
+        # Buttons
+        button_box = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.Ok | QtWidgets.QDialogButtonBox.Cancel
+        )
+        button_box.accepted.connect(self.accept)
+        button_box.rejected.connect(self.reject)
+        layout.addWidget(button_box)
+
+    def accept(self):
+        """Validate and accept dialog."""
+        name = self.name_edit.text().strip()
+        url = self.url_edit.text().strip()
+
+        if not name:
+            QtWidgets.QMessageBox.warning(self, "Required", "Link name is required")
+            return
+        if not url:
+            QtWidgets.QMessageBox.warning(self, "Required", "URL is required")
+            return
+
+        super().accept()
+
+    def get_link(self) -> Dict:
+        """Get link data from dialog."""
+        return {
+            'name': self.name_edit.text().strip(),
+            'url': self.url_edit.text().strip(),
+            'type': self.type_combo.currentText(),
+            'description': self.description_edit.toPlainText().strip()
+        }
+
+
+class Step4Review(StepWidget):
+    """Step 4: Review and save metadata."""
+
+    def __init__(self, wizard, parent=None):
+        """Initialize review step."""
+        super().__init__(parent)
+        self.wizard = wizard
+        self.setup_ui()
+
+    def setup_ui(self):
+        """Set up the user interface."""
+        layout = QtWidgets.QVBoxLayout(self)
+
+        # Title
+        title_group = QtWidgets.QGroupBox("Step 4: Review & Save")
+        main_layout = QtWidgets.QVBoxLayout()
+
+        # Status indicator
+        self.status_label = QtWidgets.QLabel()
+        self.status_label.setStyleSheet("font-size: 14px; font-weight: bold; padding: 10px;")
+        self.status_label.setAlignment(Qt.AlignCenter)
+        main_layout.addWidget(self.status_label)
+
+        # Summary display (scrollable)
+        scroll = QtWidgets.QScrollArea()
+        scroll.setWidgetResizable(True)
+
+        self.summary_text = QtWidgets.QTextEdit()
+        self.summary_text.setReadOnly(True)
+        self.summary_text.setStyleSheet("background-color: #f5f5f5; font-family: monospace;")
+
+        scroll.setWidget(self.summary_text)
+        main_layout.addWidget(scroll)
+
+        # Instructions
+        instructions = QtWidgets.QLabel(
+            "<i>Review your metadata below. Click 'Save' to write metadata to the cache, "
+            "or click 'Previous' to make changes.</i>"
+        )
+        instructions.setWordWrap(True)
+        instructions.setStyleSheet("color: #666; padding: 10px;")
+        main_layout.addWidget(instructions)
+
+        title_group.setLayout(main_layout)
+        layout.addWidget(title_group)
+
+    def refresh_summary(self, metadata: Dict):
+        """
+        Refresh the summary display with current metadata.
+
+        Args:
+            metadata: Dictionary of all metadata from steps 1-3
+        """
+        # Determine completeness
+        is_complete = self.check_completeness(metadata)
+
+        if is_complete:
+            self.status_label.setText("✓ Metadata Complete")
+            self.status_label.setStyleSheet(
+                "font-size: 14px; font-weight: bold; padding: 10px; "
+                "background-color: #d4edda; color: #155724; border-radius: 5px;"
+            )
+        else:
+            self.status_label.setText("⚠ Metadata Partial")
+            self.status_label.setStyleSheet(
+                "font-size: 14px; font-weight: bold; padding: 10px; "
+                "background-color: #fff3cd; color: #856404; border-radius: 5px;"
+            )
+
+        # Build summary text
+        summary = self.build_summary(metadata)
+        self.summary_text.setHtml(summary)
+
+    def check_completeness(self, metadata: Dict) -> bool:
+        """
+        Check if metadata is complete.
+
+        Args:
+            metadata: Dictionary of all metadata
+
+        Returns:
+            True if complete (required + recommended fields filled)
+        """
+        # Required fields (Step 1)
+        if not metadata.get('title'):
+            return False
+        if not metadata.get('abstract') or len(metadata.get('abstract', '')) < 10:
+            return False
+        if not metadata.get('category') or metadata.get('category') == "-- Select Category --":
+            return False
+
+        # Recommended fields (Step 2)
+        if not metadata.get('contacts') or len(metadata.get('contacts', [])) == 0:
+            return False
+        if not metadata.get('license'):
+            return False
+
+        return True
+
+    def build_summary(self, metadata: Dict) -> str:
+        """
+        Build HTML summary of metadata.
+
+        Args:
+            metadata: Dictionary of all metadata
+
+        Returns:
+            HTML string for display
+        """
+        html = "<html><body style='font-family: sans-serif;'>"
+
+        # Step 1: Essential Fields
+        html += "<h3 style='color: #0066cc; border-bottom: 2px solid #0066cc;'>Essential Fields</h3>"
+        html += f"<p><b>Title:</b> {self._escape(metadata.get('title', '<i>Not provided</i>'))}</p>"
+        html += f"<p><b>Abstract:</b><br>{self._escape(metadata.get('abstract', '<i>Not provided</i>'))}</p>"
+
+        keywords = metadata.get('keywords', [])
+        if keywords:
+            html += f"<p><b>Keywords:</b> {', '.join(self._escape(k) for k in keywords)}</p>"
+        else:
+            html += "<p><b>Keywords:</b> <i>None</i></p>"
+
+        html += f"<p><b>Category:</b> {self._escape(metadata.get('category', '<i>Not selected</i>'))}</p>"
+
+        # Step 2: Common Fields
+        html += "<h3 style='color: #0066cc; border-bottom: 2px solid #0066cc; margin-top: 20px;'>Common Fields</h3>"
+
+        contacts = metadata.get('contacts', [])
+        if contacts:
+            html += "<p><b>Contacts:</b></p><ul>"
+            for contact in contacts:
+                role = contact.get('role', '')
+                name = contact.get('name', '')
+                org = contact.get('organization', '')
+                html += f"<li>{self._escape(role)}: {self._escape(name)}"
+                if org:
+                    html += f" ({self._escape(org)})"
+                html += "</li>"
+            html += "</ul>"
+        else:
+            html += "<p><b>Contacts:</b> <i>None</i></p>"
+
+        html += f"<p><b>License:</b> {self._escape(metadata.get('license', '<i>Not specified</i>'))}</p>"
+
+        if metadata.get('use_constraints'):
+            html += f"<p><b>Use Constraints:</b><br>{self._escape(metadata.get('use_constraints'))}</p>"
+
+        if metadata.get('access_constraints'):
+            html += f"<p><b>Access Constraints:</b><br>{self._escape(metadata.get('access_constraints'))}</p>"
+
+        html += f"<p><b>Language:</b> {self._escape(metadata.get('language', 'English'))}</p>"
+
+        if metadata.get('attribution'):
+            html += f"<p><b>Attribution:</b> {self._escape(metadata.get('attribution'))}</p>"
+
+        # Step 3: Optional Fields
+        has_optional = (metadata.get('lineage') or metadata.get('purpose') or
+                       metadata.get('supplemental_info') or metadata.get('links') or
+                       metadata.get('spatial_resolution'))
+
+        if has_optional:
+            html += "<h3 style='color: #0066cc; border-bottom: 2px solid #0066cc; margin-top: 20px;'>Optional Fields</h3>"
+
+            if metadata.get('lineage'):
+                html += f"<p><b>Lineage:</b><br>{self._escape(metadata.get('lineage'))}</p>"
+
+            if metadata.get('purpose'):
+                html += f"<p><b>Purpose:</b><br>{self._escape(metadata.get('purpose'))}</p>"
+
+            if metadata.get('supplemental_info'):
+                html += f"<p><b>Supplemental Info:</b><br>{self._escape(metadata.get('supplemental_info'))}</p>"
+
+            links = metadata.get('links', [])
+            if links:
+                html += "<p><b>Links:</b></p><ul>"
+                for link in links:
+                    name = link.get('name', '')
+                    url = link.get('url', '')
+                    link_type = link.get('type', '')
+                    html += f"<li><b>{self._escape(name)}</b> ({self._escape(link_type)})<br>"
+                    html += f"<a href='{self._escape(url)}'>{self._escape(url)}</a></li>"
+                html += "</ul>"
+
+            update_freq = metadata.get('update_frequency', 'Unknown')
+            if update_freq != 'Unknown':
+                html += f"<p><b>Update Frequency:</b> {self._escape(update_freq)}</p>"
+
+            if metadata.get('spatial_resolution'):
+                html += f"<p><b>Spatial Resolution:</b> {self._escape(metadata.get('spatial_resolution'))}</p>"
+
+        html += "</body></html>"
+        return html
+
+    def _escape(self, text: str) -> str:
+        """
+        Escape HTML special characters.
+
+        Args:
+            text: Text to escape
+
+        Returns:
+            HTML-safe text
+        """
+        if not text:
+            return ""
+        return str(text).replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
+    def validate(self) -> tuple[bool, List[str]]:
+        """Validate review step (always valid)."""
+        return True, []
+
+    def get_data(self) -> Dict:
+        """Review step doesn't contribute new data."""
+        return {}
+
+    def set_data(self, data: Dict):
+        """Review step doesn't need to set data."""
+        pass
+
+    def clear_data(self):
+        """Clear the summary display."""
+        self.summary_display.clear()
+
+
 class MetadataWizard(QtWidgets.QWidget):
     """Main metadata wizard widget with progressive disclosure."""
 
@@ -697,10 +1279,23 @@ class MetadataWizard(QtWidgets.QWidget):
         header.setAlignment(Qt.AlignCenter)
         layout.addWidget(header)
 
-        # Layer info
-        self.layer_label = QtWidgets.QLabel("No layer selected")
-        self.layer_label.setStyleSheet("font-weight: bold; padding: 5px;")
-        layout.addWidget(self.layer_label)
+        # Layer selection
+        layer_select_layout = QtWidgets.QHBoxLayout()
+
+        layer_label = QtWidgets.QLabel("Selected Layer:")
+        layer_select_layout.addWidget(layer_label)
+
+        self.layer_display = QtWidgets.QLabel("No layer selected - Click 'Select Layer' below")
+        self.layer_display.setStyleSheet("padding: 5px; background: #f0f0f0; border: 1px solid #ccc;")
+        self.layer_display.setWordWrap(True)
+        layer_select_layout.addWidget(self.layer_display, 1)
+
+        select_btn = QtWidgets.QPushButton("Select Layer from Inventory")
+        select_btn.clicked.connect(self.select_layer_from_inventory)
+        select_btn.setStyleSheet("font-weight: bold; padding: 8px;")
+        layer_select_layout.addWidget(select_btn)
+
+        layout.addLayout(layer_select_layout)
 
         # Progress indicator
         self.progress_widget = self.create_progress_indicator()
@@ -716,12 +1311,10 @@ class MetadataWizard(QtWidgets.QWidget):
         self.step2 = Step2Common(self.db_manager, self)
         self.step_container.addWidget(self.step2)
 
-        self.step3 = QtWidgets.QLabel("Step 3: Optional Fields\n(Coming next)")
-        self.step3.setAlignment(Qt.AlignCenter)
+        self.step3 = Step3Optional(self.db_manager, self)
         self.step_container.addWidget(self.step3)
 
-        self.step4 = QtWidgets.QLabel("Step 4: Review & Save\n(Coming next)")
-        self.step4.setAlignment(Qt.AlignCenter)
+        self.step4 = Step4Review(self, self)
         self.step_container.addWidget(self.step4)
 
         layout.addWidget(self.step_container)
@@ -770,25 +1363,80 @@ class MetadataWizard(QtWidgets.QWidget):
 
         return widget
 
-    def set_layer(self, layer_path: str, layer_name: str):
+    def select_layer_from_inventory(self):
+        """Open dialog to select layer from inventory database."""
+        # Check database connection first
+        if not self.db_manager or not self.db_manager.is_connected:
+            QtWidgets.QMessageBox.warning(
+                self,
+                "No Database Connected",
+                "Please select an inventory database from the Dashboard tab first.\n\n"
+                "Go to Dashboard → Select Database... to choose your inventory database."
+            )
+            return
+
+        dialog = LayerSelectorDialog(self.db_manager, self)
+
+        if dialog.exec_():
+            layer_path, layer_name = dialog.get_selected_layer()
+            if layer_path:
+                self.current_layer_path = layer_path
+                self.layer_display.setText(f"{layer_name}\n({layer_path})")
+                # Auto-load metadata if exists
+                self.load_metadata(layer_path)
+
+    def set_layer(self, layer_path: str, layer_name: str = None):
         """
         Set the layer to edit metadata for.
 
         Args:
             layer_path: Full path to layer file
-            layer_name: Display name of layer
+            layer_name: Display name of layer (optional)
         """
         self.current_layer_path = layer_path
-        self.layer_label.setText(f"Layer: {layer_name}")
+        if layer_name:
+            self.layer_display.setText(f"{layer_name}\n({layer_path})")
+        else:
+            self.layer_display.setText(layer_path)
 
         # Load existing metadata if available
         self.load_metadata(layer_path)
 
     def load_metadata(self, layer_path: str):
         """Load existing metadata from cache."""
-        # TODO: Query metadata_cache table
-        # For now, start with empty fields
-        pass
+        metadata = self.db_manager.load_metadata_from_cache(layer_path)
+
+        if metadata:
+            # Populate all steps with loaded data
+            if hasattr(self.step1, 'set_data'):
+                self.step1.set_data(metadata)
+            if hasattr(self.step2, 'set_data'):
+                self.step2.set_data(metadata)
+            if hasattr(self.step3, 'set_data'):
+                self.step3.set_data(metadata)
+
+    def clear_layer(self):
+        """
+        Clear currently selected layer and reset wizard.
+
+        Called when database changes to ensure clean state.
+        """
+        # Clear layer selection
+        self.current_layer_path = None
+        self.layer_display.setText("No layer selected - Click 'Select Layer' below")
+
+        # Clear all step data
+        if hasattr(self.step1, 'clear_data'):
+            self.step1.clear_data()
+        if hasattr(self.step2, 'clear_data'):
+            self.step2.clear_data()
+        if hasattr(self.step3, 'clear_data'):
+            self.step3.clear_data()
+
+        # Reset to first step
+        self.current_step = 0
+        self.step_container.setCurrentIndex(0)
+        self.update_navigation()
 
     def next_step(self):
         """Go to next step."""
@@ -805,6 +1453,11 @@ class MetadataWizard(QtWidgets.QWidget):
             self.step_container.setCurrentIndex(self.current_step)
             self.update_navigation()
 
+            # Refresh Step 4 summary when navigating to it
+            if self.current_step == 3 and hasattr(self.step4, 'refresh_summary'):
+                metadata = self.collect_metadata()
+                self.step4.refresh_summary(metadata)
+
     def previous_step(self):
         """Go to previous step."""
         if self.current_step > 0:
@@ -819,6 +1472,11 @@ class MetadataWizard(QtWidgets.QWidget):
             self.step_container.setCurrentIndex(self.current_step)
             self.update_navigation()
 
+            # Refresh Step 4 summary when navigating to it
+            if self.current_step == 3 and hasattr(self.step4, 'refresh_summary'):
+                metadata = self.collect_metadata()
+                self.step4.refresh_summary(metadata)
+
     def update_navigation(self):
         """Update navigation button states."""
         self.prev_btn.setEnabled(self.current_step > 0)
@@ -827,6 +1485,22 @@ class MetadataWizard(QtWidgets.QWidget):
 
         self.progress_label.setText(f"Step {self.current_step + 1} of 4")
         self.progress_bar.setValue(self.current_step + 1)
+
+    def collect_metadata(self) -> Dict:
+        """
+        Collect metadata from all steps.
+
+        Returns:
+            Dictionary containing all metadata
+        """
+        metadata = {}
+        if hasattr(self.step1, 'get_data'):
+            metadata.update(self.step1.get_data())
+        if hasattr(self.step2, 'get_data'):
+            metadata.update(self.step2.get_data())
+        if hasattr(self.step3, 'get_data'):
+            metadata.update(self.step3.get_data())
+        return metadata
 
     def save_metadata(self):
         """Save metadata to cache and target location."""
@@ -839,21 +1513,39 @@ class MetadataWizard(QtWidgets.QWidget):
             return
 
         # Collect data from all steps
-        metadata = {}
-        if hasattr(self.step1, 'get_data'):
-            metadata.update(self.step1.get_data())
-        if hasattr(self.step2, 'get_data'):
-            metadata.update(self.step2.get_data())
+        metadata = self.collect_metadata()
 
-        # TODO: Collect from step3 and step4 when implemented
+        # Determine completeness status
+        is_complete = self.step4.check_completeness(metadata) if hasattr(self.step4, 'check_completeness') else False
+        status = 'complete' if is_complete else 'partial'
 
-        # Save to database
-        # TODO: Implement save_metadata_to_cache method in DatabaseManager
+        # Save to database cache
+        success = self.db_manager.save_metadata_to_cache(
+            self.current_layer_path,
+            metadata,
+            in_sync=False  # Not yet written to file
+        )
+
+        if not success:
+            QtWidgets.QMessageBox.critical(
+                self,
+                "Save Failed",
+                "Failed to save metadata to cache. Check the log for details."
+            )
+            return
+
+        # Update inventory status
+        self.db_manager.update_inventory_metadata_status(
+            self.current_layer_path,
+            status=status,
+            target='cache',  # Will be 'file' when we implement file writing
+            cached=True
+        )
 
         QtWidgets.QMessageBox.information(
             self,
             "Saved",
-            f"Metadata saved for {self.current_layer_path}"
+            f"Metadata saved to cache ({status}):\n{self.current_layer_path}"
         )
 
         self.metadata_saved.emit(self.current_layer_path, metadata)
