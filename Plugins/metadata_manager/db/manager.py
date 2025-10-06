@@ -427,21 +427,21 @@ class DatabaseManager:
             cursor = self.connection.cursor()
             cursor.execute("""
                 SELECT
-                    directory_path,
+                    parent_directory,
                     COUNT(*) as total,
                     SUM(CASE WHEN metadata_status = 'complete' THEN 1 ELSE 0 END) as complete,
                     SUM(CASE WHEN metadata_status = 'partial' THEN 1 ELSE 0 END) as partial,
                     SUM(CASE WHEN metadata_status IS NULL OR metadata_status = 'none' THEN 1 ELSE 0 END) as none
                 FROM geospatial_inventory
                 WHERE retired_datetime IS NULL
-                GROUP BY directory_path
+                GROUP BY parent_directory
                 ORDER BY none DESC, total DESC
             """)
 
             results = []
             for row in cursor.fetchall():
                 results.append({
-                    'directory': row['directory_path'],
+                    'directory': row['parent_directory'] or 'Root',
                     'total': row['total'],
                     'complete': row['complete'],
                     'partial': row['partial'],
