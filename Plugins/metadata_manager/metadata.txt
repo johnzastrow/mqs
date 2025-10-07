@@ -4,11 +4,11 @@
 name=Metadata Manager
 qgisMinimumVersion=3.40
 description=Create and manage QGIS layer metadata with smart defaults, layer browser, and guided wizard. Integrates with inventory databases for efficient metadata workflows.
-version=0.5.0
+version=0.6.0
 author=John Zastrow
 email=br8kwall@gmail.com
 
-about=Metadata Manager is a QGIS plugin that simplifies the process of creating and managing layer metadata following QGIS metadata standards. Phase 4 features include: Smart Defaults (auto-populate from inventory), Layer Browser with filtering and navigation, Next/Previous layer workflow with auto-save. The 4-step guided wizard (Essential, Common, Optional, Review) supports contacts, links, keywords, and comprehensive metadata fields. Features automatic save/load from database cache, completeness tracking, metadata quality dashboard, and integration with inventory databases created by the Inventory Miner tool. All persistent data is stored in a unified GeoPackage database with automatic version tracking and schema upgrades. Perfect for data managers who need to create comprehensive metadata for large collections of geospatial data.
+about=Metadata Manager is a TRUE one-stop-shop for geospatial metadata management! Now includes BUILT-IN inventory creation - no need for separate Processing scripts. Create comprehensive geospatial data inventories directly within the plugin, then seamlessly create metadata for your layers. Features: (1) Integrated Inventory Scanner with full inventory_miner functionality, (2) Smart Defaults auto-populate from ALL metadata sources (FGDC, ESRI, ISO 19115, .qmd, embedded), (3) Layer Browser with filtering and Next/Previous navigation, (4) 4-step guided wizard with contact/link management, (5) Metadata Quality Dashboard with statistics and drill-downs, (6) Auto-save to database cache and .qmd files, (7) Unified GeoPackage database for inventory + metadata. Perfect for data managers who need to catalog AND document large geospatial data collections in a single, efficient workflow.
 
 tracker=https://github.com/johnzastrow/mqs/issues
 repository=https://github.com/johnzastrow/mqs
@@ -17,6 +17,37 @@ repository=https://github.com/johnzastrow/mqs
 # Recommended items:
 hasProcessingProvider=no
 changelog=
+    0.6.0 - MAJOR: Integrated Inventory Creation (One-Stop-Shop!)
+    - NEW: Inventory Integration Tab (FIRST tab in workflow)
+      * Full inventory_miner functionality built into plugin
+      * No need for separate Processing script!
+      * Scan directories for ALL geospatial data
+      * Parse metadata from FGDC, ESRI, ISO 19115, .qmd, embedded
+      * Create/update GeoPackage inventory database
+      * Progress monitoring with real-time log display
+      * Update mode preserves metadata status
+      * All options: vectors, rasters, tables, validation, sidecar tracking
+    - Enhanced Metadata Parsing
+      * Extracts from .shp.xml (FGDC/ESRI format)
+      * Extracts from .xml (ISO 19115/19139 format)
+      * Extracts from .qmd (QGIS native format)
+      * Extracts from embedded GeoPackage metadata
+      * All extracted metadata flows to Smart Defaults
+    - Workflow Integration
+      * 4-tab interface: ① Inventory → ② Dashboard → ③ Layer Browser → ④ Metadata Editor
+      * Inventory completion auto-connects database
+      * Auto-refreshes Dashboard + Layer Browser after scan
+      * Switches to Dashboard tab to show results
+      * "Use Current Database" button for convenience
+    - Background Processing
+      * Inventory runs in separate QThread (non-blocking UI)
+      * Stop button to cancel long-running scans
+      * Real-time progress bar and status updates
+      * Color-coded log display (ERROR=red, WARNING=orange, SUCCESS=green)
+    - New Files
+      * widgets/inventory_widget.py - UI for inventory creation
+      * processors/inventory_runner.py - Background processing
+      * processors/__init__.py - Processors package
     0.5.0 - Phase 4: Smart Defaults and Layer Browser
     - NEW: Smart Defaults from Inventory
       * Auto-populate title (Title Case conversion: "roads_2024" → "Roads 2024")

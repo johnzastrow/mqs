@@ -29,7 +29,7 @@ import os
 from qgis.PyQt import QtGui, QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 
-from .widgets import DashboardWidget, MetadataWizard, LayerListWidget
+from .widgets import DashboardWidget, MetadataWizard, LayerListWidget, InventoryWidget
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'MetadataManager_dockwidget_base.ui'))
@@ -51,6 +51,7 @@ class MetadataManagerDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
 
         # Database manager (set by main plugin)
         self.db_manager = None
+        self.inventory_widget = None
         self.dashboard_widget = None
         self.wizard_widget = None
         self.layer_list_widget = None
@@ -72,6 +73,9 @@ class MetadataManagerDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Create tab widget
         self.tab_widget = QtWidgets.QTabWidget(self)
 
+        # Create inventory widget (FIRST TAB - one-stop-shop)
+        self.inventory_widget = InventoryWidget(db_manager, self)
+
         # Create dashboard widget
         self.dashboard_widget = DashboardWidget(db_manager, self)
 
@@ -81,13 +85,14 @@ class MetadataManagerDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Create wizard widget
         self.wizard_widget = MetadataWizard(db_manager, self)
 
-        # Connect signals for Phase 4 functionality
+        # Connect signals
         self._connect_signals()
 
-        # Add tabs
-        self.tab_widget.addTab(self.dashboard_widget, "Dashboard")
-        self.tab_widget.addTab(self.layer_list_widget, "Layer Browser")
-        self.tab_widget.addTab(self.wizard_widget, "Metadata Editor")
+        # Add tabs (Inventory first for workflow)
+        self.tab_widget.addTab(self.inventory_widget, "① Inventory")
+        self.tab_widget.addTab(self.dashboard_widget, "② Dashboard")
+        self.tab_widget.addTab(self.layer_list_widget, "③ Layer Browser")
+        self.tab_widget.addTab(self.wizard_widget, "④ Metadata Editor")
 
         # Add tab widget to the grid layout
         self.gridLayout.addWidget(self.tab_widget, 0, 0)
@@ -101,7 +106,11 @@ class MetadataManagerDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             self.layer_list_widget.load_layers()
 
     def _connect_signals(self):
-        """Connect widget signals for Phase 4 functionality."""
+        """Connect widget signals."""
+        # Inventory → Database and widgets refresh
+        self.inventory_widget.inventory_created.connect(self.on_inventory_created)
+        self.inventory_widget.inventory_updated.connect(self.on_inventory_updated)
+
         # Wizard save → Dashboard refresh
         self.wizard_widget.metadata_saved.connect(self.on_metadata_saved)
 
@@ -111,6 +120,48 @@ class MetadataManagerDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Layer list navigation → Auto-save and switch layer
         self.layer_list_widget.next_layer_requested.connect(self.on_next_layer_requested)
         self.layer_list_widget.previous_layer_requested.connect(self.on_previous_layer_requested)
+
+    def on_inventory_created(self, gpkg_path: str, layer_name: str):
+        """
+        Handle inventory creation.
+
+        Args:
+            gpkg_path: Path to created GeoPackage
+            layer_name: Name of inventory layer
+        """
+        # Connect to the new database if not already connected
+        if not self.db_manager.is_connected or self.db_manager.db_path != gpkg_path:
+            if self.db_manager.connect(gpkg_path):
+                # Initialize Metadata Manager tables
+                if self.db_manager.initialize_metadata_tables():
+                    # Refresh all widgets
+                    self.dashboard_widget.set_database(self.db_manager)
+                    self.layer_list_widget.set_database(self.db_manager)
+                    self.wizard_widget.db_manager = self.db_manager
+
+                    # Refresh displays
+                    self.dashboard_widget.refresh_statistics()
+                    self.layer_list_widget.load_layers()
+
+                    # Switch to dashboard tab to show results
+                    self.tab_widget.setCurrentWidget(self.dashboard_widget)
+
+    def on_inventory_updated(self, gpkg_path: str, layer_name: str):
+        """
+        Handle inventory update.
+
+        Args:
+            gpkg_path: Path to updated GeoPackage
+            layer_name: Name of inventory layer
+        """
+        # Refresh displays
+        if self.dashboard_widget:
+            self.dashboard_widget.refresh_statistics()
+        if self.layer_list_widget:
+            self.layer_list_widget.load_layers()
+
+        # Switch to dashboard tab to show results
+        self.tab_widget.setCurrentWidget(self.dashboard_widget)
 
     def on_layer_selected(self, layer_path: str, layer_name: str, layer_format: str):
         """
