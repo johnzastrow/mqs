@@ -8,5 +8,6 @@ License: MIT
 """
 
 from .inventory_runner import InventoryRunner
+from .inventory_processor import InventoryProcessor
 
-__all__ = ['InventoryRunner']
+__all__ = ['InventoryRunner', 'InventoryProcessor']

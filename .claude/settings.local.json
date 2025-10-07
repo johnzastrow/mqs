@@ -20,7 +20,8 @@
       "Read(///**)",
       "Read(//mnt/c/**)",
       "Bash(pb_tool compile:*)",
-      "Bash(sqlite3:*)"
+      "Bash(sqlite3:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

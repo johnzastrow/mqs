@@ -12,13 +12,9 @@ __version__ = "0.6.0"
 from qgis.PyQt.QtCore import QObject, pyqtSignal
 from qgis.core import (
     QgsProcessingFeedback,
-    QgsProcessingContext,
-    QgsApplication,
     QgsMessageLog,
     Qgis
 )
-from pathlib import Path
-import sys
 
 
 class InventoryFeedback(QgsProcessingFeedback):
@@ -111,87 +107,32 @@ class InventoryRunner(QObject):
     def run(self):
         """Run the inventory scan."""
         try:
-            # Add Scripts directory to path so we can import inventory_miner
-            scripts_dir = Path(__file__).parents[3] / "Scripts"
-            if str(scripts_dir) not in sys.path:
-                sys.path.insert(0, str(scripts_dir))
-
-            # Import the algorithm
-            try:
-                from inventory_miner import InventoryMinerAlgorithm
-            except ImportError as e:
-                self.error.emit(f"Could not import inventory_miner: {str(e)}\n\n"
-                              f"Please ensure inventory_miner.py is in the Scripts directory:\n"
-                              f"{scripts_dir}")
-                return
-
-            # Create algorithm instance
-            self._algorithm = InventoryMinerAlgorithm()
-            self._algorithm.initAlgorithm()
-
             # Create feedback
             self.feedback = InventoryFeedback(self)
 
-            # Create context
-            context = QgsProcessingContext()
-            context.setFeedback(self.feedback)
+            # Import the processor (now in plugin)
+            from .inventory_processor import InventoryProcessor
 
-            # Prepare algorithm parameters
-            alg_params = {
-                'INPUT_DIRECTORY': self.params['directory'],
-                'OUTPUT_GPKG': self.params['output_gpkg'],
-                'LAYER_NAME': self.params['layer_name'],
-                'UPDATE_MODE': self.params['update_mode'],
-                'INCLUDE_VECTORS': self.params['include_vectors'],
-                'INCLUDE_RASTERS': self.params['include_rasters'],
-                'INCLUDE_TABLES': self.params['include_tables'],
-                'PARSE_METADATA': self.params['parse_metadata'],
-                'INCLUDE_SIDECAR': self.params['include_sidecar'],
-                'VALIDATE_FILES': self.params['validate_files']
-            }
+            # Create processor instance
+            processor = InventoryProcessor(self.params, self.feedback)
 
             self.status_updated.emit("Scanning directory...", {})
 
-            # Run the algorithm
-            results = self._algorithm.processAlgorithm(alg_params, context, self.feedback)
+            # Run the processor
+            results = processor.process()
 
             if self.feedback.isCanceled():
                 self.log_message.emit("WARNING", "Inventory scan was canceled by user")
                 self.error.emit("Scan canceled by user")
                 return
 
-            # Extract results
-            output_layer = results.get('OUTPUT', None)
-            if not output_layer:
-                self.error.emit("No output layer produced by algorithm")
-                return
-
-            # Get statistics (would need to query the output layer)
-            stats = {
+            # Extract statistics
+            stats = results.get('stats', {
                 'total': 0,
                 'vectors': 0,
                 'rasters': 0,
                 'tables': 0
-            }
-
-            # Try to get actual statistics from the created layer
-            try:
-                from qgis.core import QgsVectorLayer
-                layer = QgsVectorLayer(output_layer, "inventory", "ogr")
-                if layer.isValid():
-                    stats['total'] = layer.featureCount()
-
-                    # Count by data type
-                    for feature in layer.getFeatures():
-                        data_type = feature['data_type']
-                        if data_type == 'vector':
-                            stats['vectors'] += 1
-                        elif data_type == 'raster':
-                            stats['rasters'] += 1
-                        elif data_type == 'table':
-                            stats['tables'] += 1
-            except Exception as e:
-                self.log_message.emit("WARNING", f"Could not extract statistics: {str(e)}")
+            })
 
             self.status_updated.emit("Inventory complete", stats)
 
