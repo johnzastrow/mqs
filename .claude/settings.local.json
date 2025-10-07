@@ -17,7 +17,10 @@
       "Bash(for line in 110 298 553 877 1206)",
       "Bash(do echo \"=== Line $line ===\")",
       "Bash(done)",
-      "Read(///**)"
+      "Read(///**)",
+      "Read(//mnt/c/**)",
+      "Bash(pb_tool compile:*)",
+      "Bash(sqlite3:*)"
     ],
     "deny": [],
     "ask": []
