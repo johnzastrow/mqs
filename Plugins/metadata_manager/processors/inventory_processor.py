@@ -852,8 +852,21 @@ class InventoryProcessor:
         ]
 
         for name, type_val in field_defs:
-            field = QgsField(name)
-            field.setType(type_val)
+            # Create QgsField with type and typename parameters
+            # This approach works across QGIS 3.x versions
+            if type_val == QVariant.String:
+                field = QgsField(name, type_val, typename="text", len=255)
+            elif type_val == QVariant.Int:
+                field = QgsField(name, type_val, typename="integer")
+            elif type_val == QVariant.LongLong:
+                field = QgsField(name, type_val, typename="integer64")
+            elif type_val == QVariant.Double:
+                field = QgsField(name, type_val, typename="double", prec=10)
+            elif type_val == QVariant.Bool:
+                field = QgsField(name, type_val, typename="boolean")
+            else:
+                # Fallback for unknown types
+                field = QgsField(name, QVariant.String, typename="text", len=255)
             fields.append(field)
 
         return fields
