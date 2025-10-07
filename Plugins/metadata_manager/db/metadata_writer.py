@@ -206,8 +206,18 @@ class MetadataWriter:
                 # Standalone file: create .qmd with same base name
                 qmd_path = os.path.splitext(layer_path)[0] + '.qmd'
 
-            # Write metadata to XML
-            xml_content = metadata.toXml()
+            # Write metadata to XML using QDomDocument
+            from qgis.PyQt.QtXml import QDomDocument
+
+            doc = QDomDocument()
+            root = doc.createElement("qgis")
+            doc.appendChild(root)
+
+            # Write metadata to the document
+            if not metadata.writeMetadataXml(root, doc):
+                return False, "Failed to convert metadata to XML"
+
+            xml_content = doc.toString(2)  # 2 = indent with 2 spaces
 
             # Ensure directory exists
             os.makedirs(os.path.dirname(qmd_path), exist_ok=True)

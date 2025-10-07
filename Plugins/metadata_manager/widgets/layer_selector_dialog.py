@@ -72,9 +72,9 @@ class LayerSelectorDialog(QtWidgets.QDialog):
         layout.addLayout(filter_layout)
 
         # Layers table
-        self.layers_table = QtWidgets.QTableWidget(0, 5)
+        self.layers_table = QtWidgets.QTableWidget(0, 6)
         self.layers_table.setHorizontalHeaderLabels([
-            "Layer Name", "Status", "Data Type", "Format", "Directory"
+            "Layer Name", "File Name", "Status", "Data Type", "Format", "Directory"
         ])
         self.layers_table.horizontalHeader().setStretchLastSection(True)
         self.layers_table.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
@@ -133,14 +133,16 @@ class LayerSelectorDialog(QtWidgets.QDialog):
             # Store all rows for filtering
             self.all_layers = []
             for row in rows:
-                # Extract full directory path from file_path
+                # Extract full directory path and file name from file_path
                 import os
                 file_path = row['file_path']
                 directory = os.path.dirname(file_path) if file_path else 'Unknown'
+                file_name = os.path.basename(file_path) if file_path else 'Unknown'
 
                 self.all_layers.append({
                     'name': row['layer_name'] or 'Unknown',
                     'path': file_path,
+                    'file_name': file_name,
                     'status': row['status'],
                     'data_type': row['data_type'] or 'Unknown',
                     'format': row['format'] or 'Unknown',
@@ -184,6 +186,9 @@ class LayerSelectorDialog(QtWidgets.QDialog):
             # Layer name
             self.layers_table.setItem(i, 0, QtWidgets.QTableWidgetItem(layer['name']))
 
+            # File name
+            self.layers_table.setItem(i, 1, QtWidgets.QTableWidgetItem(layer['file_name']))
+
             # Status with color coding
             status_item = QtWidgets.QTableWidgetItem(layer['status'].title())
             if layer['status'] == 'complete':
@@ -192,16 +197,16 @@ class LayerSelectorDialog(QtWidgets.QDialog):
                 status_item.setForeground(QtCore.Qt.darkYellow)
             else:
                 status_item.setForeground(QtCore.Qt.red)
-            self.layers_table.setItem(i, 1, status_item)
+            self.layers_table.setItem(i, 2, status_item)
 
             # Data type
-            self.layers_table.setItem(i, 2, QtWidgets.QTableWidgetItem(layer['data_type']))
+            self.layers_table.setItem(i, 3, QtWidgets.QTableWidgetItem(layer['data_type']))
 
             # Format
-            self.layers_table.setItem(i, 3, QtWidgets.QTableWidgetItem(layer['format']))
+            self.layers_table.setItem(i, 4, QtWidgets.QTableWidgetItem(layer['format']))
 
             # Directory
-            self.layers_table.setItem(i, 4, QtWidgets.QTableWidgetItem(layer['directory']))
+            self.layers_table.setItem(i, 5, QtWidgets.QTableWidgetItem(layer['directory']))
 
             # Store full path and format in row data
             self.layers_table.item(i, 0).setData(Qt.UserRole, layer['path'])

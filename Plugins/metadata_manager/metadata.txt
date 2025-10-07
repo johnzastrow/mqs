@@ -4,7 +4,7 @@
 name=Metadata Manager
 qgisMinimumVersion=3.40
 description=Create and manage QGIS layer metadata with reusable templates, organizations, and keywords. Integrates with inventory databases to identify and process layers lacking metadata.
-version=0.4.0
+version=0.4.1
 author=John Zastrow
 email=br8kwall@gmail.com
 
@@ -17,6 +17,12 @@ repository=https://github.com/johnzastrow/mqs
 # Recommended items:
 hasProcessingProvider=no
 changelog=
+    0.4.1 - Bug Fix: Correct XML Serialization
+    - Fixed QgsLayerMetadata XML export
+      * Changed from toXml() (doesn't exist) to writeMetadataXml()
+      * Uses QDomDocument for proper XML serialization
+      * .qmd files now write correctly
+    - Tested with Excel file layer (.xls)
     0.4.0 - MAJOR: Metadata File Writing Implemented
     - CRITICAL: Metadata now writes to actual files!
       * NEW: MetadataWriter class handles all file writing operations
