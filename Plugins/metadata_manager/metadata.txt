@@ -4,7 +4,7 @@
 name=Metadata Manager
 qgisMinimumVersion=3.40
 description=Create and manage QGIS layer metadata with reusable templates, organizations, and keywords. Integrates with inventory databases to identify and process layers lacking metadata.
-version=0.3.6
+version=0.4.0
 author=John Zastrow
 email=br8kwall@gmail.com
 
@@ -17,6 +17,32 @@ repository=https://github.com/johnzastrow/mqs
 # Recommended items:
 hasProcessingProvider=no
 changelog=
+    0.4.0 - MAJOR: Metadata File Writing Implemented
+    - CRITICAL: Metadata now writes to actual files!
+      * NEW: MetadataWriter class handles all file writing operations
+      * NEW: Writes .qmd sidecar files for Shapefiles, GeoTIFFs, etc.
+      * NEW: Embeds metadata in GeoPackage layers using QGIS API
+      * NEW: Automatic format detection (GeoPackage vs .qmd)
+    - Enhanced save workflow
+      * Save to cache first (backup/recovery)
+      * Write to target file (.qmd or embedded)
+      * Track write status (last_written_date, target_location, in_sync)
+      * Update inventory with target location
+    - Container file support
+      * Creates .qmd files named {container}_{layer}.qmd for multi-layer containers
+      * Properly handles GeoPackage/SQLite with multiple layers
+    - Comprehensive metadata conversion
+      * Full QgsLayerMetadata support (title, abstract, keywords, contacts, etc.)
+      * Spatial/temporal extents, CRS, links, rights, licenses, history
+      * ISO 19115 compliant metadata structure
+    - Enhanced error handling
+      * Graceful fallback if write fails (metadata still in cache)
+      * Detailed success/failure messages
+      * Write retry capability from cache
+    - Bug fixes
+      * Fixed layer selector to return file format
+      * Added format tracking to wizard
+      * Fixed metadata status bug for container files
     0.3.6 - Critical Fix: Load SpatiaLite Extension
     - CRITICAL: Fixed "no such function: ST_IsEmpty" error on metadata save
       * Database connection now loads SpatiaLite extension

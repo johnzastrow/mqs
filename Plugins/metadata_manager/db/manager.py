@@ -940,6 +940,68 @@ class DatabaseManager:
             )
             return False, error_msg
 
+    def update_metadata_write_status(
+        self,
+        layer_path: str,
+        layer_name: str,
+        target_location: str,
+        in_sync: bool = True
+    ) -> bool:
+        """
+        Update metadata_cache with write status after writing to target.
+
+        Args:
+            layer_path: Full path to the layer file
+            layer_name: Name of the layer
+            target_location: Path to .qmd file or "embedded:path/to/file.gpkg"
+            in_sync: Whether cache is in sync with target (default True after write)
+
+        Returns:
+            True if updated successfully
+        """
+        if not self.is_connected:
+            return False
+
+        try:
+            cursor = self.connection.cursor()
+            cursor.execute(
+                """
+                UPDATE metadata_cache
+                SET
+                    last_written_date = datetime('now'),
+                    target_location = ?,
+                    in_sync = ?
+                WHERE layer_path = ? AND layer_name = ?
+                """,
+                (target_location, 1 if in_sync else 0, layer_path, layer_name)
+            )
+
+            self.connection.commit()
+
+            if cursor.rowcount > 0:
+                QgsMessageLog.logMessage(
+                    f"Metadata write status updated: {layer_path} / {layer_name}",
+                    "Metadata Manager",
+                    Qgis.Success
+                )
+                return True
+            else:
+                QgsMessageLog.logMessage(
+                    f"No metadata cache entry found to update: {layer_path} / {layer_name}",
+                    "Metadata Manager",
+                    Qgis.Warning
+                )
+                return False
+
+        except Exception as e:
+            self.connection.rollback()
+            QgsMessageLog.logMessage(
+                f"Error updating metadata write status: {str(e)}",
+                "Metadata Manager",
+                Qgis.Critical
+            )
+            return False
+
     def __enter__(self):
         """Context manager entry."""
         return self

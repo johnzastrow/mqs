@@ -41,7 +41,7 @@ from qgis.core import QgsMessageLog, Qgis
 class MetadataManager:
     """QGIS Plugin Implementation."""
 
-    __version__ = "0.3.6"
+    __version__ = "0.4.0"
 
     def __init__(self, iface):
         """Constructor.

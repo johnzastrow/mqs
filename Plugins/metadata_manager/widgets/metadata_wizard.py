@@ -1268,6 +1268,7 @@ class MetadataWizard(QtWidgets.QWidget):
         self.db_manager = db_manager
         self.current_layer_path = None
         self.current_layer_name = None
+        self.current_file_format = None
         self.current_step = 0
         self.setup_ui()
 
@@ -1379,10 +1380,11 @@ class MetadataWizard(QtWidgets.QWidget):
         dialog = LayerSelectorDialog(self.db_manager, self)
 
         if dialog.exec_():
-            layer_path, layer_name = dialog.get_selected_layer()
+            layer_path, layer_name, layer_format = dialog.get_selected_layer()
             if layer_path:
                 self.current_layer_path = layer_path
                 self.current_layer_name = layer_name
+                self.current_file_format = layer_format
                 self.layer_display.setText(f"{layer_name}\n({layer_path})")
                 # Auto-load metadata if exists
                 self.load_metadata(layer_path, layer_name)
@@ -1427,6 +1429,7 @@ class MetadataWizard(QtWidgets.QWidget):
         # Clear layer selection
         self.current_layer_path = None
         self.current_layer_name = None
+        self.current_file_format = None
         self.layer_display.setText("No layer selected - Click 'Select Layer' below")
 
         # Clear all step data
@@ -1523,7 +1526,7 @@ class MetadataWizard(QtWidgets.QWidget):
         is_complete = self.step4.check_completeness(metadata) if hasattr(self.step4, 'check_completeness') else False
         status = 'complete' if is_complete else 'partial'
 
-        # Save to database cache
+        # Save to database cache first
         success = self.db_manager.save_metadata_to_cache(
             self.current_layer_path,
             self.current_layer_name,
@@ -1539,19 +1542,59 @@ class MetadataWizard(QtWidgets.QWidget):
             )
             return
 
-        # Update inventory status
-        self.db_manager.update_inventory_metadata_status(
+        # Write metadata to target file (.qmd or GeoPackage)
+        from ..db.metadata_writer import MetadataWriter
+        writer = MetadataWriter()
+
+        write_success, target_location, write_message = writer.write_metadata(
             self.current_layer_path,
             self.current_layer_name,
-            status=status,
-            target='cache',  # Will be 'file' when we implement file writing
-            cached=True
+            metadata,
+            self.current_file_format
         )
 
-        QtWidgets.QMessageBox.information(
-            self,
-            "Saved",
-            f"Metadata saved to cache ({status}):\n{self.current_layer_path}"
-        )
+        if write_success:
+            # Update metadata_cache with write status
+            self.db_manager.update_metadata_write_status(
+                self.current_layer_path,
+                self.current_layer_name,
+                target_location,
+                in_sync=True
+            )
 
-        self.metadata_saved.emit(self.current_layer_path, metadata)
+            # Update inventory status
+            self.db_manager.update_inventory_metadata_status(
+                self.current_layer_path,
+                self.current_layer_name,
+                status=status,
+                target=target_location,
+                cached=True
+            )
+
+            QtWidgets.QMessageBox.information(
+                self,
+                "Saved",
+                f"Metadata saved ({status}):\n\n"
+                f"Cache: ✓\n"
+                f"Target: {target_location}\n\n"
+                f"Layer: {self.current_layer_name}"
+            )
+
+            self.metadata_saved.emit(self.current_layer_path, metadata)
+        else:
+            # Writing to target failed, but cache succeeded
+            QtWidgets.QMessageBox.warning(
+                self,
+                "Partial Save",
+                f"Metadata saved to cache but failed to write to target:\n\n{write_message}\n\n"
+                f"You can retry writing from the cache later."
+            )
+
+            # Still update inventory with cache status
+            self.db_manager.update_inventory_metadata_status(
+                self.current_layer_path,
+                self.current_layer_name,
+                status=status,
+                target='cache',
+                cached=True
+            )

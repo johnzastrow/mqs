@@ -20,6 +20,7 @@ class LayerSelectorDialog(QtWidgets.QDialog):
         self.db_manager = db_manager
         self.selected_layer_path = None
         self.selected_layer_name = None
+        self.selected_layer_format = None
         self.setWindowTitle("Select Layer from Inventory")
         self.setMinimumWidth(900)
         self.setMinimumHeight(600)
@@ -202,8 +203,9 @@ class LayerSelectorDialog(QtWidgets.QDialog):
             # Directory
             self.layers_table.setItem(i, 4, QtWidgets.QTableWidgetItem(layer['directory']))
 
-            # Store full path in row data
+            # Store full path and format in row data
             self.layers_table.item(i, 0).setData(Qt.UserRole, layer['path'])
+            self.layers_table.item(i, 0).setData(Qt.UserRole + 1, layer['format'])
 
         self.layers_table.setSortingEnabled(True)
 
@@ -227,10 +229,11 @@ class LayerSelectorDialog(QtWidgets.QDialog):
             )
             return
 
-        # Get layer path from selected row
+        # Get layer path and format from selected row
         name_item = self.layers_table.item(current_row, 0)
         self.selected_layer_name = name_item.text()
         self.selected_layer_path = name_item.data(Qt.UserRole)
+        self.selected_layer_format = name_item.data(Qt.UserRole + 1)
 
         super().accept()
 
@@ -239,6 +242,6 @@ class LayerSelectorDialog(QtWidgets.QDialog):
         Get the selected layer.
 
         Returns:
-            Tuple of (layer_path, layer_name) or (None, None)
+            Tuple of (layer_path, layer_name, layer_format) or (None, None, None)
         """
-        return self.selected_layer_path, self.selected_layer_name
+        return self.selected_layer_path, self.selected_layer_name, self.selected_layer_format
