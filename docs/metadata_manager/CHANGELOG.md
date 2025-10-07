@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2025-10-07
+
+### Added
+- **Phase 4: Smart Defaults and Layer Browser** (COMPLETE):
+  - **Smart Defaults from Inventory**:
+    * `get_smart_defaults()` method in DatabaseManager
+    * Auto-populate title (Title Case conversion: "roads_2024" → "Roads 2024")
+    * Auto-populate CRS, extents, geometry type, feature count
+    * Auto-populate field list, raster dimensions in supplemental info
+    * Uses existing GIS metadata if available (title, abstract, keywords, lineage, etc.)
+    * Priority: cached metadata → smart defaults → empty fields
+    * Saves significant time - user refines instead of entering from scratch
+  - **Layer Browser Widget** (new widget):
+    * Embedded layer list with filtering (All, Needs Metadata, Partial, Complete)
+    * Search by layer name or path
+    * Sortable table with 5 columns (Name, Status, Type, Format, Directory)
+    * Next/Previous navigation buttons
+    * Position indicator ("Layer X of Y")
+    * Auto-save before navigation
+    * Color-coded status (green/yellow/red)
+    * Double-click or button to load in wizard
+  - **Enhanced Workflow Integration**:
+    * Three-tab interface: Dashboard, Layer Browser, Metadata Editor
+    * Layer selection loads smart defaults if no cached metadata
+    * Wizard save triggers Dashboard + Layer List refresh
+    * Next/Previous navigation through filtered layers with auto-save
+    * Seamless workflow for processing multiple layers
+  - **Title Case Conversion**:
+    * Smart conversion with abbreviation handling
+    * Handles common GIS terms: GPS, GIS, DEM, DSM, DTM, CRS, UTM, WGS, NAD, etc.
+    * Cleans underscores, hyphens, file extensions
+
+### Changed
+- MetadataWizard v0.4.0: Enhanced `load_metadata()` to use smart defaults
+- MetadataWizard: Added `_convert_smart_defaults_to_metadata()` method
+- MetadataManagerDockWidget: Added `layer_list_widget` and signal connections
+- DatabaseManager: Added `get_smart_defaults()` and `_convert_to_title_case()` methods
+- widgets/__init__.py: Export LayerListWidget
+
+### Impact
+- **Time Savings**: Users no longer start with empty fields for new layers
+- **Efficiency**: Next/Previous navigation eliminates tab switching
+- **Visibility**: Layer Browser shows what needs metadata at a glance
+- **Workflow**: Complete metadata for 50+ layers in single session
+
 ## [0.3.6] - 2025-10-06
 
 ### Fixed

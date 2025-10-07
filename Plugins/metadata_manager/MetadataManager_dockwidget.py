@@ -29,7 +29,7 @@ import os
 from qgis.PyQt import QtGui, QtWidgets, uic
 from qgis.PyQt.QtCore import pyqtSignal
 
-from .widgets import DashboardWidget, MetadataWizard
+from .widgets import DashboardWidget, MetadataWizard, LayerListWidget
 
 FORM_CLASS, _ = uic.loadUiType(os.path.join(
     os.path.dirname(__file__), 'MetadataManager_dockwidget_base.ui'))
@@ -53,6 +53,7 @@ class MetadataManagerDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.db_manager = None
         self.dashboard_widget = None
         self.wizard_widget = None
+        self.layer_list_widget = None
         self.tab_widget = None
 
     def set_database_manager(self, db_manager):
@@ -74,14 +75,18 @@ class MetadataManagerDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Create dashboard widget
         self.dashboard_widget = DashboardWidget(db_manager, self)
 
+        # Create layer list widget
+        self.layer_list_widget = LayerListWidget(db_manager, self)
+
         # Create wizard widget
         self.wizard_widget = MetadataWizard(db_manager, self)
 
-        # Connect wizard save signal to dashboard refresh
-        self.wizard_widget.metadata_saved.connect(self.on_metadata_saved)
+        # Connect signals for Phase 4 functionality
+        self._connect_signals()
 
         # Add tabs
         self.tab_widget.addTab(self.dashboard_widget, "Dashboard")
+        self.tab_widget.addTab(self.layer_list_widget, "Layer Browser")
         self.tab_widget.addTab(self.wizard_widget, "Metadata Editor")
 
         # Add tab widget to the grid layout
@@ -93,12 +98,53 @@ class MetadataManagerDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Only refresh statistics if database is connected
         if self.db_manager and self.db_manager.is_connected:
             self.dashboard_widget.refresh_statistics()
+            self.layer_list_widget.load_layers()
+
+    def _connect_signals(self):
+        """Connect widget signals for Phase 4 functionality."""
+        # Wizard save → Dashboard refresh
+        self.wizard_widget.metadata_saved.connect(self.on_metadata_saved)
+
+        # Layer list selection → Load in wizard
+        self.layer_list_widget.layer_selected.connect(self.on_layer_selected)
+
+        # Layer list navigation → Auto-save and switch layer
+        self.layer_list_widget.next_layer_requested.connect(self.on_next_layer_requested)
+        self.layer_list_widget.previous_layer_requested.connect(self.on_previous_layer_requested)
+
+    def on_layer_selected(self, layer_path: str, layer_name: str, layer_format: str):
+        """
+        Handle layer selection from layer list.
+
+        Args:
+            layer_path: Full path to layer file
+            layer_name: Display name of layer
+            layer_format: File format (for metadata writing)
+        """
+        # Load layer in wizard (with smart defaults if no cached metadata)
+        self.wizard_widget.set_layer(layer_path, layer_name)
+        self.wizard_widget.current_file_format = layer_format
+
+        # Switch to wizard tab
+        self.tab_widget.setCurrentWidget(self.wizard_widget)
+
+    def on_next_layer_requested(self):
+        """Handle request to navigate to next layer (auto-save current first)."""
+        # Save current metadata before navigation
+        if self.wizard_widget.current_layer_path:
+            self.wizard_widget.save_metadata()
+
+    def on_previous_layer_requested(self):
+        """Handle request to navigate to previous layer (auto-save current first)."""
+        # Save current metadata before navigation
+        if self.wizard_widget.current_layer_path:
+            self.wizard_widget.save_metadata()
 
     def on_metadata_saved(self, layer_path, metadata):
         """
         Handle metadata saved event.
 
-        Refreshes dashboard statistics when metadata is saved.
+        Refreshes dashboard statistics and layer list when metadata is saved.
 
         Args:
             layer_path: Path to the layer that was updated
@@ -107,6 +153,10 @@ class MetadataManagerDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         # Refresh dashboard to show updated statistics
         if self.dashboard_widget:
             self.dashboard_widget.refresh_statistics()
+
+        # Refresh layer list to show updated status
+        if self.layer_list_widget:
+            self.layer_list_widget.load_layers()
 
     def closeEvent(self, event):
         self.closingPlugin.emit()

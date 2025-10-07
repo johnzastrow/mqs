@@ -3,12 +3,12 @@
 [general]
 name=Metadata Manager
 qgisMinimumVersion=3.40
-description=Create and manage QGIS layer metadata with reusable templates, organizations, and keywords. Integrates with inventory databases to identify and process layers lacking metadata.
-version=0.4.1
+description=Create and manage QGIS layer metadata with smart defaults, layer browser, and guided wizard. Integrates with inventory databases for efficient metadata workflows.
+version=0.5.0
 author=John Zastrow
 email=br8kwall@gmail.com
 
-about=Metadata Manager is a QGIS plugin that simplifies the process of creating and managing layer metadata following QGIS metadata standards. It provides a 4-step guided wizard for metadata creation (Essential, Common, Optional, Review), with support for contacts, links, keywords, and comprehensive metadata fields. Features automatic save/load from database cache, completeness tracking, and integration with inventory databases created by the Inventory Miner tool. All persistent data is stored in a unified GeoPackage database with automatic version tracking and schema upgrades. Perfect for data managers who need to create comprehensive metadata for large collections of geospatial data.
+about=Metadata Manager is a QGIS plugin that simplifies the process of creating and managing layer metadata following QGIS metadata standards. Phase 4 features include: Smart Defaults (auto-populate from inventory), Layer Browser with filtering and navigation, Next/Previous layer workflow with auto-save. The 4-step guided wizard (Essential, Common, Optional, Review) supports contacts, links, keywords, and comprehensive metadata fields. Features automatic save/load from database cache, completeness tracking, metadata quality dashboard, and integration with inventory databases created by the Inventory Miner tool. All persistent data is stored in a unified GeoPackage database with automatic version tracking and schema upgrades. Perfect for data managers who need to create comprehensive metadata for large collections of geospatial data.
 
 tracker=https://github.com/johnzastrow/mqs/issues
 repository=https://github.com/johnzastrow/mqs
@@ -17,6 +17,27 @@ repository=https://github.com/johnzastrow/mqs
 # Recommended items:
 hasProcessingProvider=no
 changelog=
+    0.5.0 - Phase 4: Smart Defaults and Layer Browser
+    - NEW: Smart Defaults from Inventory
+      * Auto-populate title (Title Case conversion: "roads_2024" → "Roads 2024")
+      * Auto-populate CRS, extents, geometry type, feature count
+      * Auto-populate field list, raster info in supplemental info
+      * Uses existing GIS metadata if available
+      * Saves massive time - user refines instead of entering from scratch
+    - NEW: Layer Browser Widget
+      * Embedded layer list with filtering (All, Needs Metadata, Partial, Complete)
+      * Search by layer name or path
+      * Next/Previous navigation buttons with position indicator
+      * Auto-save before navigation (seamless workflow)
+      * Double-click or select to load in wizard
+    - Enhanced Workflow Integration
+      * Layer selection loads smart defaults if no cached metadata
+      * Wizard → Save → Dashboard + Layer List auto-refresh
+      * Three-tab interface: Dashboard, Layer Browser, Metadata Editor
+      * Next/Previous navigation through filtered layers
+    - Smart Title Case conversion with common abbreviations (GPS, GIS, DEM, etc.)
+    - DatabaseManager: get_smart_defaults() method with comprehensive field mapping
+    - MetadataWizard: _convert_smart_defaults_to_metadata() for format conversion
     0.4.1 - Bug Fix: Correct XML Serialization
     - Fixed QgsLayerMetadata XML export
       * Changed from toXml() (doesn't exist) to writeMetadataXml()

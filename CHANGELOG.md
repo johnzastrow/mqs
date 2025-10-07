@@ -7,12 +7,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0] - 2025-10-07
+
+### Added
+- **Metadata Manager Plugin - Phase 4: Smart Defaults and Layer Browser** (v0.5.0)
+  - **Smart Defaults from Inventory**:
+    * Auto-populate metadata fields from inventory data (title, CRS, extents, geometry, fields, etc.)
+    * Title Case conversion with smart abbreviation handling ("roads_2024" → "Roads 2024")
+    * Priority system: cached metadata → smart defaults → empty fields
+    * Saves massive time - user refines instead of entering from scratch
+  - **Layer Browser Widget**:
+    * Embedded layer list with filtering (All, Needs Metadata, Partial, Complete)
+    * Search by layer name or path
+    * Sortable table with status, data type, format, directory columns
+    * Next/Previous navigation buttons with position indicator ("Layer X of Y")
+    * Auto-save before navigation for seamless workflow
+    * Color-coded status indicators (green/yellow/red)
+  - **Enhanced Workflow Integration**:
+    * Three-tab interface: Dashboard, Layer Browser, Metadata Editor
+    * Layer selection automatically loads smart defaults if no cached metadata
+    * Save triggers automatic refresh of Dashboard + Layer Browser
+    * Complete metadata for 50+ layers in single session workflow
+  - New files: `widgets/layer_list_widget.py` (400+ lines)
+  - Enhanced: `db/manager.py` with `get_smart_defaults()` and `_convert_to_title_case()`
+  - Enhanced: `widgets/metadata_wizard.py` with smart defaults integration
+
+### Changed
+- Updated main README with Phase 4 completion status
+- Updated metadata_manager README and CHANGELOG to v0.5.0
+- metadata_manager plugin version: 0.4.1 → 0.5.0
+
 ### Fixed
 - **Metadata Manager Plugin**: SQLite multi-statement error during database initialization
   - Fixed schema.py to properly split CREATE TABLE and CREATE INDEX statements
   - Plugin now initializes tables successfully without errors
 
-### Added
+### Deprecated
 - **Metadata Manager Plugin - Phase 2: Metadata Quality Dashboard** (v0.2.0 in development)
   - Dashboard widget showing metadata completion statistics with progress bar
   - Four drill-down views: by Directory, Data Type, File Format, and CRS

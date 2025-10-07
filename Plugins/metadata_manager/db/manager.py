@@ -1002,6 +1002,189 @@ class DatabaseManager:
             )
             return False
 
+    def get_smart_defaults(self, layer_path: str, layer_name: str) -> Optional[Dict]:
+        """
+        Get smart default metadata values from inventory table.
+
+        Auto-populates metadata fields from inventory data to save time:
+        - Title (from layer_name, converted to Title Case)
+        - CRS and extents
+        - Geometry type, feature count (vectors)
+        - Raster dimensions, band count (rasters)
+        - Field list
+        - File metadata (creation date, format, etc.)
+        - Existing GIS metadata if available
+
+        Args:
+            layer_path: Full path to the layer file
+            layer_name: Name of the layer
+
+        Returns:
+            Dictionary with smart default values or None on error
+        """
+        if not self.is_connected:
+            return None
+
+        try:
+            cursor = self.connection.cursor()
+
+            # Query comprehensive metadata from inventory
+            cursor.execute(
+                """
+                SELECT
+                    layer_name,
+                    file_path,
+                    format,
+                    data_type,
+                    crs_authid,
+                    native_extent,
+                    wgs84_extent,
+                    geometry_type,
+                    feature_count,
+                    field_names,
+                    field_types,
+                    band_count,
+                    raster_width,
+                    raster_height,
+                    pixel_width,
+                    pixel_height,
+                    nodata_value,
+                    data_types,
+                    file_created,
+                    file_modified,
+                    file_size_mb,
+                    layer_title,
+                    layer_abstract,
+                    keywords,
+                    lineage,
+                    constraints,
+                    url,
+                    contact_info,
+                    parent_directory
+                FROM geospatial_inventory
+                WHERE file_path = ? AND layer_name = ? AND retired_datetime IS NULL
+                """,
+                (layer_path, layer_name)
+            )
+
+            row = cursor.fetchone()
+
+            if not row:
+                QgsMessageLog.logMessage(
+                    f"Layer not found in inventory: {layer_path} / {layer_name}",
+                    "Metadata Manager",
+                    Qgis.Warning
+                )
+                return None
+
+            # Convert layer name to Title Case for title
+            title = self._convert_to_title_case(row['layer_name'])
+
+            # Build smart defaults dictionary
+            defaults = {
+                # Essential fields
+                'title': row['layer_title'] or title,  # Use existing title or generate
+                'abstract': row['layer_abstract'] or '',
+                'keywords': row['keywords'].split(',') if row['keywords'] else [],
+
+                # Spatial information
+                'crs': row['crs_authid'] or '',
+                'native_extent': row['native_extent'],  # Format: "xmin,ymin,xmax,ymax"
+                'wgs84_extent': row['wgs84_extent'],
+
+                # Data type specific
+                'data_type': row['data_type'] or 'dataset',
+                'geometry_type': row['geometry_type'] or '',
+                'feature_count': row['feature_count'],
+                'field_names': row['field_names'].split(',') if row['field_names'] else [],
+                'field_types': row['field_types'].split(',') if row['field_types'] else [],
+
+                # Raster specific
+                'band_count': row['band_count'],
+                'raster_width': row['raster_width'],
+                'raster_height': row['raster_height'],
+                'pixel_width': row['pixel_width'],
+                'pixel_height': row['pixel_height'],
+                'nodata_value': row['nodata_value'],
+                'data_types': row['data_types'],
+
+                # File metadata
+                'format': row['format'] or '',
+                'file_path': row['file_path'],
+                'file_created': row['file_created'],
+                'file_modified': row['file_modified'],
+                'file_size_mb': row['file_size_mb'],
+                'parent_directory': row['parent_directory'],
+
+                # Existing GIS metadata
+                'lineage': row['lineage'] or '',
+                'constraints': row['constraints'] or '',
+                'url': row['url'] or '',
+                'contact_info': row['contact_info'] or ''
+            }
+
+            QgsMessageLog.logMessage(
+                f"Loaded smart defaults for: {layer_name} ({title})",
+                "Metadata Manager",
+                Qgis.Info
+            )
+
+            return defaults
+
+        except Exception as e:
+            QgsMessageLog.logMessage(
+                f"Error getting smart defaults: {str(e)}",
+                "Metadata Manager",
+                Qgis.Critical
+            )
+            return None
+
+    def _convert_to_title_case(self, layer_name: str) -> str:
+        """
+        Convert layer name to Title Case for use as metadata title.
+
+        Examples:
+            "roads_2024" -> "Roads 2024"
+            "us_census_tracts" -> "US Census Tracts"
+            "dem_10m" -> "DEM 10m"
+
+        Args:
+            layer_name: Layer name from database
+
+        Returns:
+            Title Case formatted string
+        """
+        if not layer_name:
+            return "Untitled Layer"
+
+        # Replace underscores and hyphens with spaces
+        title = layer_name.replace('_', ' ').replace('-', ' ')
+
+        # Remove common file extensions
+        extensions = ['.shp', '.tif', '.tiff', '.gpkg', '.geojson', '.kml', '.gml']
+        for ext in extensions:
+            if title.lower().endswith(ext):
+                title = title[:-len(ext)]
+
+        # Convert to title case
+        title = title.title()
+
+        # Fix common abbreviations that should be uppercase
+        abbreviations = {
+            'Usa': 'USA', 'Us': 'US', 'Uk': 'UK',
+            'Dem': 'DEM', 'Dsm': 'DSM', 'Dtm': 'DTM',
+            'Gps': 'GPS', 'Gis': 'GIS', 'Crs': 'CRS',
+            'Utm': 'UTM', 'Wgs': 'WGS', 'Nad': 'NAD',
+            'Id': 'ID', 'Url': 'URL', 'Api': 'API'
+        }
+
+        words = title.split()
+        for i, word in enumerate(words):
+            if word in abbreviations:
+                words[i] = abbreviations[word]
+
+        return ' '.join(words)
+
     def __enter__(self):
         """Context manager entry."""
         return self

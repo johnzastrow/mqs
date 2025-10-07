@@ -1,27 +1,32 @@
-# Quick Reference - Metadata Manager v0.4.1
+# Quick Reference - Metadata Manager v0.5.0
 
 ## Current Status
-✅ **Core workflow complete** - Can create and save metadata to files!
+✅ **Phase 4 complete** - Smart Defaults + Layer Browser with Next/Previous navigation!
 
 ## What Works
 - Database connection
-- Dashboard statistics
-- 4-step wizard
+- Dashboard statistics (Phase 2)
+- 4-step wizard (Phase 3)
 - Save to cache
-- **Write to .qmd files**
-- **Write to GeoPackage**
-- Layer selection
+- Write to .qmd files
+- Write to GeoPackage
+- **Smart defaults from inventory** (Phase 4)
+- **Layer Browser with filtering** (Phase 4)
+- **Next/Previous navigation** (Phase 4)
+- **Auto-save before navigation** (Phase 4)
 - Status tracking
 
 ## Key Files
 
 ### Main Implementation
 ```
-db/metadata_writer.py       - File writing (NEW v0.4.0)
-db/manager.py               - Database operations
-widgets/metadata_wizard.py  - 4-step wizard
-widgets/layer_selector_dialog.py - Layer selection
-widgets/dashboard_widget.py - Statistics dashboard
+db/metadata_writer.py       - File writing (v0.4.0)
+db/manager.py               - Database ops + smart defaults (v0.5.0)
+widgets/metadata_wizard.py  - 4-step wizard + smart defaults (v0.5.0)
+widgets/layer_list_widget.py - Layer browser (NEW v0.5.0)
+widgets/layer_selector_dialog.py - Layer selection (legacy)
+widgets/dashboard_widget.py - Statistics dashboard (v0.2.0)
+MetadataManager_dockwidget.py - Main UI with 3 tabs (v0.5.0)
 ```
 
 ### Documentation
@@ -75,23 +80,44 @@ success, msg = db.fix_incorrect_metadata_status()
 - `keyword_sets` - Keyword collections
 - `templates` - Metadata templates
 
-## Complete Workflow
+## Complete Workflow (v0.5.0)
 
+### Three-Tab Interface
+1. **Dashboard** - See statistics and priorities
+2. **Layer Browser** - Filter, search, navigate layers
+3. **Metadata Editor** - Create/edit metadata with wizard
+
+### Efficient Workflow with Smart Defaults
 ```
 1. Open Metadata Manager
-2. Dashboard shows statistics
-3. Click "Metadata Editor" tab
-4. Click "Select Layer from Inventory"
-5. Choose layer from list
-6. Fill 4 steps:
-   - Step 1: Title, Abstract, Keywords
-   - Step 2: Contacts, License, Constraints
-   - Step 3: Lineage, Links, Purpose
-   - Step 4: Review (shows Complete/Partial)
-7. Click Save
-8. Saves to cache → Writes to file → Updates inventory
-9. Dashboard auto-refreshes
+2. Dashboard shows completion statistics
+3. Click "Layer Browser" tab
+4. Filter: "Needs Metadata"
+5. Search or sort to find target layers
+6. Double-click a layer
+   → Switches to "Metadata Editor" tab
+   → Smart defaults auto-populate from inventory:
+     * Title: "roads_2024" → "Roads 2024" (Title Case)
+     * CRS, extent, geometry type
+     * Field list in supplemental info
+     * Existing GIS metadata if available
+7. Fill 4 steps (most fields already populated!):
+   - Step 1: Confirm title, add abstract, keywords
+   - Step 2: Add contacts, select license
+   - Step 3: Add lineage, links (optional)
+   - Step 4: Review completeness
+8. Click "Next →" button
+   → Auto-saves current layer
+   → Loads next layer with smart defaults
+   → Repeat for next layer
+9. All changes refresh Dashboard + Layer Browser automatically
 ```
+
+### Navigation Features
+- **Next/Previous buttons**: Move through filtered layers
+- **Position indicator**: "Layer 5 of 42"
+- **Auto-save**: Saves before navigation (no data loss)
+- **Filter persistence**: Stays on filtered list (e.g., only "Needs Metadata")
 
 ## Metadata Targets
 

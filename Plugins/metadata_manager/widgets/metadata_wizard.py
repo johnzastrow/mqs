@@ -7,7 +7,7 @@ Author: John Zastrow
 License: MIT
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 from qgis.PyQt import QtWidgets, QtCore, QtGui
 from qgis.PyQt.QtCore import Qt, pyqtSignal
@@ -1408,17 +1408,102 @@ class MetadataWizard(QtWidgets.QWidget):
         self.load_metadata(layer_path, layer_name)
 
     def load_metadata(self, layer_path: str, layer_name: str = None):
-        """Load existing metadata from cache."""
+        """
+        Load metadata for layer.
+
+        Priority:
+        1. Try loading from cache (existing metadata)
+        2. Fall back to smart defaults from inventory (auto-populate)
+        3. Leave fields empty if neither available
+        """
+        # First, try loading from cache (existing metadata)
         metadata = self.db_manager.load_metadata_from_cache(layer_path, layer_name)
 
         if metadata:
-            # Populate all steps with loaded data
+            # Populate all steps with cached metadata
             if hasattr(self.step1, 'set_data'):
                 self.step1.set_data(metadata)
             if hasattr(self.step2, 'set_data'):
                 self.step2.set_data(metadata)
             if hasattr(self.step3, 'set_data'):
                 self.step3.set_data(metadata)
+        else:
+            # No cached metadata - try smart defaults from inventory
+            smart_defaults = self.db_manager.get_smart_defaults(layer_path, layer_name)
+
+            if smart_defaults:
+                # Convert smart defaults to metadata format
+                metadata = self._convert_smart_defaults_to_metadata(smart_defaults)
+
+                # Populate steps with smart defaults
+                if hasattr(self.step1, 'set_data'):
+                    self.step1.set_data(metadata)
+                if hasattr(self.step2, 'set_data'):
+                    self.step2.set_data(metadata)
+                if hasattr(self.step3, 'set_data'):
+                    self.step3.set_data(metadata)
+
+    def _convert_smart_defaults_to_metadata(self, defaults: dict) -> dict:
+        """
+        Convert smart defaults from inventory to metadata format.
+
+        Args:
+            defaults: Smart defaults dictionary from inventory
+
+        Returns:
+            Metadata dictionary in wizard format
+        """
+        metadata = {
+            # Essential fields (Step 1)
+            'title': defaults.get('title', ''),
+            'abstract': defaults.get('abstract', ''),
+            'keywords': defaults.get('keywords', []),
+            'category': '',  # Not in inventory, user must select
+
+            # Common fields (Step 2)
+            'contacts': [],  # User must add contacts
+            'license': '',  # User must select
+            'rights': '',
+            'constraints': defaults.get('constraints', ''),
+            'use_constraints': '',
+            'access_constraints': '',
+            'language': 'English',
+            'attribution': '',
+
+            # Optional fields (Step 3)
+            'lineage': defaults.get('lineage', ''),
+            'purpose': '',
+            'supplemental_info': '',
+            'links': [],
+            'update_frequency': '',
+            'spatial_resolution': ''
+        }
+
+        # Add field list to supplemental info if available
+        if defaults.get('field_names'):
+            field_names = defaults.get('field_names', [])
+            field_types = defaults.get('field_types', [])
+            if field_names and len(field_names) == len(field_types):
+                field_info = ', '.join([f"{name} ({type})"
+                                       for name, type in zip(field_names, field_types)])
+                metadata['supplemental_info'] = f"Fields: {field_info}\n\n"
+
+        # Add raster info to supplemental info if available
+        if defaults.get('band_count'):
+            raster_info = f"Raster: {defaults.get('raster_width')}x{defaults.get('raster_height')} pixels, "
+            raster_info += f"{defaults.get('band_count')} bands"
+            if defaults.get('pixel_width'):
+                raster_info += f", {defaults.get('pixel_width')}m resolution"
+            metadata['supplemental_info'] = metadata.get('supplemental_info', '') + raster_info + "\n\n"
+
+        # Add geometry info to supplemental info if available
+        if defaults.get('geometry_type'):
+            geom_info = f"Geometry: {defaults.get('geometry_type')}"
+            if defaults.get('feature_count'):
+                geom_info += f", {defaults.get('feature_count')} features"
+            metadata['supplemental_info'] = metadata.get('supplemental_info', '') + geom_info
+
+        return metadata
 
     def clear_layer(self):
         """
