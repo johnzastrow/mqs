@@ -111,7 +111,7 @@ tags=metadata, documentation, data management, catalog, inventory, geopackage
 
 homepage=https://github.com/johnzastrow/mqs
 category=Vector
-icon=icon.png
+icon=icon.svg
 # experimental flag
 experimental=True
 
