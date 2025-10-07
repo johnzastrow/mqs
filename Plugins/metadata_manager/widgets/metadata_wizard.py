@@ -1267,6 +1267,7 @@ class MetadataWizard(QtWidgets.QWidget):
         super().__init__(parent)
         self.db_manager = db_manager
         self.current_layer_path = None
+        self.current_layer_name = None
         self.current_step = 0
         self.setup_ui()
 
@@ -1381,9 +1382,10 @@ class MetadataWizard(QtWidgets.QWidget):
             layer_path, layer_name = dialog.get_selected_layer()
             if layer_path:
                 self.current_layer_path = layer_path
+                self.current_layer_name = layer_name
                 self.layer_display.setText(f"{layer_name}\n({layer_path})")
                 # Auto-load metadata if exists
-                self.load_metadata(layer_path)
+                self.load_metadata(layer_path, layer_name)
 
     def set_layer(self, layer_path: str, layer_name: str = None):
         """
@@ -1394,17 +1396,18 @@ class MetadataWizard(QtWidgets.QWidget):
             layer_name: Display name of layer (optional)
         """
         self.current_layer_path = layer_path
+        self.current_layer_name = layer_name
         if layer_name:
             self.layer_display.setText(f"{layer_name}\n({layer_path})")
         else:
             self.layer_display.setText(layer_path)
 
         # Load existing metadata if available
-        self.load_metadata(layer_path)
+        self.load_metadata(layer_path, layer_name)
 
-    def load_metadata(self, layer_path: str):
+    def load_metadata(self, layer_path: str, layer_name: str = None):
         """Load existing metadata from cache."""
-        metadata = self.db_manager.load_metadata_from_cache(layer_path)
+        metadata = self.db_manager.load_metadata_from_cache(layer_path, layer_name)
 
         if metadata:
             # Populate all steps with loaded data
@@ -1423,6 +1426,7 @@ class MetadataWizard(QtWidgets.QWidget):
         """
         # Clear layer selection
         self.current_layer_path = None
+        self.current_layer_name = None
         self.layer_display.setText("No layer selected - Click 'Select Layer' below")
 
         # Clear all step data
@@ -1522,6 +1526,7 @@ class MetadataWizard(QtWidgets.QWidget):
         # Save to database cache
         success = self.db_manager.save_metadata_to_cache(
             self.current_layer_path,
+            self.current_layer_name,
             metadata,
             in_sync=False  # Not yet written to file
         )
@@ -1537,6 +1542,7 @@ class MetadataWizard(QtWidgets.QWidget):
         # Update inventory status
         self.db_manager.update_inventory_metadata_status(
             self.current_layer_path,
+            self.current_layer_name,
             status=status,
             target='cache',  # Will be 'file' when we implement file writing
             cached=True

@@ -680,12 +680,13 @@ class DatabaseManager:
             )
             return None
 
-    def save_metadata_to_cache(self, layer_path: str, metadata: Dict, in_sync: bool = False) -> bool:
+    def save_metadata_to_cache(self, layer_path: str, layer_name: str, metadata: Dict, in_sync: bool = False) -> bool:
         """
         Save metadata to metadata_cache table.
 
         Args:
             layer_path: Full path to the layer file
+            layer_name: Name of the layer (for container files with multiple layers)
             metadata: Dictionary containing metadata fields
             in_sync: Whether metadata has been written to target (file/database)
 
@@ -702,6 +703,7 @@ class DatabaseManager:
             metadata_json = json.dumps(metadata, indent=2)
 
             # Insert or replace metadata cache entry
+            # Use both layer_path AND layer_name to uniquely identify layers
             cursor.execute(
                 """
                 INSERT OR REPLACE INTO metadata_cache (
@@ -712,18 +714,18 @@ class DatabaseManager:
                     last_edited_date,
                     in_sync
                 ) VALUES (?, ?, ?,
-                    COALESCE((SELECT created_date FROM metadata_cache WHERE layer_path = ?), datetime('now')),
+                    COALESCE((SELECT created_date FROM metadata_cache WHERE layer_path = ? AND layer_name = ?), datetime('now')),
                     datetime('now'),
                     ?
                 )
                 """,
-                (layer_path, metadata.get('title', 'Unknown'), metadata_json, layer_path, 1 if in_sync else 0)
+                (layer_path, layer_name, metadata_json, layer_path, layer_name, 1 if in_sync else 0)
             )
 
             self.connection.commit()
 
             QgsMessageLog.logMessage(
-                f"Metadata cached for: {layer_path}",
+                f"Metadata cached for: {layer_path} / {layer_name}",
                 "Metadata Manager",
                 Qgis.Info
             )
@@ -738,12 +740,13 @@ class DatabaseManager:
             )
             return False
 
-    def load_metadata_from_cache(self, layer_path: str) -> Optional[Dict]:
+    def load_metadata_from_cache(self, layer_path: str, layer_name: str = None) -> Optional[Dict]:
         """
         Load metadata from metadata_cache table.
 
         Args:
             layer_path: Full path to the layer file
+            layer_name: Name of the layer (for container files with multiple layers)
 
         Returns:
             Dictionary containing metadata or None if not found
@@ -753,16 +756,25 @@ class DatabaseManager:
 
         try:
             cursor = self.connection.cursor()
-            cursor.execute(
-                "SELECT metadata_json FROM metadata_cache WHERE layer_path = ?",
-                (layer_path,)
-            )
+
+            # Use both layer_path and layer_name to uniquely identify layers
+            if layer_name:
+                cursor.execute(
+                    "SELECT metadata_json FROM metadata_cache WHERE layer_path = ? AND layer_name = ?",
+                    (layer_path, layer_name)
+                )
+            else:
+                # Fallback for backward compatibility if layer_name not provided
+                cursor.execute(
+                    "SELECT metadata_json FROM metadata_cache WHERE layer_path = ?",
+                    (layer_path,)
+                )
 
             row = cursor.fetchone()
             if row:
                 metadata = json.loads(row['metadata_json'])
                 QgsMessageLog.logMessage(
-                    f"Metadata loaded from cache: {layer_path}",
+                    f"Metadata loaded from cache: {layer_path}" + (f" / {layer_name}" if layer_name else ""),
                     "Metadata Manager",
                     Qgis.Info
                 )
@@ -781,6 +793,7 @@ class DatabaseManager:
     def update_inventory_metadata_status(
         self,
         layer_path: str,
+        layer_name: str,
         status: str,
         target: str = 'file',
         cached: bool = True
@@ -790,6 +803,7 @@ class DatabaseManager:
 
         Args:
             layer_path: Full path to the layer file
+            layer_name: Name of the layer (for container files with multiple layers)
             status: Metadata status ('complete', 'partial', 'none')
             target: Metadata target location ('file', 'database', 'sidecar')
             cached: Whether metadata is cached (default True)
@@ -802,6 +816,9 @@ class DatabaseManager:
 
         try:
             cursor = self.connection.cursor()
+
+            # Match both file_path AND layer_name to uniquely identify the layer
+            # This prevents updating all layers in a container file
             cursor.execute(
                 """
                 UPDATE geospatial_inventory
@@ -810,27 +827,30 @@ class DatabaseManager:
                     metadata_last_updated = datetime('now'),
                     metadata_target = ?,
                     metadata_cached = ?
-                WHERE file_path = ?
+                WHERE file_path = ? AND layer_name = ?
                 """,
-                (status, target, 1 if cached else 0, layer_path)
+                (status, target, 1 if cached else 0, layer_path, layer_name)
             )
 
             self.connection.commit()
 
             if cursor.rowcount > 0:
                 QgsMessageLog.logMessage(
-                    f"✅ Inventory updated: {layer_path} → status={status}",
+                    f"✅ Inventory updated: {layer_path} / {layer_name} → status={status}",
                     "Metadata Manager",
                     Qgis.Success
                 )
                 return True
             else:
-                # Try to find similar paths for debugging
-                cursor.execute("SELECT file_path FROM geospatial_inventory WHERE file_path LIKE ? LIMIT 5", (f"%{layer_path.split('/')[-1]}%",))
-                similar = [row['file_path'] for row in cursor.fetchall()]
+                # Try to find similar layers for debugging
+                cursor.execute(
+                    "SELECT file_path, layer_name FROM geospatial_inventory WHERE file_path = ? LIMIT 5",
+                    (layer_path,)
+                )
+                similar = [f"{row['file_path']} / {row['layer_name']}" for row in cursor.fetchall()]
                 QgsMessageLog.logMessage(
-                    f"⚠ Layer not found in inventory: {layer_path}\n"
-                    f"Similar paths in inventory: {similar[:3] if similar else 'none found'}",
+                    f"⚠ Layer not found in inventory: {layer_path} / {layer_name}\n"
+                    f"Layers with same file_path: {similar[:3] if similar else 'none found'}",
                     "Metadata Manager",
                     Qgis.Warning
                 )
@@ -844,6 +864,81 @@ class DatabaseManager:
                 Qgis.Critical
             )
             return False
+
+    def fix_incorrect_metadata_status(self) -> tuple[bool, str]:
+        """
+        Fix layers incorrectly marked as 'complete' when they don't have metadata in cache.
+
+        This can happen if layers were marked as complete due to a bug where all layers
+        in a container file were updated when only one layer had metadata saved.
+
+        Returns:
+            Tuple of (success, message)
+        """
+        if not self.is_connected:
+            return False, "Not connected to database"
+
+        try:
+            cursor = self.connection.cursor()
+
+            # First, check how many layers need fixing
+            cursor.execute("""
+                SELECT COUNT(*) as count
+                FROM geospatial_inventory
+                WHERE metadata_status = 'complete'
+                AND NOT EXISTS (
+                    SELECT 1 FROM metadata_cache
+                    WHERE metadata_cache.layer_path = geospatial_inventory.file_path
+                    AND metadata_cache.layer_name = geospatial_inventory.layer_name
+                )
+            """)
+
+            incorrect_count = cursor.fetchone()[0]
+
+            if incorrect_count == 0:
+                return True, "No incorrect metadata status found. Database is correct."
+
+            QgsMessageLog.logMessage(
+                f"Found {incorrect_count} layers incorrectly marked as 'complete'",
+                "Metadata Manager",
+                Qgis.Info
+            )
+
+            # Fix the incorrect status
+            cursor.execute("""
+                UPDATE geospatial_inventory
+                SET metadata_status = 'none',
+                    metadata_cached = 0,
+                    metadata_last_updated = datetime('now')
+                WHERE metadata_status = 'complete'
+                AND NOT EXISTS (
+                    SELECT 1 FROM metadata_cache
+                    WHERE metadata_cache.layer_path = geospatial_inventory.file_path
+                    AND metadata_cache.layer_name = geospatial_inventory.layer_name
+                )
+            """)
+
+            self.connection.commit()
+
+            message = f"Fixed {cursor.rowcount} layers that were incorrectly marked as 'complete'"
+
+            QgsMessageLog.logMessage(
+                message,
+                "Metadata Manager",
+                Qgis.Success
+            )
+
+            return True, message
+
+        except Exception as e:
+            self.connection.rollback()
+            error_msg = f"Error fixing metadata status: {str(e)}"
+            QgsMessageLog.logMessage(
+                error_msg,
+                "Metadata Manager",
+                Qgis.Critical
+            )
+            return False, error_msg
 
     def __enter__(self):
         """Context manager entry."""
