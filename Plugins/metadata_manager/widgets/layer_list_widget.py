@@ -42,11 +42,11 @@ class LayerListWidget(QtWidgets.QWidget):
     def setup_ui(self):
         """Set up the user interface."""
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(5)
 
-        # Header
-        header = QtWidgets.QLabel("Layer List")
-        header.setStyleSheet("font-weight: bold; font-size: 12pt; padding: 5px;")
+        # Header - compact
+        header = QtWidgets.QLabel("<b>Layer Browser</b>")
         layout.addWidget(header)
 
         # Filter controls

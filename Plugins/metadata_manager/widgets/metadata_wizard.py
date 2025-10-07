@@ -1275,26 +1275,28 @@ class MetadataWizard(QtWidgets.QWidget):
     def setup_ui(self):
         """Set up the user interface."""
         layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(5)
 
-        # Header
-        header = QtWidgets.QLabel("<h2>Metadata Editor</h2>")
+        # Header - compact
+        header = QtWidgets.QLabel("<b>Metadata Editor</b>")
         header.setAlignment(Qt.AlignCenter)
         layout.addWidget(header)
 
-        # Layer selection
+        # Layer selection - compact
         layer_select_layout = QtWidgets.QHBoxLayout()
 
-        layer_label = QtWidgets.QLabel("Selected Layer:")
+        layer_label = QtWidgets.QLabel("<b>Layer:</b>")
         layer_select_layout.addWidget(layer_label)
 
-        self.layer_display = QtWidgets.QLabel("No layer selected - Click 'Select Layer' below")
-        self.layer_display.setStyleSheet("padding: 5px; background: #f0f0f0; border: 1px solid #ccc;")
+        self.layer_display = QtWidgets.QLabel("No layer selected")
+        self.layer_display.setStyleSheet("padding: 3px; background: #f0f0f0; border: 1px solid #ccc;")
         self.layer_display.setWordWrap(True)
         layer_select_layout.addWidget(self.layer_display, 1)
 
-        select_btn = QtWidgets.QPushButton("Select Layer from Inventory")
+        select_btn = QtWidgets.QPushButton("Select Layer")
         select_btn.clicked.connect(self.select_layer_from_inventory)
-        select_btn.setStyleSheet("font-weight: bold; padding: 8px;")
+        select_btn.setStyleSheet("padding: 3px;")
         layer_select_layout.addWidget(select_btn)
 
         layout.addLayout(layer_select_layout)

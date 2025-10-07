@@ -47,19 +47,19 @@ class InventoryWidget(QtWidgets.QWidget):
     def setup_ui(self):
         """Set up the user interface."""
         layout = QtWidgets.QVBoxLayout(self)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(5)
 
-        # Header
-        header = QtWidgets.QLabel("Inventory Integration")
-        header.setStyleSheet("font-weight: bold; font-size: 14pt; padding: 5px;")
+        # Header - compact
+        header = QtWidgets.QLabel("<b>Inventory Integration</b>")
         layout.addWidget(header)
 
-        # Description
+        # Description - compact
         desc = QtWidgets.QLabel(
-            "Scan directories for geospatial data and create/update inventory database.\n"
-            "This database is used by all other tabs (Dashboard, Layer Browser, Metadata Editor)."
+            "Scan directories for geospatial data. Creates/updates database used by other tabs."
         )
         desc.setWordWrap(True)
-        desc.setStyleSheet("padding: 5px; background-color: #E3F2FD; border-radius: 3px;")
+        desc.setStyleSheet("padding: 3px; background-color: #E3F2FD; font-size: 9pt;")
         layout.addWidget(desc)
 
         # Settings group
@@ -164,8 +164,8 @@ class InventoryWidget(QtWidgets.QWidget):
         # Control buttons
         control_layout = QtWidgets.QHBoxLayout()
 
-        self.run_btn = QtWidgets.QPushButton("▶ Run Inventory Scan")
-        self.run_btn.setStyleSheet("font-weight: bold; padding: 8px;")
+        self.run_btn = QtWidgets.QPushButton("▶ Run Scan")
+        self.run_btn.setStyleSheet("font-weight: bold; padding: 5px;")
         self.run_btn.clicked.connect(self.run_inventory)
         control_layout.addWidget(self.run_btn)
 
@@ -176,54 +176,61 @@ class InventoryWidget(QtWidgets.QWidget):
 
         control_layout.addStretch()
 
-        self.use_current_btn = QtWidgets.QPushButton("Use Current Database")
+        self.use_current_btn = QtWidgets.QPushButton("Use Current DB")
         self.use_current_btn.setToolTip("Use the currently connected database")
         self.use_current_btn.clicked.connect(self.use_current_database)
         control_layout.addWidget(self.use_current_btn)
 
         layout.addLayout(control_layout)
 
-        # Progress group
+        # Progress group - compact
         progress_group = QtWidgets.QGroupBox("Progress")
         progress_layout = QtWidgets.QVBoxLayout()
+        progress_layout.setContentsMargins(5, 5, 5, 5)
+        progress_layout.setSpacing(3)
 
         # Progress bar
         self.progress_bar = QtWidgets.QProgressBar()
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
+        self.progress_bar.setMaximumHeight(18)
         progress_layout.addWidget(self.progress_bar)
 
-        # Status label
+        # Status and stats in horizontal layout
+        info_layout = QtWidgets.QHBoxLayout()
         self.status_label = QtWidgets.QLabel("Ready to scan")
         self.status_label.setStyleSheet("font-weight: bold;")
-        progress_layout.addWidget(self.status_label)
+        info_layout.addWidget(self.status_label)
 
-        # Statistics display
         self.stats_label = QtWidgets.QLabel("")
-        progress_layout.addWidget(self.stats_label)
+        info_layout.addWidget(self.stats_label)
+        info_layout.addStretch()
+        progress_layout.addLayout(info_layout)
 
         progress_group.setLayout(progress_layout)
         layout.addWidget(progress_group)
 
-        # Log display
+        # Log display - scrollable and compact
         log_group = QtWidgets.QGroupBox("Log")
         log_layout = QtWidgets.QVBoxLayout()
+        log_layout.setContentsMargins(5, 5, 5, 5)
+        log_layout.setSpacing(3)
 
         self.log_text = QtWidgets.QTextEdit()
         self.log_text.setReadOnly(True)
-        self.log_text.setMaximumHeight(200)
-        self.log_text.setStyleSheet("font-family: monospace; font-size: 9pt;")
+        self.log_text.setMaximumHeight(120)
+        self.log_text.setStyleSheet("font-family: monospace; font-size: 8pt;")
         log_layout.addWidget(self.log_text)
 
         log_buttons = QtWidgets.QHBoxLayout()
-        clear_log_btn = QtWidgets.QPushButton("Clear Log")
+        clear_log_btn = QtWidgets.QPushButton("Clear")
         clear_log_btn.clicked.connect(self.log_text.clear)
         log_buttons.addWidget(clear_log_btn)
         log_buttons.addStretch()
         log_layout.addLayout(log_buttons)
 
         log_group.setLayout(log_layout)
-        layout.addWidget(log_group)
+        layout.addWidget(log_group, 1)
 
         layout.addStretch()
 

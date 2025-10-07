@@ -32,10 +32,11 @@ class DashboardWidget(QtWidgets.QWidget):
     def setup_ui(self):
         """Set up the user interface."""
         layout = QtWidgets.QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(5)
 
-        # Title
-        title_label = QtWidgets.QLabel("<h2>Metadata Quality Dashboard</h2>")
+        # Title - more compact
+        title_label = QtWidgets.QLabel("<b>Metadata Quality Dashboard</b>")
         title_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(title_label)
 
@@ -74,9 +75,17 @@ class DashboardWidget(QtWidgets.QWidget):
         self.overall_group = self._create_overall_statistics_group()
         layout.addWidget(self.overall_group)
 
-        # Tab widget for drill-down views
+        # Tab widget for drill-down views (scrollable)
+        scroll_area = QtWidgets.QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setFrameShape(QtWidgets.QFrame.NoFrame)
+
+        tab_container = QtWidgets.QWidget()
+        tab_layout = QtWidgets.QVBoxLayout(tab_container)
+        tab_layout.setContentsMargins(0, 0, 0, 0)
+
         self.tab_widget = QtWidgets.QTabWidget()
-        layout.addWidget(self.tab_widget)
+        tab_layout.addWidget(self.tab_widget)
 
         # Create tabs
         self.directory_tab = self._create_drill_down_tab("Directory")
@@ -91,40 +100,48 @@ class DashboardWidget(QtWidgets.QWidget):
         self.crs_tab = self._create_drill_down_tab("CRS")
         self.tab_widget.addTab(self.crs_tab, "By CRS")
 
-        # Priority recommendations group
+        # Priority recommendations group - compact
         self.recommendations_group = self._create_recommendations_group()
-        layout.addWidget(self.recommendations_group)
+        tab_layout.addWidget(self.recommendations_group)
 
-        # Stretch to fill space
-        layout.addStretch()
+        scroll_area.setWidget(tab_container)
+        layout.addWidget(scroll_area, 1)
 
     def _create_overall_statistics_group(self) -> QtWidgets.QGroupBox:
         """Create overall statistics group box."""
         group = QtWidgets.QGroupBox("Overall Statistics")
         layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(3)
 
-        # Progress bar
+        # Progress bar - more compact
         self.progress_bar = QtWidgets.QProgressBar()
         self.progress_bar.setMinimum(0)
         self.progress_bar.setMaximum(100)
         self.progress_bar.setFormat("%p% Complete")
+        self.progress_bar.setMaximumHeight(18)
         layout.addWidget(self.progress_bar)
 
-        # Statistics labels
-        self.total_label = QtWidgets.QLabel("Total Layers: -")
+        # Statistics in horizontal layout for space efficiency
+        stats_layout = QtWidgets.QHBoxLayout()
+
+        self.total_label = QtWidgets.QLabel("Total: -")
         self.complete_label = QtWidgets.QLabel("Complete: -")
         self.partial_label = QtWidgets.QLabel("Partial: -")
-        self.none_label = QtWidgets.QLabel("No Metadata: -")
+        self.none_label = QtWidgets.QLabel("None: -")
 
-        # Apply styling
+        # Apply compact styling
         self.complete_label.setStyleSheet("color: green; font-weight: bold;")
         self.partial_label.setStyleSheet("color: orange; font-weight: bold;")
         self.none_label.setStyleSheet("color: red; font-weight: bold;")
 
-        layout.addWidget(self.total_label)
-        layout.addWidget(self.complete_label)
-        layout.addWidget(self.partial_label)
-        layout.addWidget(self.none_label)
+        stats_layout.addWidget(self.total_label)
+        stats_layout.addWidget(self.complete_label)
+        stats_layout.addWidget(self.partial_label)
+        stats_layout.addWidget(self.none_label)
+        stats_layout.addStretch()
+
+        layout.addLayout(stats_layout)
 
         group.setLayout(layout)
         return group
@@ -168,9 +185,11 @@ class DashboardWidget(QtWidgets.QWidget):
         """Create priority recommendations group box."""
         group = QtWidgets.QGroupBox("Priority Recommendations")
         layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(5, 5, 5, 5)
 
         self.recommendations_list = QtWidgets.QListWidget()
         self.recommendations_list.setAlternatingRowColors(True)
+        self.recommendations_list.setMaximumHeight(100)
         layout.addWidget(self.recommendations_list)
 
         group.setLayout(layout)
