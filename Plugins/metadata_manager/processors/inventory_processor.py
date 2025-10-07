@@ -34,6 +34,7 @@ from qgis.core import (
     Qgis
 )
 from qgis.PyQt.QtCore import QVariant
+import warnings
 
 
 class InventoryProcessor:
@@ -852,22 +853,42 @@ class InventoryProcessor:
         ]
 
         for name, type_val in field_defs:
-            # Create QgsField with type and typename parameters
-            # This approach works across QGIS 3.x versions
-            if type_val == QVariant.String:
-                field = QgsField(name, type_val, typename="text", len=255)
-            elif type_val == QVariant.Int:
-                field = QgsField(name, type_val, typename="integer")
-            elif type_val == QVariant.LongLong:
-                field = QgsField(name, type_val, typename="integer64")
-            elif type_val == QVariant.Double:
-                field = QgsField(name, type_val, typename="double", prec=10)
-            elif type_val == QVariant.Bool:
-                field = QgsField(name, type_val, typename="boolean")
-            else:
-                # Fallback for unknown types
-                field = QgsField(name, QVariant.String, typename="text", len=255)
+            # Use the simple constructor for QgsField to remain compatible
+            # across PyQGIS versions. Some builds emit a DeprecationWarning
+            # for the constructor; suppress that here while still creating
+            # the field. If the two-arg constructor is not available, fall
+            # back to the one-arg constructor.
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", DeprecationWarning)
+                try:
+                    field = QgsField(name, type_val)
+                except TypeError:
+                    # Fallback: construct using only the name and default type
+                    field = QgsField(name)
             fields.append(field)
+
+            # TODO: Explicit field typing placeholder
+            # -----------------------------------------------------------------
+            # Future enhancement: set explicit SQL/GPKG column type names,
+            # lengths and precision in a QGIS-version-aware way. The goals:
+            #  - Ensure string columns become VARCHAR(255) in the GeoPackage
+            #  - Ensure 64-bit integers map to INTEGER (or INTEGER64) correctly
+            #  - Ensure numeric precision is set for doubles when needed
+            # Implementation notes:
+            #  - Detect QGIS/PyQGIS version at runtime and use the modern
+            #    QgsField constructor or attribute setters (e.g. setTypeName,
+            #    setLength, setPrecision) when available.
+            #  - If those APIs are not available, consider using OGR/GDAL
+            #    to alter the GeoPackage schema after layer creation to
+            #    enforce column types/lengths.
+            #  - Keep a compatibility fallback to avoid raising errors on
+            #    older QGIS versions.
+            # Example approach (pseudo):
+            #   if qgis_version >= (3, 28):
+            #       field = QgsField(name, type_val, typeName='text', length=255)
+            #   else:
+            #       field = QgsField(name, type_val)
+            # -----------------------------------------------------------------
 
         return fields
 
