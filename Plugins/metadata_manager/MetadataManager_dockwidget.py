@@ -134,12 +134,13 @@ class MetadataManagerDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
             if self.db_manager.connect(gpkg_path):
                 # Initialize Metadata Manager tables
                 if self.db_manager.initialize_metadata_manager_tables():
-                    # Refresh all widgets
-                    self.dashboard_widget.set_database(self.db_manager)
+                    # Update widget database references
+                    self.dashboard_widget.db_manager = self.db_manager
                     self.layer_list_widget.set_database(self.db_manager)
                     self.wizard_widget.db_manager = self.db_manager
 
                     # Refresh displays
+                    self.dashboard_widget.update_database_display()
                     self.dashboard_widget.refresh_statistics()
                     self.layer_list_widget.load_layers()
 

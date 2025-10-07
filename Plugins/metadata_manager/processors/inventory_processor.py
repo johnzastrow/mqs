@@ -852,7 +852,9 @@ class InventoryProcessor:
         ]
 
         for name, type_val in field_defs:
-            fields.append(QgsField(name, type_val))
+            field = QgsField(name)
+            field.setType(type_val)
+            fields.append(field)
 
         return fields
 
