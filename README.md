@@ -5,7 +5,7 @@ My QGIS Stuff - A random assortment of things I might reuse. These might be imag
 
 ## Support
 
-These are my resources that I make freely available to the world. You can ask me for help using them, but I may not be able to provide it due to knowledge or time constraints. 
+These are my resources that I make freely available to the world. You can ask me for help using them, but I may not be able to provide it due to knowledge or time constraints. I'm also not a QGIS developer, so I can't promise that these will work in future versions of QGIS. Use at your own risk. 
 
 Have a look at my [blog post](https://johnzastrow.github.io/2025-10-01-qgis-tutorial-materials/) for some more usefulness
 
@@ -82,8 +82,6 @@ Script: `Scripts/rasters2gpkg.py`
 **This subproject has been abandoned due to GeoPackage specification limitations for analytical raster data.**
 
 The GeoPackage raster storage specification is designed for tile-based base layers (web mapping), not analytical datasets requiring lossless compression, high bit-depths, and continuous data access. For analytical raster workflows, keep native formats (GeoTIFF, NetCDF, HDF) that are optimized for scientific analysis.
-
-~~A QGIS Processing Toolbox script that recursively searches directories for raster files and loads them into a single GeoPackage with metadata preservation and optional style application. Consolidates scattered raster data from complex directory structures into a modern, portable GeoPackage format.~~
 
 See `docs/rasters2gpkg/README.md` for detailed explanation of abandonment reasons and alternative approaches.
 
@@ -188,6 +186,23 @@ A QGIS Plugin that helps users create, manage, and apply metadata to layers foll
 - 🚧 Phase 5-6 (Planned): Templates, Export to File
 
 See `docs/metadata_manager/README.md` for installation details and `docs/metadata_manager/REQUIREMENTS.md` for specifications.
+
+**Screenshots**:
+ ![alt text](docs/metadata_manager/images/mmdashboard.png) Metadata Quality Dashboard
+
+![alt text](docs/metadata_manager/images/mmscan.png) Metadata Wizard Step 1
+
+![alt text](docs/metadata_manager/images/mmstep2.png) Metadata Wizard Step 2
+
+![alt text](docs/metadata_manager/images/mmstep3_inv.png) Metadata Wizard Step 3 with Inventory Integration
+
+![alt text](docs/metadata_manager/images/mmexport.png) Saving out metadata to .qmd sidecar file
+
+![alt text](docs/metadata_manager/images/mmoutputs.png) Tables and spatial layers created in GeoPackage
+
+![alt text](docs/metadata_manager/images/mmmeta1.png) Metadata wizard forms with validation and smart defaults from the data scan
+
+![alt text](docs/metadata_manager/images/mmlayerStruct.png) Geometry layer created from extent of spatial data, along with lots of metadata fields about each layer
 
 ---
 
