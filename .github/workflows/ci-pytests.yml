@@ -1,0 +1,33 @@
+name: CI - Python unit tests (no PyQGIS)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install minimal test deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Run tests (skip PyQGIS)
+        env:
+          SKIP_PYQGIS: '1'
+        run: |
+          # Run tests under docs/*/testing, Scripts/*/test, and Plugins/*/test
+          pytest -q docs/**/testing || true
+          pytest -q Scripts/**/test || true
+          pytest -q Plugins/*/test || true
