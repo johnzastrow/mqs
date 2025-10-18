@@ -2,13 +2,15 @@
 
 ## Overall Goal
 
-This subproject will document the approach for building a portable, executable version of QGIS, and then how to package the executable along with the data. The executable will be a updateable GIS data viewer, based on QGIS, along with pre-packaged data for a project, that can be easily distributed, executed by for non-GIS users (non-technical) and those without network/internet connections. The product of this effort will be called an `atlas` which is the combination of software+configurations+data.
+This subproject will document the approach for building a portable, executable version of QGIS, and then how to package the executable along with the data. The executable will be a updateable GIS data viewer, based on QGIS, along with pre-packaged data and a project, that can be easily distributed, executed by for non-GIS users (non-technical) and those without network/internet connections. The product of this effort will be called an `atlas` which is the combination of software+configurations+data. History and the internet seem littered with attempts (both current and abandoned) to build the "portable" QGIS part. It feels like the process is brittle, perhaps due to shifting QGIS packaging/deployment layouts, and the secret (Google doesn't show any formal docs) recipes for producing these portable installs must get out of date people stop producing the builds. 
 
 ### Technical Goals
 
 1. Design a solution based on many stock resources (software straight from qgis.org without modification) as possible, thereby building few required specialized tools (scripts, complex configurations) to assist the staff in creating the distributable atlas.
 
-2. Manage the size of distributable atlas to keep it reasonable to download from the internet in the frontier areas.
+2. Document the above so that others can at least myself and others can reference the recipe and adjust it as QGIS deployments evolve.
+
+3. Manage the size of distributable atlas to keep it reasonable to download from the internet in the frontier areas.
 
 ### Use Cases
 
