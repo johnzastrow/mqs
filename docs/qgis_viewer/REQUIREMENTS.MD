@@ -40,6 +40,7 @@ Working process for Windows
 * [X] Install QGIS Desktop onto thumb drive using the OSGeo4W installer and the Advanced options.
 * [ ] Create a .bat file that somehow uses relative paths to run the nearby QGIS executable with program - *problems with complex path variables set by the original installer found myriad interwoven .bat and .env files and unable to wipe them/recreate them at runtime when Atlas is run in new computer*.
   * setup.bat/setup.bat.tmpl, qgis-bin.env, OSGeo4W.bat
+  * State on 10/17: `RunAtlas.bat` doesn't run. Directly running `gis-bin.exe`
 * [X] Use same .bat to start QGIS with flags that starts QGIS with the following previously created and ready to use:
   * [X] Viewer profile to slim down the UI (in a Profiles directory),
   * [X] Data in a single file for good housekeeping (geopackage easy to send to user to update)
@@ -85,14 +86,6 @@ if %ERRORLEVEL% neq 0 (
 ) else (
     echo OSGeo4W environment set up successfully.
 )
-
-REM first create a new profile directory if it doesn't exist in the directory of this script. NOT NEEDED
-if not exist "%~dp0\Profiles" (
-    mkdir "%~dp0\Profiles"
-) ELSE (
-    echo Profile directory already exists.
-)
-
 
 REM Launch QGIS with specific profile and project
 rem @echo off
