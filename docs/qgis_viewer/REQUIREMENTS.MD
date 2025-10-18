@@ -103,6 +103,6 @@ if %ERRORLEVEL% neq 0 (
 
 ## Notes
 
-Just saw this `Light` plugin referenced in another QEP. Not quite what we're after, but interesting. Doesn't meet the Download/Run level of simplicity.
+Just saw this `Light` plugin referenced in another QEP. Not quite what we're after, but interesting. UPDATE: This helps a lot! Just need to save users from needing to install anything.
 
 https://github.com/itc-crib/qgis-light
