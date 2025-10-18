@@ -16,7 +16,7 @@ This subproject will document the approach for building a portable, executable v
 
 Current use case is to support volunteers and board members that manage a land trust in Downeast coastal Maine USA. They need the ability to see spatial data regarding the wildlands they manage (i.e., invasive species management, trail and land projects). Some users have primitive computer skills and effectively none are GIS users. Therefore, the interface needs to be simple but still provide more functions that pan/zoom/layers of+off/measure length. There is no budget or in-house ability to maintain a map service. Data are updated monthly at the most frequent and every few years for most layers. Layers are primarily vector, but orthophotography exists and is referenced. LIDAR elevation data have been converted to hillshades and contours. Outputs (jpg/png/pdf) from Viewer would be used by leadership in high-quality presentations (video call/slides/static download) after marking up.
 
-Tasks needed to support:
+Operations needed to support:
 
     * Pan/zoom
     * Layers on/off
