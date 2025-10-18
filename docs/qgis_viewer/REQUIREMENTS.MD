@@ -97,3 +97,10 @@ if %ERRORLEVEL% neq 0 (
 )   else echo QGIS launched with custom profile and project.
 
 ```
+
+
+## Notes
+
+Just saw this `Light` plugin referenced in another QEP. Not quite what we're after, but interesting. Doesn't meet the Download/Run level of simplicity.
+
+https://github.com/itc-crib/qgis-light
