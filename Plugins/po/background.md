@@ -1,12 +1,12 @@
-# Introduction
+# Introduction to po
 
-We need a better name.
+**We need a better name.**
 
 ## Overall Goal
 
-he intent of the project to create a plugin that can be used to Publish Online (PO) static vector GIS data and styling information to a web server. The publishing format will be a modern, vector file format along with hopefully standards-based style information where each can be usable by existing web mapping libraries and applications.
+The intent of the project to create a QGIS plugin that can be used to Publish Online (PO) static vector GIS data and styling information to a web server. The publishing format will be a modern, vector file format along with hopefully standards-based style information where each can be usable by existing web mapping libraries and applications. See the review of standards below. We should target the upcoming QGIS 4, based on Qt6 if enough information is possible. Or at least create it in a way to ease migration later this spring.
 
-The plugin will be designed to be easy to use and will allow users to quickly publish their GIS data and styling information to the web without needing to have extensive knowledge of web development or GIS software, or complex styling rules. The plugin will be developed with the goal of making it accessible to a wide range of users, including GIS professionals, students, and hobbyists.
+The plugin will be designed to be easy to use (few controls and sensible defaults) and will allow users to quickly (small number of clicks and publishing steps) publish their GIS data and styling information to the web (initially target a remote, VPS instance running linux where user has root control) without needing to have extensive knowledge of web development or GIS software, or complex styling rules. The plugin will be developed with the goal of making it accessible to a wide range of users, including GIS professionals, students, and hobbyists. We will implement in phases with a simple output suitable for manually publishing as a first step.
 
 ## Phase 1
 
@@ -18,7 +18,7 @@ Perhaps be able to publish directly to a web server, along with some basic map s
 
 ## Background
 
-### Viable vector formats - MVT is the standard
+### Viable vector formats - MVT is the (old?) standard
 
 Mapbox Vector Tiles (MVT) are a compact, binary format (Google Protobufs) used for transmitting and rendering geographic vector data in map applications. They enable efficient, client-side rendering of interactive, zoomable maps, allowing for customized styling, data interaction, and smaller data transfer sizes compared to raster tiles. MVT is the industry standard for vector data, widely used with mapping tools like MapLibre and OpenLayers.
 
@@ -53,6 +53,7 @@ These formats address the limitations of standard .mvt files, such as hosting co
 * **PMTiles**: A single-file archive format for tile pyramids. Unlike thousands of individual .mvt files, a single PMTiles file can be hosted on Amazon S3 and queried via HTTP Range Requests, eliminating the need for a tile server.
 
 * **MBTiles**: An SQLite-based container format that packages tiles into a single database file. It is widely used for offline mobile maps and easier file management.
+  
 * **GeoArrow**: A high-performance alternative for massive datasets. It avoids the overhead of parsing MVT or GeoJSON by using a memory-efficient columnar format that can be loaded directly onto a GPU.
 
 ##### Generating Tiles with ogr2ogr
@@ -2017,3 +2018,4 @@ You can also use entirely different mapping platforms and open-source libraries 
 * **MapTiler**: A commercial provider that offers map tiles, hosting services, and styling tools built on open-source data. It supports both vector and raster tiles and offers a simple pricing structure without vendor lock-in.
 * **OpenLayers and Leaflet**: These are popular open-source JavaScript libraries for displaying maps. While Leaflet is more focused on raster tiles, OpenLayers has robust support for rendering vector tiles, allowing for dynamic styling and advanced GIS features.
 * **Commercial Alternatives**: Other comprehensive mapping platforms, such as Google Maps Platform (which offers vector maps), ArcGIS Online, HERE Technologies, and Azure Maps, provide robust enterprise-level location services that include their own vector mapping technologies and APIs.
+
