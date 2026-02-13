@@ -1338,11 +1338,15 @@ Use code with caution.
 
 3. Comparison of Geocoding Providers
 For a "public website," Nominatim can be slow or blocked if traffic is high. Consider these professional alternatives:
+
+
 Provider	Pros	Link
 Photon	Open-source, fast, No API key needed	Photon by Komoot
 MapTiler	Highly accurate, global, built-in plugin support	MapTiler Geocoding
 Stadia Maps	Privacy-focused, excellent documentation	Stadia Maps Search
-4. Why use a Geocoder with PMTiles?
+
+
+5. Why use a Geocoder with PMTiles?
 While your PMTiles file provides the visual data (the roads and buildings), the Geocoder provides the index to find them. When a user selects a result, the geocoder tells MapLibre to flyTo specific coordinates, and your Caddy server instantly pulls the relevant PMTiles for that new location.
 
 To limit geocoding, you essentially "fence" the search results so the user doesn't fly to Paris when your PMTiles only cover New York.
@@ -1351,7 +1355,7 @@ Depending on the provider, you can limit by a Bounding Box (BBOX) or a Country C
 The bounding box is defined by two coordinates: [min_lon, min_lat, max_lon, max_lat]. You pass this into your geocoder request.
 Example: Limiting to the United Kingdom
 Update your geocoderApi fetch request in the index.html to include the viewbox and bounded parameters:
-javascript
+```javascript
 // Define your map's data bounds [West, South, East, North]
 const DATA_BOUNDS = "-10.85,49.82,1.76,60.84"; // UK Bounds
 
@@ -1366,23 +1370,23 @@ const geocoderApi = {
     }
 };
 Use code with caution.
-
+```
 2. Limiting by Country (Cleanest UI)
 If your map covers an entire country, use the countrycodes parameter. This is often more reliable than a box for excluding nearby border results.
-javascript
+```javascript
 // Only search within Germany (de) and France (fr)
 const request = `https://nominatim.openstreetmap.org{config.query}` +
                 `&format=geojson&countrycodes=de,fr`;
 Use code with caution.
-
+```
 3. Automatic Mapbox-Style "Proximity"
 If you don't want to strictly block outside results but want to prioritize the area the user is currently looking at, add a Proximity parameter using the map's current center.
-javascript
+```javascript
 const center = map.getCenter();
 const request = `https://nominatim.openstreetmap.org{config.query}` +
                 `&format=geojson&lat=${center.lat}&lon=${center.lng}`;
 Use code with caution.
-
+```
 Why this is a "Must-Have" for PMTiles
 Since your PMTiles are likely clipped to a specific region (to save space), letting a user search for "Tokyo" when you only host "London" results in them seeing a blank gray screen. Using the Nominatim Search Documentation ensures the search bar and the map data stay in sync.
 
@@ -1391,7 +1395,7 @@ Since your PMTiles are likely clipped to a specific region (to save space), lett
 To turn your static PMTiles into an interactive experience, you use the map.on('click') event in MapLibre GL JS. This allows you to "query" the vector data at the exact pixel where the user clicked and pull out the attributes (like name, address, or height) stored inside your tiles.
 1. The Interactivity Script
 Add this to your index.html after your map initialization. This script listens for clicks, finds the feature in your PMTiles source, and creates a MapLibre Popup.
-javascript
+```javascript
 // 1. Create a popup instance (but don't add it yet)
 const popup = new maplibregl.Popup({
     closeButton: true,
@@ -1434,14 +1438,14 @@ map.on('mouseleave', 'my-data-layer', () => {
     map.getCanvas().style.cursor = '';
 });
 Use code with caution.
-
+```
 2. How to know your Property Names?
 If your popup says "undefined," it's because you haven't used the correct key from your PMTiles attribute table.
 The Fix: Use the PMTiles Viewer to click a feature and look at the Properties list. Common keys are name, addr:street, osm_id, or brand.
 The Logic: You can access any property using feature.properties['your_key_here'].
 3. Advanced: Highlighting the Selected Feature
 To make it look professional, you can add a "selection" layer that highlights the building or road the user just clicked.
-javascript
+```javascript
 // Add an empty highlight layer to your style
 map.on('load', () => {
     map.addLayer({
@@ -1460,7 +1464,7 @@ map.on('click', 'my-data-layer', (e) => {
     map.setFilter('highlight-layer', ["==", ["get", "osm_id"], id]);
 });
 Use code with caution.
-
+```
 Why this is powerful for Public Maps
 Since you are using the Caddy PMTiles Handler, these property lookups happen entirely in the browser using the vector data already downloaded to the user's cache. There is zero lag and zero extra server cost for these identify queries.
 
@@ -1505,7 +1509,7 @@ Use code with caution.
 
 2. Make it Dynamic (Optional)
 If your PMTiles data changes based on zoom level (e.g., layers appearing or disappearing), you can use the map.on('zoom') event to hide or show parts of the legend.
-javascript
+```javascript
 map.on('zoom', () => {
     const legend = document.getElementById('state-legend');
     if (map.getZoom() > 12) {
@@ -1515,7 +1519,7 @@ map.on('zoom', () => {
     }
 });
 Use code with caution.
-
+```
 3. Professional Alternative: MapLibre Legend Control
 If you want a more "GIS-like" legend that handles complex icons and toggles, use the maplibre-gl-legend plugin. It automatically reads your MapLibre Style Spec and generates the UI for you.
 Actionability: Follow the MapLibre Legend Control Documentation to install it via NPM or CDN.
@@ -1537,16 +1541,17 @@ Layers: Which data layers (e.g., roads, buildings) to draw and how to color them
 Zoom Rules: At what zoom level features appear or change size.
 
 2. Styling Differences in Practice
-| Feature | MBTiles (Server-Dependent) | PMTiles (Serverless/Cloud-Native) |
-| --- | --- | --- |
+   
+|Feature |MBTiles (Server-Dependent)| PMTiles (Serverless/Cloud-Native) |
+|---|---|---|
 | Source URL | Points to a tile server URL (e.g., <https://api.com{z}/{x}/{y}.pbf>). | Points directly to a hosted file using a custom protocol (e.g., pmtiles://<https://s3.com>). |
 | Backend Rendering | A server (like Martin or TileServer-GL) reads the SQLite database and "serves" tiles to the client. | The browser library (via PMTiles.js) reads specific byte ranges of the file directly from cloud storage. |
 | Schema Dependency | Styles must match the internal table names of the SQLite file (e.g., OpenMapTiles schema). | Styles must match the layer names defined when the PMTiles file was created (e.g., via Tippecanoe). |
 
 3. Rendering Logic
-Vector Rendering: In both cases, the browser (client-side) does the heavy lifting. It takes the vector coordinates from the tiles and draws them using the GPU (WebGL/WebGPU) based on your Style JSON.
-Raster Rendering: If your MBTiles or PMTiles contain pre-rendered images (PNG/JPG), the browser simply displays them as static images without needing a Style JSON for drawing.
-Pro-Tip: Style Compatibility
+* Vector Rendering: In both cases, the browser (client-side) does the heavy lifting. It takes the vector coordinates from the tiles and draws them using the GPU (WebGL/WebGPU) based on your Style JSON.
+* Raster Rendering: If your MBTiles or PMTiles contain pre-rendered images (PNG/JPG), the browser simply displays them as static images without needing a Style JSON for drawing.
+* Pro-Tip: Style Compatibility
 You cannot always swap a PMTiles file for an MBTiles file and keep the same style. The Layer Names must match exactly. For example, a style looking for a layer named transportation will fail if your PMTiles file named that same data roads. Always ensure your styling references the correct layer names as defined in your tile generation process.
 
 #### Building a Style JSON for PMTiles
@@ -1617,9 +1622,9 @@ Interpolation: You can make lines get thicker as you zoom in:
   "stops": [[10, 1], [15, 5]]
 }
 Use code with caution.
-
+```
 Filtering: You can show only specific features from a layer:
-json
+```json
 "filter": ["==", "class", "highway"]
 Use code with caution.
 ```
@@ -1664,35 +1669,35 @@ Step 3: You will see a list of IDs. Those are your source-layer names (e.g., wat
 2. The Command Line Way: PMTiles CLI
 If you prefer working in the terminal, you can use the PMTiles CLI tool.
 Command:
-bash
+```bash
 pmtiles show your-file.pmtiles
 Use code with caution.
-
+```
 Output: Look for the vector_layers section in the JSON output. Each id listed there is a valid source-layer.
-json
+```json
 "vector_layers": [
   { "id": "buildings", "fields": {...} },
   { "id": "landuse", "fields": {...} }
 ]
 Use code with caution.
-
+```
 3. The Developer Way: MapLibre Inspect
 If you already have your map running in MapLibre GL JS, you can use the Inspect plugin or a simple console command to see what's under your cursor.
 Code Snippet: Add this to your map click event to log layer names to the browser console:
-javascript
+```javascript
 map.on('click', (e) => {
     const features = map.queryRenderedFeatures(e.point);
     console.log("Internal Layer Names:", features.map(f => f.layer['source-layer']));
 });
 Use code with caution.
-
+```
 4. For MBTiles: SQLite
 Since MBTiles is just an SQLite database, you can query it directly using any SQLite browser.
 Query:
-sql
+```sql
 SELECT value FROM metadata WHERE name='json';
 Use code with caution.
-
+```
 This will return a JSON string containing the vector_layers array, identical to the PMTiles output.
 
 #### Filtering and Styling by Layer
@@ -1750,6 +1755,7 @@ Layer B: Filter for service roads (Style them thin and grey).
 
 To keep your map clean, you use Zoom Expressions. This prevents "visual noise" by hiding minor roads at high altitudes and gradually making major roads thicker as you zoom in.
 In the MapLibre Style Spec, this is done using interpolate or step.
+
 1. The "Disappearing" Act (Opacity/Visibility)
 This example hides minor roads completely until you reach zoom level 12, then fades them in.
 
@@ -1795,7 +1801,7 @@ Use code with caution.
 
 3. Using step for Discrete Changes
 If you want an "on/off" switch rather than a smooth fade (e.g., for labels), use step.
-json
+```json
 {
     "id": "road-labels",
     "type": "symbol",
@@ -1815,9 +1821,9 @@ Use code with caution.
 ```
 
 Implementation Tips
-Performance: Interpolate is GPU-accelerated and very smooth.
-Testing: Use the Maputnik Editor to slide the zoom bar back and forth while editing these values to see the immediate effect.
-Exponential Base: In the line-width example, ["exponential", 1.5] makes the width grow faster as you zoom in, which feels more natural than a purely linear growth.
+* Performance: Interpolate is GPU-accelerated and very smooth.
+* Testing: Use the Maputnik Editor to slide the zoom bar back and forth while editing these values to see the immediate effect.
+* Exponential Base: In the line-width example, ["exponential", 1.5] makes the width grow faster as you zoom in, which feels more natural than a purely linear growth.
 
 
 
@@ -1961,7 +1967,7 @@ Choose your provider below for the specific JSON configuration and steps.
 Go to the S3 Console, select your bucket, and click the Permissions tab.
 Scroll to Cross-origin resource sharing (CORS) and click Edit.
 Paste this configuration (replace <https://yourdomain.com> with your actual site URL, or use * for testing):
-json
+```json
 [
     {
         "AllowedOrigins": ["https://yourdomain.com"],
@@ -1972,12 +1978,12 @@ json
     }
 ]
 Use code with caution.
-
+```
 2. Cloudflare R2
 In the Cloudflare Dashboard, go to R2 > Overview and select your bucket.
 Go to Settings > CORS Policy and click Add CORS policy.
 Paste the following (Note: R2 uses slightly different keys than S3):
-json
+```json
 [
     {
     "AllowedOrigins": ["*"],
@@ -1988,10 +1994,10 @@ json
     }
 ]
 Use code with caution.
-
+```
 3. Google Cloud Storage (GCS)
 GCS requires the gcloud CLI. Create a cors-config.json file with the following:
-json
+```json
 [
     {
     "origin": ["*"],
@@ -2001,7 +2007,7 @@ json
     }
 ]
 Use code with caution.
-
+```
 Then run: gcloud storage buckets update gs://YOUR_BUCKET_NAME --cors-file=cors-config.json.
 Critical Requirement: Range Headers
 PMTiles requires the Range header to function. If you do not include Range in AllowedHeaders and Content-Range in ExposeHeaders, the map will fail to load.
@@ -2015,7 +2021,7 @@ PMTiles requires the Range header to function. If you do not include Range in Al
 
 * **Legacy Systems:** If you are using older software that cannot be updated to support the PMTiles protocol.
 * **Dynamic Data:** If your map data changes every few minutes and you need to update individual tiles inside the database without re-uploading a massive single file.
-Which web mapping library (e.g., MapLibre, Leaflet, or OpenLayers) are you planning to use for your site?
+
 
 1. **GIS & Open Standard Alternatives**
 For projects requiring high interoperability with traditional GIS software:
@@ -2033,5 +2039,6 @@ You can also use entirely different mapping platforms and open-source libraries 
 * **MapTiler**: A commercial provider that offers map tiles, hosting services, and styling tools built on open-source data. It supports both vector and raster tiles and offers a simple pricing structure without vendor lock-in.
 * **OpenLayers and Leaflet**: These are popular open-source JavaScript libraries for displaying maps. While Leaflet is more focused on raster tiles, OpenLayers has robust support for rendering vector tiles, allowing for dynamic styling and advanced GIS features.
 * **Commercial Alternatives**: Other comprehensive mapping platforms, such as Google Maps Platform (which offers vector maps), ArcGIS Online, HERE Technologies, and Azure Maps, provide robust enterprise-level location services that include their own vector mapping technologies and APIs.
+
 
 
