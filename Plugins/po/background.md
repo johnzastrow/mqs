@@ -985,7 +985,7 @@ This single-file index.html uses MapLibre GL JS to automatically render your map
 Since you are using the Caddy PMTiles Plugin, we don't need the pmtiles:// protocol in the frontend; we can point directly to the standard Z/X/Y tile URL provided by your server.
 The Previewer (index.html)
 Place this file in your Caddy root directory (e.g., /var/www/html/index.html).
-html
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1075,25 +1075,29 @@ html
 </body>
 </html>
 Use code with caution.
+```
 
-Important Steps to Finish
-Check Layer Name: In the script above, "source-layer": "roads" must match a layer inside your .pmtiles file. If you see a blank map, use the PMTiles Viewer to confirm your internal layer names.
-Caddyfile Root: Ensure your Caddyfile has a root directive pointing to where you saved this index.html.
-Permissions: Ensure the caddy user has read access to the HTML file:
-sudo chown caddy:caddy /var/www/html/index.html
-Why this works so well
+**Important Steps to Finish**
+* Check Layer Name: In the script above, "source-layer": "roads" must match a layer inside your .pmtiles file. If you see a blank map, use the PMTiles Viewer to confirm your internal layer names.
+* Caddyfile Root: Ensure your Caddyfile has a root directive pointing to where you saved this index.html.
+* Permissions: Ensure the caddy user has read access to the HTML file:
+`sudo chown caddy:caddy /var/www/html/index.html`
+
+
+**Why this works so well**
 By combining the Caddy PMTiles Handler with MapLibre GL JS, you have built a production-grade, self-healing map server that:
-Updates instantly when you drop in a new file (via the Watcher).
-Works on any device (via the HTML index).
-Costs nearly nothing to run on a small VPS.
+* Updates instantly when you drop in a new file (via the Watcher).
+* Works on any device (via the HTML index).
+* Costs nearly nothing to run on a small VPS.
 
 #### Example configuring a baselayer
 
 To add a professional backdrop to your custom data, you have two options: using free community tiles (like OpenStreetMap) or commercial API keys (like Stadia or MapTiler).
 The cleanest way to do this in MapLibre GL JS is to add the basemap as a separate source and layer at the very top of your layers array so your custom PMTiles sit on top of it.
+
 1. Using OpenStreetMap (Raster Tiles)
 This is the simplest way to get a map background for free without an API key.
-javascript
+```javascript
 // Add this source to your style object
 sources: {
     "osm-tiles": {
@@ -1115,11 +1119,12 @@ layers: [
     { ... } // Your PMTiles layers go here
 ]
 Use code with caution.
+```
 
 2. Using High-Quality Vector Basemaps (Recommended)
 If you want a sleek "Dark Mode" or "Satellite" look, use a provider like Stadia Maps or MapTiler. These require a free API key.
 Example with Stadia Maps Alidade Smooth:
-javascript
+```javascript
 const STADIA_KEY = 'YOUR_API_KEY';
 const TILE_URL = `${window.location.origin}/tiles/{z}/{x}/{y}.mvt`;
 
@@ -1160,25 +1165,30 @@ const map = new maplibregl.Map({
     }
 });
 Use code with caution.
+```
 
 3. Quick Pro-Tip: "Sandwich" Styling
 If you use a Vector Basemap, you can perform a "Sandwich" technique where you place your data underneath the labels of the basemap but above the land and water.
-Find the id of the label layer in the basemap (e.g., place_label).
-Use map.addLayer(myLayer, 'place_label') in your code. This ensures your road lines don't cover up the names of cities.
-Summary of Popular Basemap Providers
-Provider	Best For	Link
-OpenStreetMap	Total freedom / No keys	OSM Tile Info
-Stadia Maps	Elegant, clean designs	Stadia Maps Dashboard
-MapTiler	High-perf Vector tiles	MapTiler Cloud
-Thunderforest	Outdoors / Topography	Thunderforest
+
+* Find the id of the label layer in the basemap (e.g., place_label).
+* Use map.addLayer(myLayer, 'place_label') in your code. This ensures your road lines don't cover up the names of cities.
+* Summary of Popular Basemap Providers
+  
+|Provider|	Best For	|Link|
+|---|---|---|
+|OpenStreetMap|	Total freedom / No keys |	OSM Tile Info|
+|Stadia Maps	|Elegant, clean designs	|Stadia Maps Dashboard|
+|MapTiler|	High-perf Vector tiles	|MapTiler Cloud
+|Thunderforest|	Outdoors / Topography|	Thunderforest|
 
 
 ####  Example: Adding a Layer Switcher for Basemaps
 To create a Layer Switcher for MapLibre, the most robust method is to use a simple HTML control that updates the source and layers of your map.
 Since MapLibre "styles" are immutable objects, the standard practice is to use the map.setStyle() method or toggle the visibility property. For switching between completely different basemaps (like Satellite vs. Streets), setStyle is best.
+
 1. Updated HTML & UI
 Add a selection box to your index.html overlay:
-html
+```html
 <div class="overlay">
     <h3 style="margin-top:0">Map Preview</h3>
     <label for="style-select">Basemap:</label>
@@ -1189,10 +1199,10 @@ html
     <p id="status">Loading...</p>
 </div>
 Use code with caution.
-
+```
 2. The JavaScript Logic
 You need a function that re-defines the style while keeping your PMTiles data on top.
-javascript
+```javascript
 const TILE_URL = `${window.location.origin}/tiles/{z}/{x}/{y}.mvt`;
 
 // Define our two styles
@@ -1256,14 +1266,16 @@ document.getElementById('style-select').addEventListener('change', (e) => {
     map.setStyle(getFullStyle(e.target.value));
 });
 Use code with caution.
+```
 
 3. Professional Refinement: The Control Plugin
 If you prefer a native look, use the MapLibre GL Terrain-RGB compatible plugin maplibre-gl-controls. It adds a standard "stack" icon in the corner.
-Install: Add <script src="https://unpkg.com"></script>
-Actionability: Use the MapLibre Official Style Switcher Example to see how to handle complex vector-to-vector transitions.
-Why this works:
-Persistent Data: The getFullStyle function ensures that no matter which background you pick, your PMTiles layer is immediately re-added to the new style.
-Adaptive Styling: Notice the logic that changes the road color based on the background—this ensures high contrast regardless of whether the map is dark (satellite) or light (streets).
+* Install: `Add <script src="https://unpkg.com"></script>`
+* Actionability: Use the MapLibre Official Style Switcher Example to see how to handle complex vector-to-vector transitions.
+
+**Why this works:**
+* Persistent Data: The getFullStyle function ensures that no matter which background you pick, your PMTiles layer is immediately re-added to the new style.
+* Adaptive Styling: Notice the logic that changes the road color based on the background—this ensures high contrast regardless of whether the map is dark (satellite) or light (streets).
 
 
 #### Example: Adding a Search Bar (Geocoding) to Your Map
@@ -1271,15 +1283,16 @@ To add a search bar (geocoding) to your map, the most reliable open-source optio
 Since geocoding requires a massive database of addresses, you typically connect this plugin to a service like maptiler.com, stadiamaps.com, or the free nominatim.openstreetmap.org.
 1. Add the Geocoder Dependencies
 Include these in the <head> of your index.html:
-html
+```html
 <!-- MapLibre Geocoder Control -->
 <script src="https://unpkg.com"></script>
 <link href="https://unpkg.com" rel="stylesheet" />
 Use code with caution.
+```
 
 2. Implement the Search Logic
 Add this script block after your map initialization. This example uses the Nominatim (OpenStreetMap) engine, which is free for low-volume testing.
-javascript
+```javascript
 // 1. Define the Geocoder API configuration
 const geocoderApi = {
     forwardGeocode: async (config) => {
@@ -1321,6 +1334,7 @@ const geocoder = new MaplibreGeocoder(geocoderApi, {
 
 map.addControl(geocoder, 'top-right');
 Use code with caution.
+```
 
 3. Comparison of Geocoding Providers
 For a "public website," Nominatim can be slow or blocked if traffic is high. Consider these professional alternatives:
@@ -1457,7 +1471,7 @@ To add a Legend to your MapLibre map, you create a custom HTML overlay that stay
 Since there is no "automatic" legend in MapLibre, you build one using a simple div and CSS.
 1. Add the Legend HTML & CSS
 Add this structure to your index.html. This creates a floating box in the bottom-right corner.
-html
+```html
 <style>
     .legend {
         background-color: #fff;
@@ -1487,6 +1501,7 @@ html
     <div><span style="background-color: #aaaaaa"></span>Service Paths</div>
 </div>
 Use code with caution.
+```
 
 2. Make it Dynamic (Optional)
 If your PMTiles data changes based on zoom level (e.g., layers appearing or disappearing), you can use the map.on('zoom') event to hide or show parts of the legend.
@@ -2018,4 +2033,5 @@ You can also use entirely different mapping platforms and open-source libraries 
 * **MapTiler**: A commercial provider that offers map tiles, hosting services, and styling tools built on open-source data. It supports both vector and raster tiles and offers a simple pricing structure without vendor lock-in.
 * **OpenLayers and Leaflet**: These are popular open-source JavaScript libraries for displaying maps. While Leaflet is more focused on raster tiles, OpenLayers has robust support for rendering vector tiles, allowing for dynamic styling and advanced GIS features.
 * **Commercial Alternatives**: Other comprehensive mapping platforms, such as Google Maps Platform (which offers vector maps), ArcGIS Online, HERE Technologies, and Azure Maps, provide robust enterprise-level location services that include their own vector mapping technologies and APIs.
+
 
