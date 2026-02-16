@@ -4,9 +4,11 @@ We need a better name.
 
 ## Overall Goal
 
-he intent of the project to create a plugin that can be used to Publish Online (PO) static vector GIS data and styling information to a web server. The publishing format will be a modern, vector file format along with hopefully standards-based style information where each can be usable by existing web mapping libraries and applications.
+The intent of the project to create a plugin that can be used to Publish Online (PO) static vector GIS data and styling information to a web server. The publishing format will be a modern, vector file format along with hopefully standards-based style information where each can be usable by existing web mapping libraries and applications.
 
 The plugin will be designed to be easy to use and will allow users to quickly publish their GIS data and styling information to the web without needing to have extensive knowledge of web development or GIS software, or complex styling rules. The plugin will be developed with the goal of making it accessible to a wide range of users, including GIS professionals, students, and hobbyists.
+
+The final goal is to provide the easy "Export as.." type function where a user exports a QGIS project with all of its data and styling to a collection of data, code, and configuration files that can be copied to a simple web server to create an interactive web map based on static vector data where the source data are vectors and optionally supported by raster base layers.
 
 ## Phase 1
 
@@ -1628,3 +1630,11 @@ You can also use entirely different mapping platforms and open-source libraries 
 * **MapTiler**: A commercial provider that offers map tiles, hosting services, and styling tools built on open-source data. It supports both vector and raster tiles and offers a simple pricing structure without vendor lock-in.
 * **OpenLayers and Leaflet**: These are popular open-source JavaScript libraries for displaying maps. While Leaflet is more focused on raster tiles, OpenLayers has robust support for rendering vector tiles, allowing for dynamic styling and advanced GIS features.
 * **Commercial Alternatives**: Other comprehensive mapping platforms, such as Google Maps Platform (which offers vector maps), ArcGIS Online, HERE Technologies, and Azure Maps, provide robust enterprise-level location services that include their own vector mapping technologies and APIs.
+
+
+
+## Approach
+
+Have a look at this project and see if it can be adapted to PMtiles
+
+https://github.com/GallPeters/QGIS2VectorTiles - QGIS2VectorTiles
