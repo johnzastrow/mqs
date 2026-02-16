@@ -8,6 +8,8 @@ The intent of the project to create a QGIS plugin that can be used to Publish On
 
 The plugin will be designed to be easy to use (few controls and sensible defaults) and will allow users to quickly (small number of clicks and publishing steps) publish their GIS data and styling information to the web (initially target a remote, VPS instance running linux where user has root control) without needing to have extensive knowledge of web development or GIS software, or complex styling rules. The plugin will be developed with the goal of making it accessible to a wide range of users, including GIS professionals, students, and hobbyists. We will implement in phases with a simple output suitable for manually publishing as a first step.
 
+The final goal is to provide the easy "Export as.." type function where a user exports a QGIS project with all of its data and styling to a collection of data, code, and configuration files that can be copied to a simple web server to create an interactive web map based on static vector data where the source data are vectors and optionally supported by raster base layers.
+
 ## Phase 1
 
 The first phase of the project will focus on developing the core functionality of the plugin, which will include the ability to select layers from a QGIS project, specify styling information for each layer, and publish the data to the local file system. The user will then be left to provide a map server that can read the published data and styling information and upload the newly created files for the map server to use.
