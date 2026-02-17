@@ -5,7 +5,7 @@ This module contains the dockable widget that provides the main UI
 for layer selection, export options, and triggering exports.
 """
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 
 import os
 
@@ -29,6 +29,7 @@ from qgis.PyQt.QtWidgets import (
     QListWidgetItem,
     QMessageBox,
     QSizePolicy,
+    QSpinBox,
 )
 
 from qgis.core import (
@@ -125,6 +126,20 @@ class MapSplatDockWidget(QDockWidget):
         mode_layout.addWidget(self.combo_export_mode)
         options_layout.addLayout(mode_layout)
 
+        # Max zoom level
+        zoom_layout = QHBoxLayout()
+        zoom_layout.addWidget(QLabel("Max zoom:"))
+        self.spin_max_zoom = QSpinBox()
+        self.spin_max_zoom.setRange(4, 18)
+        self.spin_max_zoom.setValue(6)
+        self.spin_max_zoom.setToolTip(
+            "Higher zoom = more detail but exponentially longer processing.\n"
+            "10 is good for most data. 14+ can take hours for large datasets."
+        )
+        zoom_layout.addWidget(self.spin_max_zoom)
+        zoom_layout.addStretch()
+        options_layout.addLayout(zoom_layout)
+
         # Style options
         self.chk_export_style = QCheckBox("Export separate style.json")
         self.chk_export_style.setChecked(True)
@@ -189,21 +204,53 @@ class MapSplatDockWidget(QDockWidget):
         self.main_layout.addWidget(self.btn_export)
 
         # ==================== Progress ====================
+        progress_layout = QHBoxLayout()
         self.progress_bar = QProgressBar()
         self.progress_bar.setVisible(False)
-        self.main_layout.addWidget(self.progress_bar)
+        progress_layout.addWidget(self.progress_bar)
+
+        self.btn_cancel = QPushButton("Cancel")
+        self.btn_cancel.setVisible(False)
+        self.btn_cancel.setMaximumWidth(70)
+        self.btn_cancel.setStyleSheet("""
+            QPushButton {
+                background-color: #c62828;
+                color: white;
+                font-weight: bold;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #b71c1c;
+            }
+        """)
+        self.btn_cancel.clicked.connect(self._cancel_export)
+        progress_layout.addWidget(self.btn_cancel)
+
+        self.main_layout.addLayout(progress_layout)
 
         # ==================== Log Area ====================
         log_group = QGroupBox("Log")
         log_layout = QVBoxLayout(log_group)
 
+        # Log header with expand button
+        log_header = QHBoxLayout()
+        self.btn_expand_log = QPushButton("Expand")
+        self.btn_expand_log.setMaximumWidth(70)
+        self.btn_expand_log.setCheckable(True)
+        self.btn_expand_log.clicked.connect(self._toggle_log_size)
+        log_header.addStretch()
+        log_header.addWidget(self.btn_expand_log)
+        log_layout.addLayout(log_header)
+
         self.txt_log = QTextEdit()
         self.txt_log.setReadOnly(True)
+        self.txt_log.setMinimumHeight(80)
         self.txt_log.setMaximumHeight(100)
         self.txt_log.setStyleSheet("font-family: monospace; font-size: 11px;")
         log_layout.addWidget(self.txt_log)
 
         self.main_layout.addWidget(log_group)
+        self._log_expanded = False
 
         # Spacer at bottom
         self.main_layout.addStretch()
@@ -283,6 +330,17 @@ class MapSplatDockWidget(QDockWidget):
             self.lbl_imported_style.setStyleSheet("color: green;")
             self._log(f"Imported style: {file_path}")
 
+    def _toggle_log_size(self):
+        """Toggle the log area between small and expanded size."""
+        if self._log_expanded:
+            self.txt_log.setMaximumHeight(100)
+            self.btn_expand_log.setText("Expand")
+            self._log_expanded = False
+        else:
+            self.txt_log.setMaximumHeight(400)
+            self.btn_expand_log.setText("Collapse")
+            self._log_expanded = True
+
     def _log(self, message, level="info"):
         """Add a message to the log area.
 
@@ -349,23 +407,32 @@ class MapSplatDockWidget(QDockWidget):
             "single_file": self.combo_export_mode.currentIndex() == 0,
             "export_style_json": self.chk_export_style.isChecked(),
             "imported_style_path": self.imported_style_path,
+            "max_zoom": self.spin_max_zoom.value(),
         }
 
-        # Show progress
+        # Show progress and cancel button
         self.progress_bar.setVisible(True)
         self.progress_bar.setValue(0)
         self.btn_export.setEnabled(False)
+        self.btn_cancel.setVisible(True)
 
         try:
-            exporter = MapSplatExporter(self.iface, settings)
-            exporter.progress.connect(self._on_progress)
-            exporter.log_message.connect(self._on_log_message)
-            exporter.finished.connect(self._on_export_finished)
-            exporter.run()
+            # Create exporter (uses QProcess internally, no separate thread needed)
+            self._exporter = MapSplatExporter(self.iface, settings)
+
+            # Connect signals
+            self._exporter.progress.connect(self._on_progress)
+            self._exporter.log_message.connect(self._on_log_message)
+            self._exporter.finished.connect(self._on_export_finished)
+
+            # Run export (QProcess keeps UI responsive via processEvents)
+            self._exporter.run()
+
         except Exception as e:
             self._log(f"Export failed: {str(e)}", "error")
             self.btn_export.setEnabled(True)
             self.progress_bar.setVisible(False)
+            self.btn_cancel.setVisible(False)
 
     def _on_progress(self, value):
         """Handle progress updates."""
@@ -378,6 +445,8 @@ class MapSplatDockWidget(QDockWidget):
     def _on_export_finished(self, success, output_path):
         """Handle export completion."""
         self.progress_bar.setVisible(False)
+        self.btn_cancel.setVisible(False)
+        self.btn_cancel.setEnabled(True)  # Re-enable for next export
         self.btn_export.setEnabled(True)
 
         if success:
@@ -389,6 +458,13 @@ class MapSplatDockWidget(QDockWidget):
             )
         else:
             self._log("Export failed.", "error")
+
+    def _cancel_export(self):
+        """Cancel the running export."""
+        if hasattr(self, '_exporter') and self._exporter:
+            self._log("Cancelling export...", "warning")
+            self._exporter.cancel()
+            self.btn_cancel.setEnabled(False)
 
     def closeEvent(self, event):
         """Handle close event."""

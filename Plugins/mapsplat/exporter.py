@@ -8,15 +8,27 @@ This module handles the actual export process:
 - Generating the HTML viewer
 """
 
-__version__ = "0.1.6"
+__version__ = "0.1.7"
 
 import os
+import sys
 import json
 import shutil
 import subprocess
 from pathlib import Path
 
-from qgis.PyQt.QtCore import QObject, pyqtSignal
+# Windows: hide console window when spawning subprocesses
+if sys.platform == "win32":
+    # Use numeric values to ensure compatibility
+    STARTUPINFO = subprocess.STARTUPINFO()
+    STARTUPINFO.dwFlags |= 0x00000001  # STARTF_USESHOWWINDOW
+    STARTUPINFO.wShowWindow = 0  # SW_HIDE
+    CREATIONFLAGS = 0x08000000  # CREATE_NO_WINDOW
+else:
+    STARTUPINFO = None
+    CREATIONFLAGS = 0
+
+from qgis.PyQt.QtCore import QObject, pyqtSignal, QProcess, QTimer
 
 from qgis.core import (
     QgsProject,
@@ -24,6 +36,7 @@ from qgis.core import (
     QgsRasterLayer,
     QgsVectorFileWriter,
     QgsCoordinateReferenceSystem,
+    QgsCoordinateTransform,
     QgsCoordinateTransformContext,
 )
 
@@ -51,6 +64,21 @@ class MapSplatExporter(QObject):
 
         # Target CRS (Web Mercator)
         self.target_crs = QgsCoordinateReferenceSystem("EPSG:3857")
+
+        # Cancellation support
+        self._cancelled = False
+        self._qprocess = None
+        self._progress_timer = None
+        self._pmtiles_path = None
+        self._start_time = None
+
+    def cancel(self):
+        """Cancel the export process."""
+        self._cancelled = True
+        if self._qprocess and self._qprocess.state() != QProcess.NotRunning:
+            self._qprocess.kill()
+        if self._progress_timer:
+            self._progress_timer.stop()
 
     def run(self):
         """Run the export process."""
@@ -123,8 +151,9 @@ class MapSplatExporter(QObject):
         # Copy MapLibre assets
         self._copy_maplibre_assets(output_dir)
 
-        # Write README
+        # Write README and serve script
         self._write_readme(output_dir)
+        self._write_serve_script(output_dir)
         self.progress.emit(100)
 
         self.log_message.emit("Export complete!", "success")
@@ -180,7 +209,11 @@ class MapSplatExporter(QObject):
 
             # Transform to Web Mercator
             if layer.crs() != self.target_crs:
-                options.ct = QgsCoordinateTransformContext()
+                options.ct = QgsCoordinateTransform(
+                    layer.crs(),
+                    self.target_crs,
+                    self.project
+                )
 
             error, error_message, new_filename, new_layer = QgsVectorFileWriter.writeAsVectorFormatV3(
                 layer,
@@ -193,48 +226,194 @@ class MapSplatExporter(QObject):
                 self.log_message.emit(f"  Warning: {error_message}", "warning")
 
     def _convert_to_pmtiles(self, gpkg_path, pmtiles_path):
-        """Convert GeoPackage to PMTiles using ogr2ogr.
+        """Convert GeoPackage to PMTiles using ogr2ogr (blocking version for thread).
 
         :param gpkg_path: Input GeoPackage path
         :param pmtiles_path: Output PMTiles path
         :returns: True if successful
         """
+        import time
+        from qgis.PyQt.QtCore import QCoreApplication
+
+        # Check GDAL version first
+        gdal_version = self._check_gdal_version()
+        if gdal_version:
+            self.log_message.emit(f"  GDAL version: {gdal_version}", "info")
+
+        # Check if PMTiles driver is available
+        if not self._check_pmtiles_driver():
+            self.log_message.emit(
+                "PMTiles driver not available. GDAL 3.8+ required.",
+                "error"
+            )
+            return False
+
+        # Show input file size
+        gpkg_size_mb = os.path.getsize(gpkg_path) / (1024 * 1024)
+        self.log_message.emit(f"  GeoPackage size: {gpkg_size_mb:.1f} MB", "info")
+
+        # List layers in GeoPackage
+        layers_in_gpkg = self._list_gpkg_layers(gpkg_path)
+        if layers_in_gpkg:
+            self.log_message.emit(f"  Layers to convert: {', '.join(layers_in_gpkg)}", "info")
+        else:
+            self.log_message.emit("  Warning: Could not list layers in GeoPackage", "warning")
+
+        # Normalize paths for Windows
+        gpkg_path = os.path.normpath(gpkg_path)
+        pmtiles_path = os.path.normpath(pmtiles_path)
+        output_dir = os.path.dirname(pmtiles_path)
+
         # Build ogr2ogr command
-        cmd = [
-            "ogr2ogr",
+        max_zoom = self.settings.get("max_zoom", 6)
+
+        self.log_message.emit(f"  Max zoom: {max_zoom}", "info")
+        self.log_message.emit(f"  Output: {pmtiles_path}", "info")
+        self.log_message.emit("  Starting ogr2ogr (this runs in background)...", "info")
+
+        # Use QProcess for non-blocking execution
+        self._qprocess = QProcess()
+        self._pmtiles_path = pmtiles_path
+        self._output_dir = output_dir
+        self._start_time = time.time()
+
+        args = [
             "-f", "PMTiles",
             "-dsco", "MINZOOM=0",
-            "-dsco", "MAXZOOM=14",
+            "-dsco", f"MAXZOOM={max_zoom}",
             "-t_srs", "EPSG:3857",
             pmtiles_path,
             gpkg_path
         ]
 
-        self.log_message.emit(f"  Running: {' '.join(cmd)}", "info")
+        self.log_message.emit(f"  Command: ogr2ogr {' '.join(args)}", "info")
 
-        try:
-            result = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                timeout=300  # 5 minute timeout
-            )
+        # Start process
+        self._qprocess.start("ogr2ogr", args)
 
-            if result.returncode != 0:
-                self.log_message.emit(f"  ogr2ogr error: {result.stderr}", "error")
+        if not self._qprocess.waitForStarted(5000):
+            self.log_message.emit("  Failed to start ogr2ogr", "error")
+            return False
+
+        self.log_message.emit("  ogr2ogr started, waiting for completion...", "info")
+
+        # Poll with event processing to keep UI responsive
+        last_update = time.time()
+        while self._qprocess.state() != QProcess.NotRunning:
+            # Process Qt events to keep UI responsive
+            QCoreApplication.processEvents()
+
+            # Check for cancellation
+            if self._cancelled:
+                self._qprocess.kill()
+                self._qprocess.waitForFinished(1000)
+                self.log_message.emit("  Export cancelled by user.", "warning")
                 return False
 
-            return True
+            # Update progress every 3 seconds
+            now = time.time()
+            if now - last_update >= 3:
+                last_update = now
+                elapsed = now - self._start_time
+                if os.path.exists(pmtiles_path):
+                    size_mb = os.path.getsize(pmtiles_path) / (1024 * 1024)
+                    self.log_message.emit(f"  Processing... {elapsed:.0f}s, output: {size_mb:.1f} MB", "info")
+                else:
+                    self.log_message.emit(f"  Processing... {elapsed:.0f}s (building tiles)", "info")
 
-        except FileNotFoundError:
-            self.log_message.emit(
-                "ogr2ogr not found. Ensure GDAL 3.8+ is installed.",
-                "error"
+            # Small sleep to avoid busy loop
+            self._qprocess.waitForFinished(100)
+
+        # Process finished
+        elapsed = time.time() - self._start_time
+        exit_code = self._qprocess.exitCode()
+        stderr = bytes(self._qprocess.readAllStandardError()).decode('utf-8', errors='replace')
+        stdout = bytes(self._qprocess.readAllStandardOutput()).decode('utf-8', errors='replace')
+
+        self.log_message.emit(f"  Conversion finished in {elapsed:.1f} seconds", "info")
+
+        if exit_code != 0:
+            error_msg = stderr.strip() if stderr.strip() else stdout.strip()
+            if not error_msg:
+                error_msg = f"ogr2ogr exited with code {exit_code}"
+            self.log_message.emit(f"  ogr2ogr error: {error_msg}", "error")
+            return False
+
+        # Show output file size
+        if os.path.exists(pmtiles_path):
+            pmtiles_size_mb = os.path.getsize(pmtiles_path) / (1024 * 1024)
+            self.log_message.emit(f"  PMTiles size: {pmtiles_size_mb:.1f} MB", "info")
+
+        return True
+
+    def _check_gdal_version(self):
+        """Check GDAL version.
+
+        :returns: Version string or None
+        """
+        try:
+            result = subprocess.run(
+                ["ogr2ogr", "--version"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                startupinfo=STARTUPINFO,
+                creationflags=CREATIONFLAGS
             )
+            if result.returncode == 0:
+                # Parse "GDAL 3.8.0, released 2023/..."
+                return result.stdout.split(",")[0].strip()
+        except Exception:
+            pass
+        return None
+
+    def _check_pmtiles_driver(self):
+        """Check if PMTiles driver is available.
+
+        :returns: True if available
+        """
+        try:
+            result = subprocess.run(
+                ["ogr2ogr", "--formats"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                startupinfo=STARTUPINFO,
+                creationflags=CREATIONFLAGS
+            )
+            return "PMTiles" in result.stdout
+        except Exception:
             return False
-        except subprocess.TimeoutExpired:
-            self.log_message.emit("PMTiles conversion timed out.", "error")
-            return False
+
+    def _list_gpkg_layers(self, gpkg_path):
+        """List layers in a GeoPackage.
+
+        :param gpkg_path: Path to GeoPackage
+        :returns: List of layer names or empty list
+        """
+        try:
+            result = subprocess.run(
+                ["ogrinfo", "-so", "-q", gpkg_path],
+                capture_output=True,
+                text=True,
+                timeout=30,
+                startupinfo=STARTUPINFO,
+                creationflags=CREATIONFLAGS
+            )
+            if result.returncode == 0:
+                # Parse output like "1: layer_name (Multi Polygon)"
+                layers = []
+                for line in result.stdout.strip().split("\n"):
+                    if line.strip():
+                        # Extract layer name between ": " and " ("
+                        parts = line.split(": ", 1)
+                        if len(parts) > 1:
+                            layer_name = parts[1].split(" (")[0]
+                            layers.append(layer_name)
+                return layers
+        except Exception:
+            pass
+        return []
 
     def _merge_imported_style(self, style_json):
         """Merge imported style with generated style.
@@ -282,8 +461,6 @@ class MapSplatExporter(QObject):
         :param layers: List of layers
         :returns: [west, south, east, north] in EPSG:4326
         """
-        from qgis.core import QgsCoordinateTransform
-
         if not layers:
             return [-180, -85, 180, 85]
 
@@ -336,9 +513,10 @@ class MapSplatExporter(QObject):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{self.settings["project_name"]} - MapSplat</title>
-    <link rel="stylesheet" href="lib/maplibre-gl.css">
-    <script src="lib/maplibre-gl.js"></script>
-    <script src="lib/pmtiles.js"></script>
+    <!-- MapLibre GL JS from CDN (replace with local files for offline use) -->
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
     <style>
         body {{ margin: 0; padding: 0; }}
         #map {{ position: absolute; top: 0; bottom: 0; width: 100%; }}
@@ -380,8 +558,7 @@ class MapSplatExporter(QObject):
             container: 'map',
             style: {style_str},
             center: [{center_lng}, {center_lat}],
-            zoom: 10,
-            maxBounds: [{bounds}]
+            zoom: 4
         }});
 
         // Add navigation controls
@@ -433,24 +610,11 @@ class MapSplatExporter(QObject):
         """
         lib_dir = os.path.join(output_dir, "lib")
 
-        # For now, create placeholder files with CDN references
-        # In production, we'd bundle the actual files
-        self.log_message.emit(
-            "Note: MapLibre assets should be downloaded for offline use",
-            "warning"
-        )
+        # Using CDN for now - assets downloaded at runtime by browser
+        self.log_message.emit("  Using CDN for MapLibre assets", "info")
 
-        # Create a loader script that falls back to CDN
-        loader_js = '''// MapLibre GL JS Loader
-// For offline use, download maplibre-gl.js and maplibre-gl.css from:
-// https://unpkg.com/maplibre-gl/dist/
-
-// This file is a placeholder - the actual MapLibre files should be placed here
-console.log("MapSplat: MapLibre assets loaded");
-'''
-        # Write placeholder (actual implementation would bundle real files)
-        # For MVP, we'll modify the HTML to use CDN
-        pass
+        # TODO: Optionally download and bundle for offline use
+        # See TODO.md for planned offline bundling feature
 
     def _write_readme(self, output_dir):
         """Write README file with deployment instructions.
@@ -510,6 +674,126 @@ Place these files in the `lib/` folder.
         readme_path = os.path.join(output_dir, "README.txt")
         with open(readme_path, "w", encoding="utf-8") as f:
             f.write(readme_content)
+
+    def _write_serve_script(self, output_dir):
+        """Write a simple Python server script for local viewing.
+
+        :param output_dir: Output directory
+        """
+        serve_script = '''#!/usr/bin/env python3
+"""
+HTTP server with Range request support for PMTiles.
+
+Usage:
+    python serve.py
+
+Then open http://localhost:8000 in your browser.
+Press Ctrl+C to stop the server.
+"""
+
+import http.server
+import os
+import webbrowser
+
+PORT = 8000
+
+class RangeRequestHandler(http.server.SimpleHTTPRequestHandler):
+    """HTTP handler with support for Range requests (required for PMTiles)."""
+
+    def send_head(self):
+        """Handle HEAD requests and Range requests."""
+        path = self.translate_path(self.path)
+
+        if os.path.isdir(path):
+            return super().send_head()
+
+        if not os.path.exists(path):
+            self.send_error(404, "File not found")
+            return None
+
+        file_size = os.path.getsize(path)
+
+        # Check for Range header
+        range_header = self.headers.get("Range")
+
+        if range_header:
+            # Parse Range header (e.g., "bytes=0-1023")
+            try:
+                range_spec = range_header.replace("bytes=", "")
+                start, end = range_spec.split("-")
+                start = int(start) if start else 0
+                end = int(end) if end else file_size - 1
+                end = min(end, file_size - 1)
+                length = end - start + 1
+
+                self.send_response(206)  # Partial Content
+                self.send_header("Content-Type", self.guess_type(path))
+                self.send_header("Content-Length", str(length))
+                self.send_header("Content-Range", f"bytes {start}-{end}/{file_size}")
+                self.send_header("Accept-Ranges", "bytes")
+                self.send_header("Access-Control-Allow-Origin", "*")
+                self.end_headers()
+
+                f = open(path, "rb")
+                f.seek(start)
+                return _FileWrapper(f, length)
+            except Exception as e:
+                self.send_error(416, "Range Not Satisfiable")
+                return None
+        else:
+            # Normal request
+            self.send_response(200)
+            self.send_header("Content-Type", self.guess_type(path))
+            self.send_header("Content-Length", str(file_size))
+            self.send_header("Accept-Ranges", "bytes")
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            return open(path, "rb")
+
+    def do_OPTIONS(self):
+        """Handle CORS preflight requests."""
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, HEAD, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Range")
+        self.send_header("Access-Control-Expose-Headers", "Content-Length, Content-Range")
+        self.end_headers()
+
+class _FileWrapper:
+    """Wrapper to read a specific byte range from a file."""
+    def __init__(self, f, length):
+        self.f = f
+        self.remaining = length
+
+    def read(self, size=None):
+        if self.remaining <= 0:
+            return b""
+        if size is None or size > self.remaining:
+            size = self.remaining
+        data = self.f.read(size)
+        self.remaining -= len(data)
+        return data
+
+    def close(self):
+        self.f.close()
+
+if __name__ == "__main__":
+    os.chdir(os.path.dirname(os.path.abspath(__file__)) or ".")
+
+    print(f"Starting server at http://localhost:{PORT}")
+    print("Press Ctrl+C to stop\\n")
+
+    webbrowser.open(f"http://localhost:{PORT}")
+
+    with http.server.HTTPServer(("", PORT), RangeRequestHandler) as httpd:
+        try:
+            httpd.serve_forever()
+        except KeyboardInterrupt:
+            print("\\nServer stopped.")
+'''
+        serve_path = os.path.join(output_dir, "serve.py")
+        with open(serve_path, "w", encoding="utf-8") as f:
+            f.write(serve_script)
 
     def _sanitize_layer_name(self, name):
         """Sanitize layer name for use in files/PMTiles.
