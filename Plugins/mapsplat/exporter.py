@@ -765,6 +765,8 @@ Press Ctrl+C to stop the server.
 
 import http.server
 import os
+import sys
+import threading
 import webbrowser
 
 PORT = 8000
@@ -867,13 +869,26 @@ if __name__ == "__main__":
     print(f"Starting server at http://localhost:{PORT}")
     print("Press Ctrl+C to stop\\n")
 
+    httpd = http.server.HTTPServer(("", PORT), RangeRequestHandler)
+
+    # Run server in a daemon thread so Ctrl+C works properly on Windows
+    server_thread = threading.Thread(target=httpd.serve_forever)
+    server_thread.daemon = True
+    server_thread.start()
+
     webbrowser.open(f"http://localhost:{PORT}")
 
-    with http.server.HTTPServer(("", PORT), RangeRequestHandler) as httpd:
-        try:
-            httpd.serve_forever()
-        except KeyboardInterrupt:
-            print("\\nServer stopped.")
+    try:
+        # Keep main thread alive - this allows Ctrl+C to work
+        while True:
+            server_thread.join(timeout=1)
+            if not server_thread.is_alive():
+                break
+    except KeyboardInterrupt:
+        print("\\nShutting down server...")
+        httpd.shutdown()
+        print("Server stopped.")
+        sys.exit(0)
 '''
         serve_path = os.path.join(output_dir, "serve.py")
         with open(serve_path, "w", encoding="utf-8") as f:
