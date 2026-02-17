@@ -8,7 +8,7 @@ This module handles the actual export process:
 - Generating the HTML viewer
 """
 
-__version__ = "0.1.8"
+__version__ = "0.1.9"
 
 import os
 import sys
@@ -106,29 +106,65 @@ class MapSplatExporter(QObject):
             self.finished.emit(False, "")
             return
 
-        # Export vector layers to GeoPackage
-        self.log_message.emit("Exporting layers to GeoPackage...", "info")
-        gpkg_path = os.path.join(output_dir, "data", "layers.gpkg")
-        self._export_to_geopackage(layers["vector"], gpkg_path)
-        self.progress.emit(40)
+        single_file = self.settings.get("single_file", True)
 
-        # Convert to PMTiles
-        self.log_message.emit("Converting to PMTiles...", "info")
-        pmtiles_path = os.path.join(output_dir, "data", "layers.pmtiles")
-        success = self._convert_to_pmtiles(gpkg_path, pmtiles_path)
-        if not success:
-            self.finished.emit(False, "")
-            return
-        self.progress.emit(60)
+        if single_file:
+            # Single PMTiles file containing all layers
+            self.log_message.emit("Exporting layers to GeoPackage...", "info")
+            gpkg_path = os.path.join(output_dir, "data", "layers.gpkg")
+            self._export_to_geopackage(layers["vector"], gpkg_path)
+            self.progress.emit(40)
 
-        # Clean up intermediate GeoPackage
-        if os.path.exists(gpkg_path):
-            os.remove(gpkg_path)
+            self.log_message.emit("Converting to PMTiles...", "info")
+            pmtiles_path = os.path.join(output_dir, "data", "layers.pmtiles")
+            success = self._convert_to_pmtiles(gpkg_path, pmtiles_path)
+            if not success:
+                self.finished.emit(False, "")
+                return
+            self.progress.emit(60)
+
+            # Clean up intermediate GeoPackage
+            if os.path.exists(gpkg_path):
+                os.remove(gpkg_path)
+        else:
+            # Separate PMTiles file per layer
+            self.log_message.emit("Exporting layers separately...", "info")
+            total_layers = len(layers["vector"])
+            for i, layer in enumerate(layers["vector"]):
+                if self._cancelled:
+                    self.log_message.emit("Export cancelled.", "warning")
+                    self.finished.emit(False, "")
+                    return
+
+                layer_name = self._sanitize_layer_name(layer.name())
+                self.log_message.emit(f"Processing layer {i+1}/{total_layers}: {layer.name()}", "info")
+
+                # Export single layer to GeoPackage
+                gpkg_path = os.path.join(output_dir, "data", f"{layer_name}.gpkg")
+                self._export_to_geopackage([layer], gpkg_path)
+
+                # Convert to PMTiles
+                pmtiles_path = os.path.join(output_dir, "data", f"{layer_name}.pmtiles")
+                success = self._convert_to_pmtiles(gpkg_path, pmtiles_path)
+                if not success:
+                    self.log_message.emit(f"Failed to convert {layer_name}", "error")
+                    # Continue with other layers instead of aborting
+                    continue
+
+                # Clean up intermediate GeoPackage
+                if os.path.exists(gpkg_path):
+                    os.remove(gpkg_path)
+
+                # Update progress (10-60% range for conversion)
+                progress = 10 + int(50 * (i + 1) / total_layers)
+                self.progress.emit(progress)
+
+            self.progress.emit(60)
 
         # Convert styles
         self.log_message.emit("Converting styles...", "info")
         style_converter = StyleConverter(layers["vector"], self.settings)
-        style_json = style_converter.convert()
+        style_json = style_converter.convert(single_file=single_file)
 
         # Handle imported style merge
         if self.settings.get("imported_style_path"):

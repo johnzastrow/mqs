@@ -11,7 +11,7 @@ Supported renderers:
 Unsupported renderers fall back to default styles.
 """
 
-__version__ = "0.1.7"
+__version__ = "0.1.9"
 
 from qgis.core import (
     QgsVectorLayer,
@@ -45,20 +45,36 @@ class StyleConverter:
         self.layers = layers
         self.settings = settings
 
-    def convert(self):
+    def convert(self, single_file=True):
         """Convert all layers to MapLibre style JSON.
 
+        :param single_file: If True, all layers share one PMTiles source.
+                           If False, each layer has its own PMTiles file.
         :returns: Style JSON dictionary
         """
-        style = {
-            "version": 8,
-            "name": self.settings.get("project_name", "MapSplat Export"),
-            "sources": {
+        self._single_file = single_file
+
+        if single_file:
+            sources = {
                 "mapsplat": {
                     "type": "vector",
                     "url": "pmtiles://data/layers.pmtiles"
                 }
-            },
+            }
+        else:
+            # Create separate source for each layer
+            sources = {}
+            for layer in self.layers:
+                source_name = self._sanitize_name(layer.name())
+                sources[source_name] = {
+                    "type": "vector",
+                    "url": f"pmtiles://data/{source_name}.pmtiles"
+                }
+
+        style = {
+            "version": 8,
+            "name": self.settings.get("project_name", "MapSplat Export"),
+            "sources": sources,
             "layers": [
                 # Background layer
                 {
@@ -88,18 +104,24 @@ class StyleConverter:
         source_layer = self._sanitize_name(layer.name())
         geom_type = layer.geometryType()
 
+        # Determine source name based on single_file mode
+        if self._single_file:
+            source_name = "mapsplat"
+        else:
+            source_name = source_layer  # Each layer has its own source
+
         # Dispatch based on renderer type
         if isinstance(renderer, QgsSingleSymbolRenderer):
-            return self._convert_single_symbol(layer, renderer, source_layer, geom_type)
+            return self._convert_single_symbol(layer, renderer, source_layer, geom_type, source_name)
         elif isinstance(renderer, QgsCategorizedSymbolRenderer):
-            return self._convert_categorized(layer, renderer, source_layer, geom_type)
+            return self._convert_categorized(layer, renderer, source_layer, geom_type, source_name)
         elif isinstance(renderer, QgsGraduatedSymbolRenderer):
-            return self._convert_graduated(layer, renderer, source_layer, geom_type)
+            return self._convert_graduated(layer, renderer, source_layer, geom_type, source_name)
         else:
             # Fallback to default style
-            return self._create_default_style(layer, source_layer, geom_type)
+            return self._create_default_style(layer, source_layer, geom_type, source_name)
 
-    def _convert_single_symbol(self, layer, renderer, source_layer, geom_type):
+    def _convert_single_symbol(self, layer, renderer, source_layer, geom_type, source_name):
         """Convert single symbol renderer.
 
         :returns: List of MapLibre layer dictionaries
@@ -108,15 +130,15 @@ class StyleConverter:
         layer_id = f"{source_layer}"
 
         if geom_type == 2:  # Polygon
-            return [self._symbol_to_fill_layer(symbol, layer_id, source_layer)]
+            return [self._symbol_to_fill_layer(symbol, layer_id, source_layer, source_name)]
         elif geom_type == 1:  # Line
-            return [self._symbol_to_line_layer(symbol, layer_id, source_layer)]
+            return [self._symbol_to_line_layer(symbol, layer_id, source_layer, source_name)]
         elif geom_type == 0:  # Point
-            return [self._symbol_to_circle_layer(symbol, layer_id, source_layer)]
+            return [self._symbol_to_circle_layer(symbol, layer_id, source_layer, source_name)]
 
-        return self._create_default_style(layer, source_layer, geom_type)
+        return self._create_default_style(layer, source_layer, geom_type, source_name)
 
-    def _convert_categorized(self, layer, renderer, source_layer, geom_type):
+    def _convert_categorized(self, layer, renderer, source_layer, geom_type, source_name):
         """Convert categorized symbol renderer.
 
         :returns: List of MapLibre layer dictionaries
@@ -147,7 +169,7 @@ class StyleConverter:
             layers.append({
                 "id": source_layer,
                 "type": "fill",
-                "source": "mapsplat",
+                "source": source_name,
                 "source-layer": source_layer,
                 "paint": {
                     "fill-color": fill_colors,
@@ -172,7 +194,7 @@ class StyleConverter:
             layers.append({
                 "id": source_layer,
                 "type": "line",
-                "source": "mapsplat",
+                "source": source_name,
                 "source-layer": source_layer,
                 "paint": {
                     "line-color": line_colors,
@@ -196,7 +218,7 @@ class StyleConverter:
             layers.append({
                 "id": source_layer,
                 "type": "circle",
-                "source": "mapsplat",
+                "source": source_name,
                 "source-layer": source_layer,
                 "paint": {
                     "circle-color": circle_colors,
@@ -206,9 +228,9 @@ class StyleConverter:
                 }
             })
 
-        return layers if layers else self._create_default_style(layer, source_layer, geom_type)
+        return layers if layers else self._create_default_style(layer, source_layer, geom_type, source_name)
 
-    def _convert_graduated(self, layer, renderer, source_layer, geom_type):
+    def _convert_graduated(self, layer, renderer, source_layer, geom_type, source_name):
         """Convert graduated symbol renderer.
 
         :returns: List of MapLibre layer dictionaries
@@ -218,7 +240,7 @@ class StyleConverter:
         ranges = renderer.ranges()
 
         if not ranges:
-            return self._create_default_style(layer, source_layer, geom_type)
+            return self._create_default_style(layer, source_layer, geom_type, source_name)
 
         # Build step expression for colors based on ranges
         if geom_type == 2:  # Polygon
@@ -234,7 +256,7 @@ class StyleConverter:
             layers.append({
                 "id": source_layer,
                 "type": "fill",
-                "source": "mapsplat",
+                "source": source_name,
                 "source-layer": source_layer,
                 "paint": {
                     "fill-color": fill_expr,
@@ -255,7 +277,7 @@ class StyleConverter:
             layers.append({
                 "id": source_layer,
                 "type": "line",
-                "source": "mapsplat",
+                "source": source_name,
                 "source-layer": source_layer,
                 "paint": {
                     "line-color": line_expr,
@@ -275,7 +297,7 @@ class StyleConverter:
             layers.append({
                 "id": source_layer,
                 "type": "circle",
-                "source": "mapsplat",
+                "source": source_name,
                 "source-layer": source_layer,
                 "paint": {
                     "circle-color": circle_expr,
@@ -285,9 +307,9 @@ class StyleConverter:
                 }
             })
 
-        return layers if layers else self._create_default_style(layer, source_layer, geom_type)
+        return layers if layers else self._create_default_style(layer, source_layer, geom_type, source_name)
 
-    def _symbol_to_fill_layer(self, symbol, layer_id, source_layer):
+    def _symbol_to_fill_layer(self, symbol, layer_id, source_layer, source_name):
         """Convert fill symbol to MapLibre layer.
 
         :returns: MapLibre layer dictionary
@@ -297,7 +319,7 @@ class StyleConverter:
         return {
             "id": layer_id,
             "type": "fill",
-            "source": "mapsplat",
+            "source": source_name,
             "source-layer": source_layer,
             "paint": {
                 "fill-color": fill_color,
@@ -306,7 +328,7 @@ class StyleConverter:
             }
         }
 
-    def _symbol_to_line_layer(self, symbol, layer_id, source_layer):
+    def _symbol_to_line_layer(self, symbol, layer_id, source_layer, source_name):
         """Convert line symbol to MapLibre layer.
 
         :returns: MapLibre layer dictionary
@@ -317,7 +339,7 @@ class StyleConverter:
         return {
             "id": layer_id,
             "type": "line",
-            "source": "mapsplat",
+            "source": source_name,
             "source-layer": source_layer,
             "paint": {
                 "line-color": line_color,
@@ -325,7 +347,7 @@ class StyleConverter:
             }
         }
 
-    def _symbol_to_circle_layer(self, symbol, layer_id, source_layer):
+    def _symbol_to_circle_layer(self, symbol, layer_id, source_layer, source_name):
         """Convert marker symbol to MapLibre circle layer.
 
         :returns: MapLibre layer dictionary
@@ -336,7 +358,7 @@ class StyleConverter:
         return {
             "id": layer_id,
             "type": "circle",
-            "source": "mapsplat",
+            "source": source_name,
             "source-layer": source_layer,
             "paint": {
                 "circle-color": circle_color,
@@ -346,7 +368,7 @@ class StyleConverter:
             }
         }
 
-    def _create_default_style(self, layer, source_layer, geom_type):
+    def _create_default_style(self, layer, source_layer, geom_type, source_name):
         """Create default fallback style for unsupported renderers.
 
         :returns: List with single MapLibre layer dictionary
@@ -355,7 +377,7 @@ class StyleConverter:
             return [{
                 "id": source_layer,
                 "type": "fill",
-                "source": "mapsplat",
+                "source": source_name,
                 "source-layer": source_layer,
                 "paint": {
                     "fill-color": self.DEFAULT_FILL_COLOR,
@@ -367,7 +389,7 @@ class StyleConverter:
             return [{
                 "id": source_layer,
                 "type": "line",
-                "source": "mapsplat",
+                "source": source_name,
                 "source-layer": source_layer,
                 "paint": {
                     "line-color": self.DEFAULT_LINE_COLOR,
@@ -378,7 +400,7 @@ class StyleConverter:
             return [{
                 "id": source_layer,
                 "type": "circle",
-                "source": "mapsplat",
+                "source": source_name,
                 "source-layer": source_layer,
                 "paint": {
                     "circle-color": self.DEFAULT_POINT_COLOR,

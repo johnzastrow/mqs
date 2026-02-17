@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.9] - 2026-02-17
+
+### Added
+- **Separate PMTiles per layer option** - new "PMTiles mode" dropdown in UI
+  - "Single file (all layers)" - default, combines all layers into one PMTiles
+  - "Separate files per layer" - creates individual PMTiles files for each layer
+- Separate sources in style.json when using separate files mode
+
+### Changed
+- StyleConverter now accepts `single_file` parameter to control source generation
+- Each layer references its own source when exporting separately
+
 ## [0.1.8] - 2026-02-17
 
 ### Added

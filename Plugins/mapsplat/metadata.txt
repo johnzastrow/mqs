@@ -2,7 +2,7 @@
 name=MapSplat
 qgisMinimumVersion=3.40
 description=Export QGIS projects to static web maps using PMTiles and MapLibre GL JS
-version=0.1.8
+version=0.1.9
 author=John Zastrow
 email=john@example.com
 
@@ -22,6 +22,9 @@ repository=https://github.com/johnzastrow/mqs
 hasProcessingProvider=no
 
 changelog=
+    0.1.9 - Separate PMTiles per layer option
+    - Added "PMTiles mode" dropdown: single file or separate files per layer
+    - Each layer can now export to its own PMTiles file
     0.1.8 - Legend and usability improvements
     - Added legend swatches to layer controls (shows layer colors)
     - Fixed serve.py Ctrl+C handling on Windows
