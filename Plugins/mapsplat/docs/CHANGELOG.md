@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-02-17
+
+### Added
+- **Labels support** - extracts QGIS labels and converts to MapLibre symbol layers
+  - Text field, font family, size, color
+  - Halo/buffer settings (color, width)
+  - Line placement for linear features
+- **Rule-based renderer support** - converts filter expressions to MapLibre filters
+  - Supports =, !=, <, >, <=, >= operators
+  - Supports IS NULL, IS NOT NULL checks
+  - Nested rules processed recursively
+- **Opacity extraction** - reads actual alpha values from QGIS symbols
+  - Fill opacity, line opacity, circle opacity
+  - Stroke opacity for markers
+- **Line dash patterns** - converts custom dash patterns to MapLibre line-dasharray
+- **Line cap/join styles** - extracts pen cap (flat/square/round) and join (miter/bevel/round)
+- **Multiple symbol layers** - processes all symbol layers, not just the first
+  - Creates separate MapLibre layers for each symbol layer
+- **Proper unit conversion** - handles mm, pixels, points, inches
+- **Glyphs URL** - added default MapLibre font glyphs for label rendering
+
+### Changed
+- Categorized renderer now extracts opacity and line width per category
+- Graduated renderer now extracts opacity and line width per range
+- Marker symbols now extract stroke width and opacity
+
+### Known Limitations
+- SVG markers fall back to circles (sprite sheets not yet implemented)
+- Font markers fall back to circles
+- Fill patterns fall back to solid fills (needs sprite images)
+- Complex QGIS expressions (AND/OR, functions) not converted
+- Blend modes not supported by MapLibre
+
 ## [0.1.9] - 2026-02-17
 
 ### Added
