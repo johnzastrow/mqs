@@ -2,7 +2,7 @@
 name=MapSplat
 qgisMinimumVersion=3.40
 description=Export QGIS projects to static web maps using PMTiles and MapLibre GL JS
-version=0.1.5
+version=0.1.6
 author=John Zastrow
 email=john@example.com
 
@@ -22,6 +22,10 @@ repository=https://github.com/johnzastrow/mqs
 hasProcessingProvider=no
 
 changelog=
+    0.1.6 - Windows deployment scripts
+    - Added deploy.bat for Windows Command Prompt
+    - Added deploy.ps1 for Windows PowerShell
+    - Updated README with Windows deployment instructions
     0.1.5 - Local viewing instructions
     - Added local server instructions to README
     - Explains why file:// doesn't work with PMTiles

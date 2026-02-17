@@ -4,7 +4,7 @@
 
 [![QGIS](https://img.shields.io/badge/QGIS-3.40%2B-green.svg)](https://qgis.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.1.5-orange.svg)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.1.6-orange.svg)](docs/CHANGELOG.md)
 
 MapSplat is a QGIS plugin that exports your project layers to self-contained web map packages. The output can be hosted on any static web server, cloud storage, or CDN - no tile server required.
 
@@ -30,16 +30,28 @@ MapSplat is a QGIS plugin that exports your project layers to self-contained web
 
 ### From Source (Development)
 
+**Linux/macOS:**
 ```bash
-# Clone the repository
 git clone https://github.com/johnzastrow/mqs.git
 cd mqs/Plugins/mapsplat
-
-# Deploy to QGIS plugins directory
 make deploy
-
-# Restart QGIS and enable the plugin
 ```
+
+**Windows (Command Prompt):**
+```cmd
+git clone https://github.com/johnzastrow/mqs.git
+cd mqs\Plugins\mapsplat
+deploy.bat
+```
+
+**Windows (PowerShell):**
+```powershell
+git clone https://github.com/johnzastrow/mqs.git
+cd mqs\Plugins\mapsplat
+.\deploy.ps1
+```
+
+Restart QGIS and enable the plugin in Plugin Manager.
 
 ### From ZIP (Release)
 
