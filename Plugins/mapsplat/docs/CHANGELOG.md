@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-02-17
+
+### Added
+- **Legend swatches** in layer controls panel
+  - Color swatches show layer fill/line/circle colors
+  - Swatch shape adapts to geometry type (square for fill, line for lines, circle for points)
+  - Outline color shown on fill swatches when different from fill
+
+### Fixed
+- **serve.py Ctrl+C handling on Windows** - server now shuts down cleanly
+  - Uses daemon thread approach instead of blocking serve_forever()
+  - Proper shutdown sequence on keyboard interrupt
+- **Layer control order** - layers now listed top-to-bottom matching map stacking
+  - Top-most (visually on top) layers appear first in the legend
+
 ## [0.1.7] - 2026-02-17
 
 ### Added
