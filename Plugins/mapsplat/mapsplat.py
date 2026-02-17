@@ -5,17 +5,32 @@ This module contains the main plugin class that handles QGIS integration,
 menu items, toolbar buttons, and the dockable widget.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 import os
 
 from qgis.PyQt.QtCore import QSettings, QTranslator, QCoreApplication, Qt
 from qgis.PyQt.QtGui import QIcon
-from qgis.PyQt.QtWidgets import QAction, QDockWidget
+
+# Qt6 compatibility: QAction moved from QtWidgets to QtGui
+try:
+    from qgis.PyQt.QtGui import QAction
+except ImportError:
+    from qgis.PyQt.QtWidgets import QAction
+
+from qgis.PyQt.QtWidgets import QDockWidget
 
 from qgis.core import QgsProject
 
 from .mapsplat_dockwidget import MapSplatDockWidget
+
+# Qt6 compatibility: handle scoped enums
+try:
+    # Qt6 style
+    _RightDockWidgetArea = Qt.DockWidgetArea.RightDockWidgetArea
+except AttributeError:
+    # Qt5 style
+    _RightDockWidgetArea = Qt.RightDockWidgetArea
 
 
 class MapSplat:
@@ -168,5 +183,5 @@ class MapSplat:
             self.dockwidget.closingPlugin.connect(self.onClosePlugin)
 
             # Show the dockwidget
-            self.iface.addDockWidget(Qt.RightDockWidgetArea, self.dockwidget)
+            self.iface.addDockWidget(_RightDockWidgetArea, self.dockwidget)
             self.dockwidget.show()

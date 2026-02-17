@@ -5,7 +5,7 @@ This module contains the dockable widget that provides the main UI
 for layer selection, export options, and triggering exports.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 
 import os
 
@@ -40,6 +40,24 @@ from qgis.core import (
 )
 
 from .exporter import MapSplatExporter
+
+# Qt6 compatibility: handle scoped enums
+try:
+    # Qt6 style
+    _ItemIsEnabled = Qt.ItemFlag.ItemIsEnabled
+    _UserRole = Qt.ItemDataRole.UserRole
+except AttributeError:
+    # Qt5 style
+    _ItemIsEnabled = Qt.ItemIsEnabled
+    _UserRole = Qt.UserRole
+
+try:
+    # Qt6 style
+    from qgis.PyQt.QtWidgets import QAbstractItemView
+    _MultiSelection = QAbstractItemView.SelectionMode.MultiSelection
+except (ImportError, AttributeError):
+    # Qt5 style
+    _MultiSelection = QListWidget.MultiSelection
 
 
 class MapSplatDockWidget(QDockWidget):
@@ -77,7 +95,7 @@ class MapSplatDockWidget(QDockWidget):
         layer_layout = QVBoxLayout(layer_group)
 
         self.layer_list = QListWidget()
-        self.layer_list.setSelectionMode(QListWidget.MultiSelection)
+        self.layer_list.setSelectionMode(_MultiSelection)
         layer_layout.addWidget(self.layer_list)
 
         # Select all / none buttons
@@ -216,10 +234,10 @@ class MapSplatDockWidget(QDockWidget):
                 prefix = "[Raster]"
             else:
                 prefix = "[Other]"
-                item.setFlags(item.flags() & ~Qt.ItemIsEnabled)
+                item.setFlags(item.flags() & ~_ItemIsEnabled)
 
             item.setText(f"{prefix} {layer.name()}")
-            item.setData(Qt.UserRole, layer.id())
+            item.setData(_UserRole, layer.id())
             self.layer_list.addItem(item)
 
         # Auto-populate project name from QGIS project
@@ -233,7 +251,7 @@ class MapSplatDockWidget(QDockWidget):
         """Select all layers in the list."""
         for i in range(self.layer_list.count()):
             item = self.layer_list.item(i)
-            if item.flags() & Qt.ItemIsEnabled:
+            if item.flags() & _ItemIsEnabled:
                 item.setSelected(True)
 
     def _select_no_layers(self):
@@ -320,7 +338,7 @@ class MapSplatDockWidget(QDockWidget):
         # Gather selected layers
         selected_layer_ids = []
         for item in self.layer_list.selectedItems():
-            layer_id = item.data(Qt.UserRole)
+            layer_id = item.data(_UserRole)
             selected_layer_ids.append(layer_id)
 
         # Gather settings

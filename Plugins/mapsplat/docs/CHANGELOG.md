@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-02-16
+
+### Added
+- Qt6/QGIS 4.0 compatibility shims
+- Try/except blocks for Qt5/Qt6 enum differences
+
+### Fixed
+- `QAction` import location (moved from QtWidgets to QtGui in Qt6)
+- `Qt.RightDockWidgetArea` enum scoping for Qt6
+- `Qt.ItemIsEnabled` enum scoping for Qt6
+- `Qt.UserRole` enum scoping for Qt6
+- `QListWidget.MultiSelection` enum scoping for Qt6
+
+### Changed
+- Plugin now compatible with both QGIS 3.x (Qt5) and QGIS 4.x (Qt6)
+
 ## [0.1.1] - 2026-02-16
 
 ### Added

@@ -2,7 +2,7 @@
 name=MapSplat
 qgisMinimumVersion=3.40
 description=Export QGIS projects to static web maps using PMTiles and MapLibre GL JS
-version=0.1.1
+version=0.1.2
 author=John Zastrow
 email=john@example.com
 
@@ -22,6 +22,10 @@ repository=https://github.com/johnzastrow/mqs
 hasProcessingProvider=no
 
 changelog=
+    0.1.2 - Qt6/QGIS 4.0 compatibility
+    - Added compatibility shims for Qt6 enum changes
+    - Fixed QAction import for Qt6 (moved from QtWidgets to QtGui)
+    - Compatible with both QGIS 3.x (Qt5) and QGIS 4.x (Qt6)
     0.1.1 - Documentation and planning
     - Added PLAN.md, TODO.md, CHANGELOG.md
     - Renamed plugin from "po" to "mapsplat"
