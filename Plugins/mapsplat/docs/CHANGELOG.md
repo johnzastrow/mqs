@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-02-16
+
+### Added
+- Comprehensive README.md in plugin root directory
+- Detailed deployment instructions for multiple platforms:
+  - GitHub Pages
+  - Netlify / Vercel
+  - AWS S3
+  - nginx / Apache
+- CORS configuration examples for nginx, Apache, and S3
+- Troubleshooting guide for common issues
+- Development and build instructions
+- Project structure documentation
+
 ## [0.1.2] - 2026-02-16
 
 ### Added
