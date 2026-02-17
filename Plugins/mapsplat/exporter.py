@@ -624,7 +624,8 @@ class MapSplatExporter(QObject):
             // Create layer toggles
             const layerToggles = document.getElementById('layer-toggles');
             const style = map.getStyle();
-            const layers = style.layers.filter(l => l['source-layer']);
+            // Reverse so top layers appear first in the list (MapLibre renders bottom-to-top)
+            const layers = style.layers.filter(l => l['source-layer']).reverse();
 
             // Helper to extract color from layer paint properties
             function getLayerColor(layer) {{
