@@ -4,7 +4,7 @@
 
 [![QGIS](https://img.shields.io/badge/QGIS-3.40%2B-green.svg)](https://qgis.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.1.4-orange.svg)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.1.5-orange.svg)](docs/CHANGELOG.md)
 
 MapSplat is a QGIS plugin that exports your project layers to self-contained web map packages. The output can be hosted on any static web server, cloud storage, or CDN - no tile server required.
 
@@ -84,6 +84,49 @@ myproject_webmap/
 │   ├── maplibre-gl.css     # MapLibre styles
 │   └── pmtiles.js          # PMTiles protocol handler
 └── README.txt              # Deployment instructions
+```
+
+## Local Viewing
+
+**Important**: You cannot simply open `index.html` directly in a browser (via `file://`). PMTiles requires HTTP Range Requests, which only work over HTTP/HTTPS.
+
+### Quick Local Server Options
+
+#### Python (recommended - already installed with QGIS)
+
+```bash
+cd myproject_webmap/
+python -m http.server 8000
+```
+Then open http://localhost:8000 in your browser.
+
+#### Node.js
+
+```bash
+# Using npx (no install needed)
+npx serve myproject_webmap/
+
+# Or with http-server
+npx http-server myproject_webmap/
+```
+
+#### PHP
+
+```bash
+cd myproject_webmap/
+php -S localhost:8000
+```
+
+#### VS Code Live Server
+
+If using VS Code, install the "Live Server" extension, then right-click `index.html` → **Open with Live Server**.
+
+#### PowerShell (Windows)
+
+```powershell
+cd myproject_webmap
+Start-Process python -ArgumentList "-m", "http.server", "8000"
+Start-Process "http://localhost:8000"
 ```
 
 ## Deployment

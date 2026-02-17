@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-02-16
+
+### Added
+- Local viewing instructions in README
+- Explanation of why `file://` protocol doesn't work with PMTiles
+- Quick start commands for local servers:
+  - Python (`python -m http.server`)
+  - Node.js (`npx serve`)
+  - PHP (`php -S`)
+  - VS Code Live Server
+  - PowerShell one-liner for Windows
+
 ## [0.1.4] - 2026-02-16
 
 ### Changed
