@@ -7,6 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-02-17
+
+### Added
+- **Cancel button** to abort long-running exports
+- **Max zoom control** in UI (spinbox, range 4-18, default 6)
+- **serve.py** script in export output for local viewing
+  - Custom HTTP server with Range request support (required for PMTiles)
+  - Auto-opens browser on startup
+- GDAL version check before conversion
+- PMTiles driver availability check
+- Layer listing before conversion (shows which layers will be processed)
+- Progress updates during ogr2ogr conversion (elapsed time, output file size)
+- Expandable log panel (Expand/Collapse button)
+
+### Changed
+- **Switched from QThread to QProcess** for ogr2ogr execution
+  - UI now stays responsive during long exports
+  - Proper cancellation support
+- HTML viewer now uses **CDN for MapLibre assets** (unpkg.com)
+  - maplibre-gl.js v4.7.1
+  - maplibre-gl.css v4.7.1
+  - pmtiles.js v3.2.0
+- Default max zoom reduced from 14 to 6 (much faster exports)
+- Removed maxBounds from map initialization (was causing errors)
+
+### Fixed
+- **QgsCoordinateTransformContext error** - was passing wrong type to options.ct
+- **QGIS hanging during export** - replaced blocking subprocess with QProcess + processEvents
+- **Console windows appearing on Windows** - added CREATE_NO_WINDOW flags
+- **PMTiles "no content-length" error** - serve.py now supports HTTP Range requests
+- **serve.py "read of closed file" error** - fixed file wrapper to keep file open
+
+### Updated
+- TODO.md with completed items and offline bundling feature description
+
 ## [0.1.6] - 2026-02-17
 
 ### Added
