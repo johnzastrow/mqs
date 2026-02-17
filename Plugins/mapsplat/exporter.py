@@ -557,8 +557,26 @@ class MapSplatExporter(QObject):
             cursor: pointer;
         }}
         .layer-item input {{
-            margin-right: 8px;
+            margin-right: 6px;
             cursor: pointer;
+        }}
+        .legend-swatch {{
+            width: 16px;
+            height: 16px;
+            min-width: 16px;
+            border-radius: 3px;
+            margin-right: 6px;
+            border: 1px solid rgba(0,0,0,0.2);
+        }}
+        .legend-swatch.line {{
+            height: 4px;
+            align-self: center;
+        }}
+        .legend-swatch.circle {{
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            min-width: 12px;
         }}
         .layer-item label {{
             cursor: pointer;
@@ -608,6 +626,20 @@ class MapSplatExporter(QObject):
             const style = map.getStyle();
             const layers = style.layers.filter(l => l['source-layer']);
 
+            // Helper to extract color from layer paint properties
+            function getLayerColor(layer) {{
+                const paint = layer.paint || {{}};
+                // Try different color properties based on layer type
+                return paint['fill-color'] || paint['line-color'] ||
+                       paint['circle-color'] || paint['text-color'] ||
+                       paint['icon-color'] || '#888888';
+            }}
+
+            // Helper to get layer geometry type
+            function getLayerType(layer) {{
+                return layer.type; // fill, line, circle, symbol, etc.
+            }}
+
             // Group by source-layer (actual data layers)
             const seenLayers = new Set();
             layers.forEach(layer => {{
@@ -622,6 +654,30 @@ class MapSplatExporter(QObject):
                 checkbox.type = 'checkbox';
                 checkbox.id = 'toggle-' + sourceLayer;
                 checkbox.checked = true;
+
+                // Create legend swatch
+                const swatch = document.createElement('div');
+                swatch.className = 'legend-swatch';
+                const color = getLayerColor(layer);
+                const layerType = getLayerType(layer);
+
+                // Style swatch based on geometry type
+                if (layerType === 'line') {{
+                    swatch.classList.add('line');
+                    swatch.style.backgroundColor = color;
+                }} else if (layerType === 'circle') {{
+                    swatch.classList.add('circle');
+                    swatch.style.backgroundColor = color;
+                }} else {{
+                    // fill or other
+                    swatch.style.backgroundColor = color;
+                    // Add outline color if different
+                    const outlineColor = layer.paint?.['fill-outline-color'];
+                    if (outlineColor && outlineColor !== color) {{
+                        swatch.style.borderColor = outlineColor;
+                        swatch.style.borderWidth = '2px';
+                    }}
+                }}
 
                 const label = document.createElement('label');
                 label.htmlFor = checkbox.id;
@@ -639,6 +695,7 @@ class MapSplatExporter(QObject):
                 }});
 
                 div.appendChild(checkbox);
+                div.appendChild(swatch);
                 div.appendChild(label);
                 layerToggles.appendChild(div);
             }});
