@@ -772,6 +772,18 @@ PORT = 8000
 class RangeRequestHandler(http.server.SimpleHTTPRequestHandler):
     """HTTP handler with support for Range requests (required for PMTiles)."""
 
+    def log_error(self, format, *args):
+        """Suppress connection aborted errors (normal when browser cancels requests)."""
+        if "ConnectionAbortedError" not in str(args):
+            super().log_error(format, *args)
+
+    def handle(self):
+        """Handle requests, silently ignoring connection aborts."""
+        try:
+            super().handle()
+        except (ConnectionAbortedError, ConnectionResetError, BrokenPipeError):
+            pass  # Browser cancelled the request, this is normal
+
     def send_head(self):
         """Handle HEAD requests and Range requests."""
         path = self.translate_path(self.path)
