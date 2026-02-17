@@ -11,7 +11,7 @@ Supported renderers:
 Unsupported renderers fall back to default styles.
 """
 
-__version__ = "0.1.3"
+__version__ = "0.1.4"
 
 from qgis.core import (
     QgsVectorLayer,
