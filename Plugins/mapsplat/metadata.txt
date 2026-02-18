@@ -2,7 +2,7 @@
 name=MapSplat
 qgisMinimumVersion=3.40
 description=Export QGIS projects to static web maps using PMTiles and MapLibre GL JS
-version=0.2.0
+version=0.2.1
 author=John Zastrow
 email=john@example.com
 
@@ -22,6 +22,9 @@ repository=https://github.com/johnzastrow/mqs
 hasProcessingProvider=no
 
 changelog=
+    0.2.1 - Style-only export and label fixes
+    - Added style-only export option (skip data conversion)
+    - Fixed label rendering with proper fonts and halo
     0.2.0 - Enhanced style extraction
     - Labels support (text, font, color, halo)
     - Rule-based renderer support with filter conversion

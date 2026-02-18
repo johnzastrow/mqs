@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-02-17
+
+### Added
+- **Style-only export option** - new checkbox to skip data conversion
+  - Generates only style.json and HTML viewer
+  - Much faster for iterating on styles
+  - Use when PMTiles data already exists
+
+### Fixed
+- **Label rendering** - improved text field extraction
+  - Use `to-string` expression to ensure values are strings
+  - Standard Open Sans/Arial Unicode fonts for glyph compatibility
+  - Default halo for better readability
+  - Better label placement with padding and spacing
+  - Point labels offset below markers
+
 ## [0.2.0] - 2026-02-17
 
 ### Added
