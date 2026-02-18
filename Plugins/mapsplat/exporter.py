@@ -8,7 +8,7 @@ This module handles the actual export process:
 - Generating the HTML viewer
 """
 
-__version__ = "0.2.1"
+__version__ = "0.2.2"
 
 import os
 import sys
@@ -490,7 +490,9 @@ class MapSplatExporter(QObject):
         # Calculate initial bounds from layers
         bounds = self._calculate_bounds(layers["vector"])
 
-        html_content = self._get_html_template(style_json, bounds)
+        # If exporting style.json, reference it externally instead of embedding
+        use_external_style = self.settings.get("export_style_json", False)
+        html_content = self._get_html_template(style_json, bounds, use_external_style)
         html_path = os.path.join(output_dir, "index.html")
 
         with open(html_path, "w", encoding="utf-8") as f:
@@ -535,18 +537,24 @@ class MapSplatExporter(QObject):
 
         return [-180, -85, 180, 85]
 
-    def _get_html_template(self, style_json, bounds):
-        """Get the HTML template with embedded style.
+    def _get_html_template(self, style_json, bounds, use_external_style=False):
+        """Get the HTML template.
 
         :param style_json: Style JSON dictionary
         :param bounds: [west, south, east, north]
+        :param use_external_style: If True, reference ./style.json instead of embedding
         :returns: HTML string
         """
         # Calculate center
         center_lng = (bounds[0] + bounds[2]) / 2
         center_lat = (bounds[1] + bounds[3]) / 2
 
-        style_str = json.dumps(style_json, indent=2)
+        if use_external_style:
+            # Reference external style.json file
+            style_ref = "'./style.json'"
+        else:
+            # Embed style inline for self-contained HTML
+            style_ref = json.dumps(style_json, indent=2)
 
         return f'''<!DOCTYPE html>
 <html lang="en">
@@ -647,7 +655,7 @@ class MapSplatExporter(QObject):
         // Initialize map
         const map = new maplibregl.Map({{
             container: 'map',
-            style: {style_str},
+            style: {style_ref},
             center: [{center_lng}, {center_lat}],
             zoom: 4
         }});
