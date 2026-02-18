@@ -107,8 +107,13 @@ class MapSplatExporter(QObject):
             return
 
         single_file = self.settings.get("single_file", True)
+        style_only = self.settings.get("style_only", False)
 
-        if single_file:
+        if style_only:
+            # Skip data export, just generate style and HTML
+            self.log_message.emit("Style-only mode: skipping data export", "info")
+            self.progress.emit(60)
+        elif single_file:
             # Single PMTiles file containing all layers
             self.log_message.emit("Exporting layers to GeoPackage...", "info")
             gpkg_path = os.path.join(output_dir, "data", "layers.gpkg")

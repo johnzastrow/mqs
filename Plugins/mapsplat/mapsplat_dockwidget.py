@@ -145,6 +145,13 @@ class MapSplatDockWidget(QDockWidget):
         self.chk_export_style.setChecked(True)
         options_layout.addWidget(self.chk_export_style)
 
+        self.chk_style_only = QCheckBox("Style only (skip data export)")
+        self.chk_style_only.setToolTip(
+            "Export only style.json and HTML viewer without converting data.\n"
+            "Use when data already exists or for quick style iteration."
+        )
+        options_layout.addWidget(self.chk_style_only)
+
         # Import style button
         style_import_layout = QHBoxLayout()
         self.btn_import_style = QPushButton("Import style.json...")
@@ -405,6 +412,7 @@ class MapSplatDockWidget(QDockWidget):
             "output_folder": self.txt_output_folder.text().strip(),
             "project_name": self.txt_project_name.text().strip(),
             "single_file": self.combo_export_mode.currentIndex() == 0,
+            "style_only": self.chk_style_only.isChecked(),
             "export_style_json": self.chk_export_style.isChecked(),
             "imported_style_path": self.imported_style_path,
             "max_zoom": self.spin_max_zoom.value(),
