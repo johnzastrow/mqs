@@ -190,12 +190,17 @@ class StyleConverter:
         if not field_name:
             return None
 
+        # Clean up field name (remove quotes if present)
+        clean_field = field_name.strip().replace('"', '').replace("'", "")
+
         # Check if it's an expression or field name
         if settings.isExpression:
-            # For expressions, we'd need to convert - just use as literal for now
-            text_field = ["get", field_name.replace('"', '')]
+            # For expressions, try to extract field name or use as-is
+            # Simple case: just a field name in quotes
+            text_field = ["to-string", ["get", clean_field]]
         else:
-            text_field = ["get", field_name]
+            # Use format string for simple field reference
+            text_field = ["to-string", ["get", clean_field]]
 
         # Extract text format
         text_format = settings.format()
@@ -203,15 +208,17 @@ class StyleConverter:
         # Font settings
         font_family = text_format.font().family()
         font_size = self._convert_size(text_format.size(), text_format.sizeUnit())
+        if font_size < 8:
+            font_size = 12  # Default to reasonable size
         text_color = text_format.color().name()
 
         # Halo/buffer settings
         buffer_settings = text_format.buffer()
         halo_color = self.DEFAULT_HALO_COLOR
-        halo_width = 0
+        halo_width = 1  # Default small halo for readability
         if buffer_settings.enabled():
             halo_color = buffer_settings.color().name()
-            halo_width = self._convert_size(buffer_settings.size(), buffer_settings.sizeUnit())
+            halo_width = max(1, self._convert_size(buffer_settings.size(), buffer_settings.sizeUnit()))
 
         # Build the symbol layer
         label_layer = {
@@ -220,29 +227,35 @@ class StyleConverter:
             "source": source_name,
             "source-layer": source_layer,
             "layout": {
+                "visibility": "visible",
                 "text-field": text_field,
-                "text-font": [f"{font_family} Regular", "Open Sans Regular", "Arial Unicode MS Regular"],
-                "text-size": max(8, font_size),
+                "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
+                "text-size": font_size,
                 "text-anchor": "center",
-                "text-offset": [0, 0],
+                "text-justify": "center",
+                "text-allow-overlap": False,
+                "text-ignore-placement": False,
+                "text-optional": True,
+                "text-padding": 2,
             },
             "paint": {
                 "text-color": text_color,
+                "text-halo-color": halo_color,
+                "text-halo-width": halo_width,
             }
         }
-
-        # Add halo if present
-        if halo_width > 0:
-            label_layer["paint"]["text-halo-color"] = halo_color
-            label_layer["paint"]["text-halo-width"] = halo_width
 
         # Placement based on geometry type
         geom_type = layer.geometryType()
         if geom_type == 1:  # Line
             label_layer["layout"]["symbol-placement"] = "line"
             label_layer["layout"]["text-rotation-alignment"] = "map"
+            label_layer["layout"]["symbol-spacing"] = 250
         elif geom_type == 2:  # Polygon
             label_layer["layout"]["symbol-placement"] = "point"
+        elif geom_type == 0:  # Point
+            label_layer["layout"]["text-offset"] = [0, 1.5]
+            label_layer["layout"]["text-anchor"] = "top"
 
         return label_layer
 
