@@ -867,16 +867,18 @@ Usage:
     python serve.py
 
 Then open http://localhost:8000 in your browser.
-Press Ctrl+C to stop the server.
+Press Ctrl+C to stop the server (or close this window).
 """
 
 import http.server
 import os
+import signal
 import sys
 import threading
 import webbrowser
 
 PORT = 8000
+server_running = True
 
 class RangeRequestHandler(http.server.SimpleHTTPRequestHandler):
     """HTTP handler with support for Range requests (required for PMTiles)."""
@@ -970,15 +972,31 @@ class _FileWrapper:
     def close(self):
         self.f.close()
 
+def shutdown_server(signum=None, frame=None):
+    """Handle shutdown signal."""
+    global server_running
+    server_running = False
+    print("\\nShutting down server...")
+    httpd.shutdown()
+    print("Server stopped.")
+    sys.exit(0)
+
 if __name__ == "__main__":
     os.chdir(os.path.dirname(os.path.abspath(__file__)) or ".")
 
     print(f"Starting server at http://localhost:{PORT}")
-    print("Press Ctrl+C to stop\\n")
+    print("Press Ctrl+C to stop (or close this window)\\n")
 
     httpd = http.server.HTTPServer(("", PORT), RangeRequestHandler)
 
-    # Run server in a daemon thread so Ctrl+C works properly on Windows
+    # Register signal handlers for clean shutdown
+    signal.signal(signal.SIGINT, shutdown_server)
+    signal.signal(signal.SIGTERM, shutdown_server)
+    # Windows-specific: handle Ctrl+Break
+    if hasattr(signal, "SIGBREAK"):
+        signal.signal(signal.SIGBREAK, shutdown_server)
+
+    # Run server in a daemon thread
     server_thread = threading.Thread(target=httpd.serve_forever)
     server_thread.daemon = True
     server_thread.start()
@@ -986,16 +1004,13 @@ if __name__ == "__main__":
     webbrowser.open(f"http://localhost:{PORT}")
 
     try:
-        # Keep main thread alive - this allows Ctrl+C to work
-        while True:
-            server_thread.join(timeout=1)
+        # Keep main thread alive with a simple loop
+        while server_running:
+            server_thread.join(timeout=0.5)
             if not server_thread.is_alive():
                 break
     except KeyboardInterrupt:
-        print("\\nShutting down server...")
-        httpd.shutdown()
-        print("Server stopped.")
-        sys.exit(0)
+        shutdown_server()
 '''
         serve_path = os.path.join(output_dir, "serve.py")
         with open(serve_path, "w", encoding="utf-8") as f:
