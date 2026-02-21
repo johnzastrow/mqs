@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-02-20
+
+### Added
+- **Basemap overlay mode** — combine a Protomaps basemap with QGIS business layers
+  - New "Basemap Overlay" group box in the dockwidget (checkable; disabled by default)
+  - Source type toggle: Remote URL or Local file (with Browse button)
+  - Basemap style.json picker to load a Protomaps-compatible style
+  - `_check_pmtiles_cli()` in exporter: verifies `pmtiles` CLI is available before extraction
+  - `_extract_basemap()` in exporter: runs `pmtiles extract` (with bbox + maxzoom) using the
+    same QProcess polling pattern as ogr2ogr; keeps UI responsive; supports cancellation
+  - `_merge_business_into_basemap()` in exporter: loads basemap style, redirects remote tile
+    source URL to `pmtiles://data/basemap.pmtiles`, injects business sources, appends overlay
+    layers (excluding background)
+- New settings keys: `use_basemap`, `basemap_source_type`, `basemap_source`, `basemap_style_path`
+
+### Changed
+- Style merge logic: when `use_basemap` is set, `_merge_business_into_basemap()` is used
+  instead of `_merge_imported_style()`
+- Standalone mode (basemap unchecked) is fully backward-compatible with all previous settings
+
+### Output structure in basemap mode
+```
+output_dir/
+├── index.html
+├── style.json          (basemap style + business layers merged)
+├── data/
+│   ├── basemap.pmtiles (extracted from Protomaps)
+│   └── layers.pmtiles  (business data)
+├── lib/
+├── README.txt
+└── serve.py
+```
+
 ## [0.2.2] - 2026-02-17
 
 ### Changed

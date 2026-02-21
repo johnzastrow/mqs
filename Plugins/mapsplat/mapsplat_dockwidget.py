@@ -5,7 +5,7 @@ This module contains the dockable widget that provides the main UI
 for layer selection, export options, and triggering exports.
 """
 
-__version__ = "0.2.2"
+__version__ = "0.3.0"
 
 import os
 
@@ -30,6 +30,8 @@ from qgis.PyQt.QtWidgets import (
     QMessageBox,
     QSizePolicy,
     QSpinBox,
+    QRadioButton,
+    QButtonGroup,
 )
 
 from qgis.core import (
@@ -163,6 +165,56 @@ class MapSplatDockWidget(QDockWidget):
         options_layout.addLayout(style_import_layout)
 
         self.main_layout.addWidget(options_group)
+
+        # ==================== Basemap Overlay ====================
+        self.basemap_group = QGroupBox("Basemap Overlay")
+        self.basemap_group.setCheckable(True)
+        self.basemap_group.setChecked(False)
+        basemap_layout = QVBoxLayout(self.basemap_group)
+
+        # Source type radio buttons
+        source_type_layout = QHBoxLayout()
+        source_type_layout.addWidget(QLabel("Source:"))
+        self.radio_basemap_url = QRadioButton("Remote URL")
+        self.radio_basemap_file = QRadioButton("Local file")
+        self.radio_basemap_url.setChecked(True)
+        self._basemap_source_group = QButtonGroup()
+        self._basemap_source_group.addButton(self.radio_basemap_url)
+        self._basemap_source_group.addButton(self.radio_basemap_file)
+        source_type_layout.addWidget(self.radio_basemap_url)
+        source_type_layout.addWidget(self.radio_basemap_file)
+        source_type_layout.addStretch()
+        basemap_layout.addLayout(source_type_layout)
+
+        # Source URL / file path row
+        basemap_src_layout = QHBoxLayout()
+        self.txt_basemap_source = QLineEdit()
+        self.txt_basemap_source.setPlaceholderText(
+            "https://build.protomaps.com/20260217.pmtiles"
+        )
+        self.btn_basemap_browse = QPushButton("Browse...")
+        self.btn_basemap_browse.setVisible(False)
+        self.btn_basemap_browse.clicked.connect(self._browse_basemap_file)
+        basemap_src_layout.addWidget(self.txt_basemap_source, 1)
+        basemap_src_layout.addWidget(self.btn_basemap_browse)
+        basemap_layout.addLayout(basemap_src_layout)
+
+        # Basemap style.json row
+        basemap_style_layout = QHBoxLayout()
+        basemap_style_layout.addWidget(QLabel("Basemap style:"))
+        self.txt_basemap_style = QLineEdit()
+        self.txt_basemap_style.setPlaceholderText("path/to/basemap_style.json")
+        self.btn_basemap_style_browse = QPushButton("Browse...")
+        self.btn_basemap_style_browse.clicked.connect(self._browse_basemap_style)
+        basemap_style_layout.addWidget(self.txt_basemap_style, 1)
+        basemap_style_layout.addWidget(self.btn_basemap_style_browse)
+        basemap_layout.addLayout(basemap_style_layout)
+
+        self.main_layout.addWidget(self.basemap_group)
+
+        # Connect radio buttons to show/hide browse button
+        self.radio_basemap_url.toggled.connect(self._on_basemap_source_type_changed)
+        self.radio_basemap_file.toggled.connect(self._on_basemap_source_type_changed)
 
         # ==================== Output Settings ====================
         output_group = QGroupBox("Output")
@@ -337,6 +389,39 @@ class MapSplatDockWidget(QDockWidget):
             self.lbl_imported_style.setStyleSheet("color: green;")
             self._log(f"Imported style: {file_path}")
 
+    def _on_basemap_source_type_changed(self):
+        """Show/hide browse button based on source type selection."""
+        is_file = self.radio_basemap_file.isChecked()
+        self.btn_basemap_browse.setVisible(is_file)
+        if is_file:
+            self.txt_basemap_source.setPlaceholderText("path/to/basemap.pmtiles")
+        else:
+            self.txt_basemap_source.setPlaceholderText(
+                "https://build.protomaps.com/20260217.pmtiles"
+            )
+
+    def _browse_basemap_file(self):
+        """Open file browser for local basemap PMTiles file."""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select Basemap PMTiles File",
+            self.txt_basemap_source.text() or os.path.expanduser("~"),
+            "PMTiles Files (*.pmtiles);;All Files (*)"
+        )
+        if file_path:
+            self.txt_basemap_source.setText(file_path)
+
+    def _browse_basemap_style(self):
+        """Open file browser for basemap style.json."""
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Select Basemap Style JSON",
+            self.txt_basemap_style.text() or os.path.expanduser("~"),
+            "JSON Files (*.json);;All Files (*)"
+        )
+        if file_path:
+            self.txt_basemap_style.setText(file_path)
+
     def _toggle_log_size(self):
         """Toggle the log area between small and expanded size."""
         if self._log_expanded:
@@ -390,6 +475,30 @@ class MapSplatDockWidget(QDockWidget):
             QMessageBox.warning(self, "No Project Name", "Please enter a project name.")
             return False
 
+        # Basemap validation (only when enabled)
+        if self.basemap_group.isChecked():
+            basemap_source = self.txt_basemap_source.text().strip()
+            if not basemap_source:
+                QMessageBox.warning(self, "No Basemap Source",
+                                    "Please enter a basemap PMTiles URL or file path.")
+                return False
+
+            if self.radio_basemap_file.isChecked() and not os.path.isfile(basemap_source):
+                QMessageBox.warning(self, "Invalid Basemap File",
+                                    "The basemap PMTiles file does not exist.")
+                return False
+
+            basemap_style = self.txt_basemap_style.text().strip()
+            if not basemap_style:
+                QMessageBox.warning(self, "No Basemap Style",
+                                    "Please select a basemap style.json file.")
+                return False
+
+            if not os.path.isfile(basemap_style):
+                QMessageBox.warning(self, "Invalid Basemap Style",
+                                    "The basemap style.json file does not exist.")
+                return False
+
         return True
 
     def _do_export(self):
@@ -416,6 +525,10 @@ class MapSplatDockWidget(QDockWidget):
             "export_style_json": self.chk_export_style.isChecked(),
             "imported_style_path": self.imported_style_path,
             "max_zoom": self.spin_max_zoom.value(),
+            "use_basemap": self.basemap_group.isChecked(),
+            "basemap_source_type": "file" if self.radio_basemap_file.isChecked() else "url",
+            "basemap_source": self.txt_basemap_source.text().strip(),
+            "basemap_style_path": self.txt_basemap_style.text().strip(),
         }
 
         # Show progress and cancel button

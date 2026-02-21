@@ -8,7 +8,7 @@ This module handles the actual export process:
 - Generating the HTML viewer
 """
 
-__version__ = "0.2.2"
+__version__ = "0.3.0"
 
 import os
 import sys
@@ -108,6 +108,24 @@ class MapSplatExporter(QObject):
 
         single_file = self.settings.get("single_file", True)
         style_only = self.settings.get("style_only", False)
+        use_basemap = self.settings.get("use_basemap", False)
+
+        # [NEW] Basemap extraction
+        if use_basemap and not style_only:
+            if not self._check_pmtiles_cli():
+                self.log_message.emit(
+                    "pmtiles CLI not found. Install it from https://github.com/protomaps/go-pmtiles/releases",
+                    "error"
+                )
+                self.finished.emit(False, "")
+                return
+            bounds = self._calculate_bounds(layers["vector"])
+            self.log_message.emit("Extracting basemap to bounding box...", "info")
+            success = self._extract_basemap(output_dir, bounds)
+            if not success:
+                self.finished.emit(False, "")
+                return
+            self.progress.emit(30)
 
         if style_only:
             # Skip data export, just generate style and HTML
@@ -171,8 +189,12 @@ class MapSplatExporter(QObject):
         style_converter = StyleConverter(layers["vector"], self.settings)
         style_json = style_converter.convert(single_file=single_file)
 
-        # Handle imported style merge
-        if self.settings.get("imported_style_path"):
+        # Handle style merging
+        if use_basemap:
+            basemap_style_path = self.settings.get("basemap_style_path", "")
+            self.log_message.emit("Merging business layers into basemap style...", "info")
+            style_json = self._merge_business_into_basemap(basemap_style_path, style_json)
+        elif self.settings.get("imported_style_path"):
             style_json = self._merge_imported_style(style_json)
 
         self.progress.emit(75)
@@ -479,6 +501,151 @@ class MapSplatExporter(QObject):
         except Exception as e:
             self.log_message.emit(f"Failed to merge style: {e}", "warning")
             return style_json
+
+    def _check_pmtiles_cli(self):
+        """Check if the pmtiles CLI is available.
+
+        :returns: True if pmtiles CLI is found and functional
+        """
+        try:
+            result = subprocess.run(
+                ["pmtiles", "--help"],
+                capture_output=True,
+                text=True,
+                timeout=10,
+                startupinfo=STARTUPINFO,
+                creationflags=CREATIONFLAGS
+            )
+            return result.returncode == 0
+        except Exception:
+            return False
+
+    def _extract_basemap(self, output_dir, bounds):
+        """Run pmtiles extract to clip basemap to data bounding box.
+
+        :param output_dir: Export output directory
+        :param bounds: [west, south, east, north] in EPSG:4326
+        :returns: True if successful
+        """
+        import time
+        from qgis.PyQt.QtCore import QCoreApplication
+
+        source = self.settings["basemap_source"]
+        output_path = os.path.join(output_dir, "data", "basemap.pmtiles")
+        west, south, east, north = bounds
+        bbox_str = f"{west},{south},{east},{north}"
+        max_zoom = self.settings.get("max_zoom", 10)
+
+        self.log_message.emit(f"  Basemap source: {source}", "info")
+        self.log_message.emit(f"  Bounding box: {bbox_str}", "info")
+        self.log_message.emit(f"  Max zoom: {max_zoom}", "info")
+        self.log_message.emit(f"  Output: {output_path}", "info")
+
+        args = [
+            "extract",
+            source,
+            output_path,
+            f"--bbox={bbox_str}",
+            f"--maxzoom={max_zoom}",
+        ]
+
+        self.log_message.emit(f"  Command: pmtiles {' '.join(args)}", "info")
+
+        self._qprocess = QProcess()
+        self._start_time = time.time()
+
+        self._qprocess.start("pmtiles", args)
+
+        if not self._qprocess.waitForStarted(10000):
+            self.log_message.emit("  Failed to start pmtiles", "error")
+            return False
+
+        self.log_message.emit("  pmtiles extract started, waiting...", "info")
+
+        last_update = time.time()
+        while self._qprocess.state() != QProcess.NotRunning:
+            QCoreApplication.processEvents()
+
+            if self._cancelled:
+                self._qprocess.kill()
+                self._qprocess.waitForFinished(1000)
+                self.log_message.emit("  Export cancelled by user.", "warning")
+                return False
+
+            now = time.time()
+            if now - last_update >= 3:
+                last_update = now
+                elapsed = now - self._start_time
+                if os.path.exists(output_path):
+                    size_mb = os.path.getsize(output_path) / (1024 * 1024)
+                    self.log_message.emit(
+                        f"  Extracting... {elapsed:.0f}s, output: {size_mb:.1f} MB", "info"
+                    )
+                else:
+                    self.log_message.emit(
+                        f"  Extracting... {elapsed:.0f}s", "info"
+                    )
+
+            self._qprocess.waitForFinished(100)
+
+        elapsed = time.time() - self._start_time
+        exit_code = self._qprocess.exitCode()
+        stderr = bytes(self._qprocess.readAllStandardError()).decode("utf-8", errors="replace")
+        stdout = bytes(self._qprocess.readAllStandardOutput()).decode("utf-8", errors="replace")
+
+        self.log_message.emit(f"  pmtiles extract finished in {elapsed:.1f}s", "info")
+
+        if exit_code != 0:
+            error_msg = stderr.strip() or stdout.strip() or f"pmtiles exited with code {exit_code}"
+            self.log_message.emit(f"  pmtiles error: {error_msg}", "error")
+            return False
+
+        if os.path.exists(output_path):
+            size_mb = os.path.getsize(output_path) / (1024 * 1024)
+            self.log_message.emit(f"  Basemap PMTiles size: {size_mb:.1f} MB", "info")
+
+        return True
+
+    def _merge_business_into_basemap(self, basemap_style_path, business_style_json):
+        """Merge business layer sources and styles on top of a basemap style.
+
+        The basemap's remote tile URL is replaced with the local extracted file.
+        Business layer sources are injected and layers appended (background excluded).
+
+        :param basemap_style_path: Path to Protomaps basemap style.json
+        :param business_style_json: Style dict generated from QGIS layers
+        :returns: Merged style dictionary
+        """
+        try:
+            with open(basemap_style_path, "r", encoding="utf-8") as f:
+                basemap = json.load(f)
+        except Exception as e:
+            self.log_message.emit(f"Failed to load basemap style: {e}", "error")
+            return business_style_json
+
+        # Update basemap's vector tile source URL to point to local extracted file
+        for src_name, src in basemap.get("sources", {}).items():
+            if src.get("type") == "vector" and "protomaps" in src.get("url", ""):
+                src["url"] = "pmtiles://data/basemap.pmtiles"
+                self.log_message.emit(
+                    f"  Updated basemap source '{src_name}' to local file", "info"
+                )
+                break
+
+        # Inject business data sources
+        basemap.setdefault("sources", {}).update(business_style_json.get("sources", {}))
+
+        # Append business layers, skipping background (basemap provides its own)
+        overlay_layers = [
+            layer for layer in business_style_json.get("layers", [])
+            if layer.get("id") != "background"
+        ]
+        basemap.setdefault("layers", []).extend(overlay_layers)
+
+        self.log_message.emit(
+            f"  Merged {len(overlay_layers)} business layer(s) into basemap style", "info"
+        )
+        return basemap
 
     def _generate_html_viewer(self, output_dir, style_json, layers):
         """Generate the HTML viewer file.

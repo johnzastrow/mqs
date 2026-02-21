@@ -2,7 +2,7 @@
 name=MapSplat
 qgisMinimumVersion=3.40
 description=Export QGIS projects to static web maps using PMTiles and MapLibre GL JS
-version=0.2.2
+version=0.3.0
 author=John Zastrow
 email=john@example.com
 
@@ -22,6 +22,11 @@ repository=https://github.com/johnzastrow/mqs
 hasProcessingProvider=no
 
 changelog=
+    0.3.0 - Basemap overlay mode
+    - New "Basemap Overlay" group in UI: toggle, source URL/file, style.json picker
+    - pmtiles extract clips Protomaps basemap to data bounding box
+    - Business layer sources and styles merged into basemap style
+    - Basemap remote URL automatically redirected to local extracted file
     0.2.2 - External style.json reference
     - HTML now references external style.json instead of embedding inline
     - Enables faster style iteration (edit style.json, refresh browser)
