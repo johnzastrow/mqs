@@ -5,11 +5,14 @@ This module contains the dockable widget that provides the main UI
 for layer selection, export options, and triggering exports.
 """
 
-__version__ = "0.5.1"
+__version__ = "0.5.2"
 
 import os
 
-from .log_utils import format_log_line
+try:
+    from .log_utils import format_log_line
+except ImportError:
+    from log_utils import format_log_line  # test environment (no package)
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import pyqtSignal, Qt
@@ -305,6 +308,46 @@ class MapSplatDockWidget(QDockWidget):
         export_layout.addLayout(progress_layout)
         export_layout.addStretch()
 
+        # --- Viewer tab ---
+        viewer_tab = QWidget()
+        viewer_layout = QVBoxLayout(viewer_tab)
+        viewer_layout.setContentsMargins(8, 8, 8, 8)
+        viewer_layout.setSpacing(6)
+
+        viewer_group = QGroupBox("Map Controls")
+        viewer_group_layout = QVBoxLayout(viewer_group)
+
+        self.chk_viewer_scale_bar = QCheckBox("Scale bar")
+        self.chk_viewer_scale_bar.setChecked(True)
+        viewer_group_layout.addWidget(self.chk_viewer_scale_bar)
+
+        self.chk_viewer_geolocate = QCheckBox("Geolocate (show my location)")
+        self.chk_viewer_geolocate.setChecked(True)
+        viewer_group_layout.addWidget(self.chk_viewer_geolocate)
+
+        self.chk_viewer_fullscreen = QCheckBox("Fullscreen button")
+        self.chk_viewer_fullscreen.setChecked(True)
+        viewer_group_layout.addWidget(self.chk_viewer_fullscreen)
+
+        self.chk_viewer_coords = QCheckBox("Coordinate display (mouse position)")
+        self.chk_viewer_coords.setChecked(True)
+        viewer_group_layout.addWidget(self.chk_viewer_coords)
+
+        self.chk_viewer_zoom_display = QCheckBox("Zoom level display")
+        self.chk_viewer_zoom_display.setChecked(True)
+        viewer_group_layout.addWidget(self.chk_viewer_zoom_display)
+
+        self.chk_viewer_reset_view = QCheckBox("Reset view button (fit to data)")
+        self.chk_viewer_reset_view.setChecked(True)
+        viewer_group_layout.addWidget(self.chk_viewer_reset_view)
+
+        self.chk_viewer_north_reset = QCheckBox("North-up / reset rotation button")
+        self.chk_viewer_north_reset.setChecked(True)
+        viewer_group_layout.addWidget(self.chk_viewer_north_reset)
+
+        viewer_layout.addWidget(viewer_group)
+        viewer_layout.addStretch()
+
         # --- Log tab ---
         log_tab = QWidget()
         log_layout = QVBoxLayout(log_tab)
@@ -317,6 +360,7 @@ class MapSplatDockWidget(QDockWidget):
 
         # Register tabs
         self.tabs.addTab(export_tab, "Export")
+        self.tabs.addTab(viewer_tab, "Viewer")
         self.tabs.addTab(log_tab, "Log")
 
         # Store imported style path
@@ -537,7 +581,7 @@ class MapSplatDockWidget(QDockWidget):
                 self._log(f"Warning: could not open log file: {e}", "warning")
 
         self._log("Starting export...", "info")
-        self.tabs.setCurrentIndex(1)
+        self.tabs.setCurrentIndex(2)
 
         # Gather selected layers
         selected_layer_ids = []
@@ -559,6 +603,13 @@ class MapSplatDockWidget(QDockWidget):
             "basemap_source_type": "file" if self.radio_basemap_file.isChecked() else "url",
             "basemap_source": self.txt_basemap_source.text().strip(),
             "basemap_style_path": self.txt_basemap_style.text().strip(),
+            "viewer_scale_bar": self.chk_viewer_scale_bar.isChecked(),
+            "viewer_geolocate": self.chk_viewer_geolocate.isChecked(),
+            "viewer_fullscreen": self.chk_viewer_fullscreen.isChecked(),
+            "viewer_coords": self.chk_viewer_coords.isChecked(),
+            "viewer_zoom_display": self.chk_viewer_zoom_display.isChecked(),
+            "viewer_reset_view": self.chk_viewer_reset_view.isChecked(),
+            "viewer_north_reset": self.chk_viewer_north_reset.isChecked(),
         }
 
         # Show progress and cancel button

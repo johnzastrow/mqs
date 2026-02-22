@@ -8,7 +8,7 @@ This module handles the actual export process:
 - Generating the HTML viewer
 """
 
-__version__ = "0.5.0"
+__version__ = "0.5.2"
 
 import os
 import sys
@@ -40,7 +40,325 @@ from qgis.core import (
     QgsCoordinateTransformContext,
 )
 
-from .style_converter import StyleConverter
+try:
+    from .style_converter import StyleConverter
+except ImportError:
+    from style_converter import StyleConverter  # test environment (no package)
+
+
+def generate_html_viewer(settings, style_json, bounds, use_external_style=False):
+    """Generate the HTML viewer as a standalone function (no Qt dependencies).
+
+    :param settings: Settings dict; uses ``project_name`` and ``viewer_*`` keys.
+                     Unknown/missing viewer keys default to True (control shown).
+    :param style_json: Style JSON dict embedded inline (ignored when use_external_style).
+    :param bounds: [west, south, east, north] in WGS-84.
+    :param use_external_style: If True, reference ./style.json instead of embedding.
+    :returns: Complete HTML string for the web viewer.
+    """
+    center_lng = (bounds[0] + bounds[2]) / 2
+    center_lat = (bounds[1] + bounds[3]) / 2
+    project_name = settings.get("project_name", "Map")
+
+    if use_external_style:
+        style_ref = "'./style.json'"
+    else:
+        style_ref = json.dumps(style_json, indent=2)
+
+    # ---------- Conditional control snippets ----------
+    # Each snippet is an empty string when the control is disabled.
+    scale_bar_js = (
+        "\n        map.addControl(new maplibregl.ScaleControl(), 'bottom-left');"
+        if settings.get('viewer_scale_bar', True) else ""
+    )
+    geolocate_js = (
+        "\n        map.addControl(new maplibregl.GeolocateControl({"
+        " positionOptions: { enableHighAccuracy: true },"
+        " trackUserLocation: true }), 'top-right');"
+        if settings.get('viewer_geolocate', True) else ""
+    )
+    fullscreen_js = (
+        "\n        map.addControl(new maplibregl.FullscreenControl(), 'top-right');"
+        if settings.get('viewer_fullscreen', True) else ""
+    )
+    coords_html = (
+        '\n    <div id="coords-display"'
+        ' style="position:absolute;bottom:30px;left:10px;'
+        'background:rgba(255,255,255,0.85);padding:4px 8px;border-radius:3px;'
+        'font-family:monospace;font-size:12px;z-index:1;"></div>'
+        if settings.get('viewer_coords', True) else ""
+    )
+    coords_js = (
+        "\n        map.on('mousemove', (e) => {"
+        " document.getElementById('coords-display').textContent ="
+        " e.lngLat.lng.toFixed(5) + ', ' + e.lngLat.lat.toFixed(5); });"
+        if settings.get('viewer_coords', True) else ""
+    )
+    zoom_html = (
+        '\n    <div id="zoom-display"'
+        ' style="position:absolute;bottom:10px;left:10px;'
+        'background:rgba(255,255,255,0.85);padding:4px 8px;border-radius:3px;'
+        'font-family:monospace;font-size:12px;z-index:1;"></div>'
+        if settings.get('viewer_zoom_display', True) else ""
+    )
+    zoom_js = (
+        "\n        map.on('zoom', () => {"
+        " document.getElementById('zoom-display').textContent ="
+        " 'Z: ' + map.getZoom().toFixed(1); });"
+        "\n        document.getElementById('zoom-display').textContent ="
+        " 'Z: ' + map.getZoom().toFixed(1);"
+        if settings.get('viewer_zoom_display', True) else ""
+    )
+    reset_view_html = (
+        '\n    <button id="reset-view"'
+        ' style="position:absolute;top:50px;right:10px;z-index:1;'
+        'background:white;border:1px solid #ccc;border-radius:4px;'
+        'padding:4px 8px;cursor:pointer;font-size:12px;" title="Reset view">&#8962;</button>'
+        if settings.get('viewer_reset_view', True) else ""
+    )
+    reset_view_js = (
+        f"\n        document.getElementById('reset-view').addEventListener('click', () => {{"
+        f" map.fitBounds([[{bounds[0]}, {bounds[1]}], [{bounds[2]}, {bounds[3]}]],"
+        f" {{ padding: 50 }}); }});"
+        if settings.get('viewer_reset_view', True) else ""
+    )
+    north_reset_html = (
+        '\n    <button id="north-reset"'
+        ' style="position:absolute;top:90px;right:10px;z-index:1;'
+        'background:white;border:1px solid #ccc;border-radius:4px;'
+        'padding:4px 8px;cursor:pointer;font-size:12px;" title="Reset north">N</button>'
+        if settings.get('viewer_north_reset', True) else ""
+    )
+    north_reset_js = (
+        "\n        document.getElementById('north-reset').addEventListener('click', () => {"
+        " map.setBearing(0); map.setPitch(0); });"
+        if settings.get('viewer_north_reset', True) else ""
+    )
+
+    return f'''<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{project_name} - MapSplat</title>
+    <!-- MapLibre GL JS from CDN (replace with local files for offline use) -->
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
+    <style>
+        body {{ margin: 0; padding: 0; }}
+        #map {{ position: absolute; top: 0; bottom: 0; width: 100%; }}
+        .info-panel {{
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            font-family: sans-serif;
+            font-size: 14px;
+            z-index: 1;
+            max-width: 280px;
+        }}
+        .info-panel h3 {{
+            margin: 0 0 5px 0;
+            font-size: 16px;
+        }}
+        .info-panel small {{
+            color: #666;
+        }}
+        .layer-control {{
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
+        }}
+        .layer-control h4 {{
+            margin: 0 0 8px 0;
+            font-size: 13px;
+            color: #333;
+        }}
+        .layer-item {{
+            display: flex;
+            align-items: center;
+            margin: 4px 0;
+            cursor: pointer;
+        }}
+        .layer-item input {{
+            margin-right: 6px;
+            cursor: pointer;
+        }}
+        .legend-swatch {{
+            width: 16px;
+            height: 16px;
+            min-width: 16px;
+            border-radius: 3px;
+            margin-right: 6px;
+            border: 1px solid rgba(0,0,0,0.2);
+        }}
+        .legend-swatch.line {{
+            height: 4px;
+            align-self: center;
+        }}
+        .legend-swatch.circle {{
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            min-width: 12px;
+        }}
+        .layer-item label {{
+            cursor: pointer;
+            font-size: 12px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }}
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div class="info-panel">
+        <h3>{project_name}</h3>
+        <small>Generated by MapSplat</small>
+        <div class="layer-control">
+            <h4>Layers</h4>
+            <div id="layer-toggles"></div>
+        </div>
+    </div>{coords_html}{zoom_html}{reset_view_html}{north_reset_html}
+    <script>
+        // Register PMTiles protocol
+        const protocol = new pmtiles.Protocol();
+        maplibregl.addProtocol("pmtiles", protocol.tile);
+
+        // Initialize map
+        const map = new maplibregl.Map({{
+            container: 'map',
+            style: {style_ref},
+            center: [{center_lng}, {center_lat}],
+            zoom: 4
+        }});
+
+        // Add navigation controls
+        map.addControl(new maplibregl.NavigationControl(), 'top-right');{scale_bar_js}{geolocate_js}{fullscreen_js}
+
+        // Fit to data bounds on load and create layer controls
+        map.on('load', () => {{
+            map.fitBounds([
+                [{bounds[0]}, {bounds[1]}],
+                [{bounds[2]}, {bounds[3]}]
+            ], {{ padding: 50 }});
+
+            // Create layer toggles
+            const layerToggles = document.getElementById('layer-toggles');
+            const style = map.getStyle();
+            // Reverse so top layers appear first in the list (MapLibre renders bottom-to-top)
+            const layers = style.layers.filter(l => l['source-layer']).reverse();
+
+            // Helper to extract color from layer paint properties
+            function getLayerColor(layer) {{
+                const paint = layer.paint || {{}};
+                // Try different color properties based on layer type
+                return paint['fill-color'] || paint['line-color'] ||
+                       paint['circle-color'] || paint['text-color'] ||
+                       paint['icon-color'] || '#888888';
+            }}
+
+            // Helper to get layer geometry type
+            function getLayerType(layer) {{
+                return layer.type; // fill, line, circle, symbol, etc.
+            }}
+
+            // Group by source-layer (actual data layers)
+            const seenLayers = new Set();
+            layers.forEach(layer => {{
+                const sourceLayer = layer['source-layer'];
+                if (seenLayers.has(sourceLayer)) return;
+                seenLayers.add(sourceLayer);
+
+                const div = document.createElement('div');
+                div.className = 'layer-item';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = 'toggle-' + sourceLayer;
+                checkbox.checked = true;
+
+                // Create legend swatch
+                const swatch = document.createElement('div');
+                swatch.className = 'legend-swatch';
+                const color = getLayerColor(layer);
+                const layerType = getLayerType(layer);
+
+                // Style swatch based on geometry type
+                if (layerType === 'line') {{
+                    swatch.classList.add('line');
+                    swatch.style.backgroundColor = color;
+                }} else if (layerType === 'circle') {{
+                    swatch.classList.add('circle');
+                    swatch.style.backgroundColor = color;
+                }} else {{
+                    // fill or other
+                    swatch.style.backgroundColor = color;
+                    // Add outline color if different
+                    const outlineColor = layer.paint?.['fill-outline-color'];
+                    if (outlineColor && outlineColor !== color) {{
+                        swatch.style.borderColor = outlineColor;
+                        swatch.style.borderWidth = '2px';
+                    }}
+                }}
+
+                const label = document.createElement('label');
+                label.htmlFor = checkbox.id;
+                label.textContent = sourceLayer.replace(/_/g, ' ');
+                label.title = sourceLayer;
+
+                checkbox.addEventListener('change', () => {{
+                    // Toggle all layers with this source-layer
+                    style.layers.forEach(l => {{
+                        if (l['source-layer'] === sourceLayer) {{
+                            map.setLayoutProperty(l.id, 'visibility',
+                                checkbox.checked ? 'visible' : 'none');
+                        }}
+                    }});
+                }});
+
+                div.appendChild(checkbox);
+                div.appendChild(swatch);
+                div.appendChild(label);
+                layerToggles.appendChild(div);
+            }});
+        }});
+
+        // Click handler for feature identification
+        map.on('click', (e) => {{
+            const features = map.queryRenderedFeatures(e.point);
+            if (features.length > 0) {{
+                const feature = features[0];
+                const props = feature.properties;
+
+                let html = '<div style="max-width:300px;max-height:200px;overflow:auto;">';
+                for (const [key, value] of Object.entries(props)) {{
+                    html += `<strong>${{key}}:</strong> ${{value}}<br>`;
+                }}
+                html += '</div>';
+
+                new maplibregl.Popup()
+                    .setLngLat(e.lngLat)
+                    .setHTML(html)
+                    .addTo(map);
+            }}
+        }});
+
+        // Change cursor on feature hover
+        map.on('mouseenter', () => {{
+            map.getCanvas().style.cursor = 'pointer';
+        }});
+        map.on('mouseleave', () => {{
+            map.getCanvas().style.cursor = '';
+        }});{coords_js}{zoom_js}{reset_view_js}{north_reset_js}
+    </script>
+</body>
+</html>'''
 
 
 class MapSplatExporter(QObject):
@@ -751,242 +1069,7 @@ class MapSplatExporter(QObject):
         :param use_external_style: If True, reference ./style.json instead of embedding
         :returns: HTML string
         """
-        # Calculate center
-        center_lng = (bounds[0] + bounds[2]) / 2
-        center_lat = (bounds[1] + bounds[3]) / 2
-
-        if use_external_style:
-            # Reference external style.json file
-            style_ref = "'./style.json'"
-        else:
-            # Embed style inline for self-contained HTML
-            style_ref = json.dumps(style_json, indent=2)
-
-        return f'''<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{self.settings["project_name"]} - MapSplat</title>
-    <!-- MapLibre GL JS from CDN (replace with local files for offline use) -->
-    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
-    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
-    <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
-    <style>
-        body {{ margin: 0; padding: 0; }}
-        #map {{ position: absolute; top: 0; bottom: 0; width: 100%; }}
-        .info-panel {{
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 10px 15px;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            font-family: sans-serif;
-            font-size: 14px;
-            z-index: 1;
-            max-width: 280px;
-        }}
-        .info-panel h3 {{
-            margin: 0 0 5px 0;
-            font-size: 16px;
-        }}
-        .info-panel small {{
-            color: #666;
-        }}
-        .layer-control {{
-            margin-top: 10px;
-            padding-top: 10px;
-            border-top: 1px solid #ddd;
-        }}
-        .layer-control h4 {{
-            margin: 0 0 8px 0;
-            font-size: 13px;
-            color: #333;
-        }}
-        .layer-item {{
-            display: flex;
-            align-items: center;
-            margin: 4px 0;
-            cursor: pointer;
-        }}
-        .layer-item input {{
-            margin-right: 6px;
-            cursor: pointer;
-        }}
-        .legend-swatch {{
-            width: 16px;
-            height: 16px;
-            min-width: 16px;
-            border-radius: 3px;
-            margin-right: 6px;
-            border: 1px solid rgba(0,0,0,0.2);
-        }}
-        .legend-swatch.line {{
-            height: 4px;
-            align-self: center;
-        }}
-        .legend-swatch.circle {{
-            border-radius: 50%;
-            width: 12px;
-            height: 12px;
-            min-width: 12px;
-        }}
-        .layer-item label {{
-            cursor: pointer;
-            font-size: 12px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }}
-    </style>
-</head>
-<body>
-    <div id="map"></div>
-    <div class="info-panel">
-        <h3>{self.settings["project_name"]}</h3>
-        <small>Generated by MapSplat</small>
-        <div class="layer-control">
-            <h4>Layers</h4>
-            <div id="layer-toggles"></div>
-        </div>
-    </div>
-
-    <script>
-        // Register PMTiles protocol
-        const protocol = new pmtiles.Protocol();
-        maplibregl.addProtocol("pmtiles", protocol.tile);
-
-        // Initialize map
-        const map = new maplibregl.Map({{
-            container: 'map',
-            style: {style_ref},
-            center: [{center_lng}, {center_lat}],
-            zoom: 4
-        }});
-
-        // Add navigation controls
-        map.addControl(new maplibregl.NavigationControl(), 'top-right');
-
-        // Fit to data bounds on load and create layer controls
-        map.on('load', () => {{
-            map.fitBounds([
-                [{bounds[0]}, {bounds[1]}],
-                [{bounds[2]}, {bounds[3]}]
-            ], {{ padding: 50 }});
-
-            // Create layer toggles
-            const layerToggles = document.getElementById('layer-toggles');
-            const style = map.getStyle();
-            // Reverse so top layers appear first in the list (MapLibre renders bottom-to-top)
-            const layers = style.layers.filter(l => l['source-layer']).reverse();
-
-            // Helper to extract color from layer paint properties
-            function getLayerColor(layer) {{
-                const paint = layer.paint || {{}};
-                // Try different color properties based on layer type
-                return paint['fill-color'] || paint['line-color'] ||
-                       paint['circle-color'] || paint['text-color'] ||
-                       paint['icon-color'] || '#888888';
-            }}
-
-            // Helper to get layer geometry type
-            function getLayerType(layer) {{
-                return layer.type; // fill, line, circle, symbol, etc.
-            }}
-
-            // Group by source-layer (actual data layers)
-            const seenLayers = new Set();
-            layers.forEach(layer => {{
-                const sourceLayer = layer['source-layer'];
-                if (seenLayers.has(sourceLayer)) return;
-                seenLayers.add(sourceLayer);
-
-                const div = document.createElement('div');
-                div.className = 'layer-item';
-
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = 'toggle-' + sourceLayer;
-                checkbox.checked = true;
-
-                // Create legend swatch
-                const swatch = document.createElement('div');
-                swatch.className = 'legend-swatch';
-                const color = getLayerColor(layer);
-                const layerType = getLayerType(layer);
-
-                // Style swatch based on geometry type
-                if (layerType === 'line') {{
-                    swatch.classList.add('line');
-                    swatch.style.backgroundColor = color;
-                }} else if (layerType === 'circle') {{
-                    swatch.classList.add('circle');
-                    swatch.style.backgroundColor = color;
-                }} else {{
-                    // fill or other
-                    swatch.style.backgroundColor = color;
-                    // Add outline color if different
-                    const outlineColor = layer.paint?.['fill-outline-color'];
-                    if (outlineColor && outlineColor !== color) {{
-                        swatch.style.borderColor = outlineColor;
-                        swatch.style.borderWidth = '2px';
-                    }}
-                }}
-
-                const label = document.createElement('label');
-                label.htmlFor = checkbox.id;
-                label.textContent = sourceLayer.replace(/_/g, ' ');
-                label.title = sourceLayer;
-
-                checkbox.addEventListener('change', () => {{
-                    // Toggle all layers with this source-layer
-                    style.layers.forEach(l => {{
-                        if (l['source-layer'] === sourceLayer) {{
-                            map.setLayoutProperty(l.id, 'visibility',
-                                checkbox.checked ? 'visible' : 'none');
-                        }}
-                    }});
-                }});
-
-                div.appendChild(checkbox);
-                div.appendChild(swatch);
-                div.appendChild(label);
-                layerToggles.appendChild(div);
-            }});
-        }});
-
-        // Click handler for feature identification
-        map.on('click', (e) => {{
-            const features = map.queryRenderedFeatures(e.point);
-            if (features.length > 0) {{
-                const feature = features[0];
-                const props = feature.properties;
-
-                let html = '<div style="max-width:300px;max-height:200px;overflow:auto;">';
-                for (const [key, value] of Object.entries(props)) {{
-                    html += `<strong>${{key}}:</strong> ${{value}}<br>`;
-                }}
-                html += '</div>';
-
-                new maplibregl.Popup()
-                    .setLngLat(e.lngLat)
-                    .setHTML(html)
-                    .addTo(map);
-            }}
-        }});
-
-        // Change cursor on feature hover
-        map.on('mouseenter', () => {{
-            map.getCanvas().style.cursor = 'pointer';
-        }});
-        map.on('mouseleave', () => {{
-            map.getCanvas().style.cursor = '';
-        }});
-    </script>
-</body>
-</html>'''
+        return generate_html_viewer(self.settings, style_json, bounds, use_external_style)
 
     def _copy_maplibre_assets(self, output_dir):
         """Copy MapLibre JS assets to output directory.

@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.5.2 — 2026-02-22
+
+### Added
+- **Viewer tab** in the dockwidget with 7 map control checkboxes (all enabled by default)
+- Map controls: scale bar, geolocate, fullscreen, coordinate display, zoom display, reset-view, north-up reset
+- `generate_html_viewer()` module-level function in `exporter.py` (testable without Qt)
+- Plugin `.gitignore` to exclude `__pycache__/`, `*.pyc`, `.pytest_cache/`, `resources.py`
+
+---
+
+## v0.5.1 — 2026-02-22
+
+### Added
+- Export log saved to `export.log` in the output folder (opt-in checkbox)
+- `log_utils.py` with `format_log_line()` for timestamped log lines (INFO/WARNING/ERROR/SUCCESS)
+- Log file appends across runs for persistent history
+
+---
+
 ## v0.5.0 — 2026-02-22
 
 ### Changed
