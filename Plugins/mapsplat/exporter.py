@@ -673,8 +673,9 @@ class MapSplatExporter(QObject):
             # Prefix all icon-image layout refs in business overlay layers with "biz:"
             for layer in overlay_layers:
                 layout = layer.get("layout", {})
-                if "icon-image" in layout and not str(layout["icon-image"]).startswith("biz:"):
-                    layout["icon-image"] = "biz:" + layout["icon-image"]
+                icon_image = layout.get("icon-image")
+                if isinstance(icon_image, str) and not icon_image.startswith("biz:"):
+                    layout["icon-image"] = "biz:" + icon_image
             self.log_message.emit(
                 "  Using multi-sprite array for basemap + business icons", "info"
             )

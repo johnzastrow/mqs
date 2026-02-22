@@ -447,7 +447,7 @@ class StyleConverter:
             }
 
         elif isinstance(sym_layer, QgsSvgMarkerSymbolLayer):
-            sprite_key = getattr(self, '_svg_sprite_map', {}).get(source_layer)
+            sprite_key = self._svg_sprite_map.get(source_layer)
             size = self._convert_size(sym_layer.size(), sym_layer.sizeUnit())
             if sprite_key:
                 # Single-symbol SVG with a pre-rendered sprite — emit symbol layer
@@ -936,23 +936,22 @@ class StyleConverter:
         try:
             from qgis.core import QgsApplication
             cache = QgsApplication.svgCache()
-            img, success = cache.svgAsImage(
-                svg_path,
-                float(size_px),
-                fill_color,
-                stroke_color,
-                float(stroke_width_px),
-                1.0,  # widthScaleFactor
-            )
-            if success and not img.isNull():
+
+            def _call(stroke_w):
+                result = cache.svgAsImage(
+                    svg_path, float(size_px), fill_color, stroke_color, float(stroke_w), 1.0
+                )
+                # PyQGIS binding may return (QImage, bool) or just QImage depending on version
+                if isinstance(result, tuple):
+                    return result[0]
+                return result
+
+            img = _call(stroke_width_px)
+            if img and not img.isNull():
                 return img
             # Retry without color substitution (some SVGs ignore fill/stroke params)
-            img, success = cache.svgAsImage(
-                svg_path, float(size_px), fill_color, stroke_color, 0.0, 1.0
-            )
-            if success and not img.isNull():
-                return img
-            return None
+            img = _call(0.0)
+            return img if img and not img.isNull() else None
         except Exception as e:
             self._log(f"SVG render failed for '{svg_path}': {e}")
             return None

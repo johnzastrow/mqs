@@ -4,7 +4,7 @@ MapSplat - Style Converter Tests
 Tests for the QGIS to MapLibre style conversion.
 """
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 import unittest
 import sys
