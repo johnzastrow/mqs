@@ -5,9 +5,11 @@ This module contains the dockable widget that provides the main UI
 for layer selection, export options, and triggering exports.
 """
 
-__version__ = "0.5.0"
+__version__ = "0.5.1"
 
 import os
+
+from .log_utils import format_log_line
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import pyqtSignal, Qt
@@ -250,6 +252,10 @@ class MapSplatDockWidget(QDockWidget):
         folder_layout.addWidget(self.btn_browse)
         output_layout.addLayout(folder_layout)
 
+        self.chk_save_log = QCheckBox("Save export log to file (export.log)")
+        self.chk_save_log.setChecked(False)
+        output_layout.addWidget(self.chk_save_log)
+
         export_layout.addWidget(output_group)
 
         # ==================== Export Button ====================
@@ -315,6 +321,9 @@ class MapSplatDockWidget(QDockWidget):
 
         # Store imported style path
         self.imported_style_path = None
+
+        # Log file handle (opened at export start, closed at finish)
+        self._log_file = None
 
     def refresh_layer_list(self):
         """Refresh the layer list from the current project."""
@@ -435,6 +444,21 @@ class MapSplatDockWidget(QDockWidget):
         }
         color = color_map.get(level, "black")
         self.txt_log.append(f'<span style="color:{color}">{message}</span>')
+        if self._log_file:
+            try:
+                self._log_file.write(format_log_line(message, level))
+                self._log_file.flush()
+            except OSError:
+                pass
+
+    def _close_log_file(self):
+        """Close the export log file if open."""
+        if self._log_file:
+            try:
+                self._log_file.close()
+            except OSError:
+                pass
+            self._log_file = None
 
     def _validate_export(self):
         """Validate export settings before proceeding.
@@ -495,6 +519,23 @@ class MapSplatDockWidget(QDockWidget):
             return
 
         self.txt_log.clear()
+
+        # Open log file before first message so the header is captured
+        if self.chk_save_log.isChecked():
+            output_folder = self.txt_output_folder.text().strip()
+            project_name = self.txt_project_name.text().strip()
+            log_path = os.path.join(output_folder, project_name, "export.log")
+            os.makedirs(os.path.join(output_folder, project_name), exist_ok=True)
+            try:
+                from datetime import datetime
+                self._log_file = open(log_path, "a", encoding="utf-8")
+                self._log_file.write(
+                    f"\n--- Export run {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} ---\n"
+                )
+            except OSError as e:
+                self._log_file = None
+                self._log(f"Warning: could not open log file: {e}", "warning")
+
         self._log("Starting export...", "info")
         self.tabs.setCurrentIndex(1)
 
@@ -540,6 +581,7 @@ class MapSplatDockWidget(QDockWidget):
 
         except Exception as e:
             self._log(f"Export failed: {str(e)}", "error")
+            self._close_log_file()
             self.btn_export.setEnabled(True)
             self.progress_bar.setVisible(False)
             self.btn_cancel.setVisible(False)
@@ -561,6 +603,7 @@ class MapSplatDockWidget(QDockWidget):
 
         if success:
             self._log(f"Export complete: {output_path}", "success")
+            self._close_log_file()
             QMessageBox.information(
                 self,
                 "Export Complete",
@@ -568,6 +611,7 @@ class MapSplatDockWidget(QDockWidget):
             )
         else:
             self._log("Export failed.", "error")
+            self._close_log_file()
 
     def _cancel_export(self):
         """Cancel the running export."""
