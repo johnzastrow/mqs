@@ -77,6 +77,11 @@ class StyleConverter:
         self._log_callback = log_callback
         self._svg_sprite_map = {}  # populated by _generate_sprites(); {source_layer: sprite_key}
 
+    def _log(self, message):
+        """Emit a log message via callback if one was provided."""
+        if self._log_callback:
+            self._log_callback(message)
+
     def convert(self, single_file=True):
         """Convert all layers to MapLibre style JSON.
 
@@ -991,6 +996,9 @@ class StyleConverter:
 
         # Compose atlas image
         atlas = QImage(max(total_w, 1), max(total_h, 1), QImage.Format_ARGB32)
+        if atlas.isNull():
+            self._log("Warning: failed to allocate sprite atlas image")
+            return False
         atlas.fill(Qt.transparent)
         painter = QPainter(atlas)
         for name, entry in manifest.items():
@@ -1000,17 +1008,14 @@ class StyleConverter:
         # Write sprites.png and sprites.json
         atlas_path = os.path.join(output_dir, "sprites.png")
         json_path = os.path.join(output_dir, "sprites.json")
-        atlas.save(atlas_path)
+        if not atlas.save(atlas_path):
+            self._log(f"Warning: failed to write sprite atlas to '{atlas_path}'")
+            return False
         with open(json_path, "w", encoding="utf-8") as f:
             _json.dump(manifest, f, indent=2)
 
         self._log(f"Wrote sprite atlas: {len(images)} icon(s) → {atlas_path}")
         return True
-
-    def _log(self, message):
-        """Emit a log message via callback if one was provided."""
-        if self._log_callback:
-            self._log_callback(message)
 
     def _compute_sprite_layout(self, sprite_sizes):
         """Compute x/y offsets for a single-row sprite atlas.
