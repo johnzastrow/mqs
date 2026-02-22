@@ -173,5 +173,44 @@ class TestMergeBusinessIntoBasemap(unittest.TestCase):
         self.assertEqual(mapsplat_src.get("url"), "pmtiles://data/layers.pmtiles")
 
 
+
+
+class TestComputeSpriteLayout(unittest.TestCase):
+    """Test atlas layout computation — pure Python, no QGIS required."""
+
+    def _layout(self, sizes):
+        from style_converter import StyleConverter
+        return StyleConverter([], {})._compute_sprite_layout(sizes)
+
+    def test_empty_input(self):
+        manifest, w, h = self._layout({})
+        self.assertEqual(manifest, {})
+        self.assertEqual(w, 0)
+        self.assertEqual(h, 0)
+
+    def test_single_image(self):
+        manifest, w, h = self._layout({"icon_a": (32, 32)})
+        self.assertEqual(w, 32)
+        self.assertEqual(h, 32)
+        self.assertEqual(manifest["icon_a"], {
+            "x": 0, "y": 0, "width": 32, "height": 32, "pixelRatio": 1
+        })
+
+    def test_two_images_placed_side_by_side(self):
+        manifest, w, h = self._layout({"a": (32, 32), "b": (16, 16)})
+        self.assertEqual(manifest["a"]["x"], 0)
+        self.assertEqual(manifest["b"]["x"], 32)
+        self.assertEqual(w, 48)
+        self.assertEqual(h, 32)  # tallest image height
+
+    def test_manifest_has_required_maplibre_fields(self):
+        manifest, _, _ = self._layout({"x": (64, 64)})
+        for field in ("x", "y", "width", "height", "pixelRatio"):
+            self.assertIn(field, manifest["x"])
+
+    def test_pixel_ratio_is_one(self):
+        manifest, _, _ = self._layout({"z": (48, 48)})
+        self.assertEqual(manifest["z"]["pixelRatio"], 1)
+
 if __name__ == "__main__":
     unittest.main()

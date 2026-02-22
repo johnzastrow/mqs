@@ -19,6 +19,7 @@ Supported style properties:
 
 __version__ = "0.3.0"
 
+import os
 from qgis.core import (
     QgsVectorLayer,
     QgsSingleSymbolRenderer,
@@ -854,3 +855,26 @@ class StyleConverter:
         while "__" in sanitized:
             sanitized = sanitized.replace("__", "_")
         return sanitized.strip("_").lower()
+
+    def _compute_sprite_layout(self, sprite_sizes):
+        """Compute x/y offsets for a single-row sprite atlas.
+
+        :param sprite_sizes: dict mapping name -> (width, height) in pixels
+        :returns: (manifest_dict, total_width, total_height)
+                  manifest_dict maps name -> {"x", "y", "width", "height", "pixelRatio"}
+        """
+        manifest = {}
+        x = 0
+        max_height = 0
+        for name, (w, h) in sprite_sizes.items():
+            manifest[name] = {
+                "x": x,
+                "y": 0,
+                "width": w,
+                "height": h,
+                "pixelRatio": 1,
+            }
+            x += w
+            max_height = max(max_height, h)
+        return manifest, x, max_height
+
