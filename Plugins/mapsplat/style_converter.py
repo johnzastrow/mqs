@@ -423,10 +423,15 @@ class StyleConverter:
             }
 
         elif isinstance(sym_layer, QgsSvgMarkerSymbolLayer):
-            # SVG markers need sprite sheets - use circle fallback
+            sprite_key = getattr(self, '_svg_sprite_map', {}).get(source_layer)
             size = self._convert_size(sym_layer.size(), sym_layer.sizeUnit())
+            if sprite_key:
+                # Single-symbol SVG with a pre-rendered sprite — emit symbol layer
+                return self._build_symbol_layer_for_sprite(
+                    layer_id, sprite_key, source_name, source_layer, size
+                )
+            # Categorized/graduated SVG, or sprite generation not run — circle fallback
             fill_color = sym_layer.fillColor() if hasattr(sym_layer, 'fillColor') else None
-
             return {
                 "id": layer_id,
                 "type": "circle",
@@ -437,7 +442,7 @@ class StyleConverter:
                     "circle-radius": max(2, size / 2),
                     "circle-stroke-color": "#ffffff",
                     "circle-stroke-width": 1,
-                }
+                },
             }
 
         elif isinstance(sym_layer, QgsFontMarkerSymbolLayer):
@@ -459,6 +464,30 @@ class StyleConverter:
             }
 
         return None
+
+    def _build_symbol_layer_for_sprite(self, layer_id, sprite_key, source_name, source_layer, size_px):
+        """Build a MapLibre symbol layer referencing a pre-rendered sprite entry.
+
+        :param layer_id: MapLibre layer ID string
+        :param sprite_key: Key in the sprite manifest (sprites.json)
+        :param source_name: PMTiles source name in the style
+        :param source_layer: Source-layer name in PMTiles
+        :param size_px: Original icon size in pixels (reserved for future icon-size scaling)
+        :returns: MapLibre layer dict with type "symbol"
+        """
+        return {
+            "id": layer_id,
+            "type": "symbol",
+            "source": source_name,
+            "source-layer": source_layer,
+            "layout": {
+                "icon-image": sprite_key,
+                "icon-size": 1.0,
+                "icon-allow-overlap": True,
+                "icon-ignore-placement": True,
+            },
+        }
+
 
     def _convert_categorized(self, layer, renderer, source_layer, geom_type, source_name):
         """Convert categorized symbol renderer."""

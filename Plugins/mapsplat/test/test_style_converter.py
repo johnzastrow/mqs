@@ -212,5 +212,49 @@ class TestComputeSpriteLayout(unittest.TestCase):
         manifest, _, _ = self._layout({"z": (48, 48)})
         self.assertEqual(manifest["z"]["pixelRatio"], 1)
 
+
+
+class TestBuildSymbolLayerForSprite(unittest.TestCase):
+    """Test _build_symbol_layer_for_sprite — pure Python, no QGIS required."""
+
+    def _make_converter(self):
+        from style_converter import StyleConverter
+        c = StyleConverter([], {})
+        c._svg_sprite_map = {}
+        c._single_file = True
+        return c
+
+    def _call(self, sprite_key="my_layer", source_layer="my_layer",
+              source_name="mapsplat", layer_id="my_layer", size_px=30.0):
+        c = self._make_converter()
+        return c._build_symbol_layer_for_sprite(layer_id, sprite_key, source_name, source_layer, size_px)
+
+    def test_layer_type_is_symbol(self):
+        result = self._call()
+        self.assertEqual(result["type"], "symbol")
+
+    def test_icon_image_matches_sprite_key(self):
+        result = self._call(sprite_key="my_layer")
+        self.assertEqual(result["layout"]["icon-image"], "my_layer")
+
+    def test_required_maplibre_fields_present(self):
+        result = self._call()
+        for field in ("id", "type", "source", "source-layer", "layout"):
+            self.assertIn(field, result)
+
+    def test_icon_size_is_one(self):
+        result = self._call()
+        self.assertEqual(result["layout"]["icon-size"], 1.0)
+
+    def test_icon_allow_overlap_true(self):
+        result = self._call()
+        self.assertTrue(result["layout"]["icon-allow-overlap"])
+
+    def test_source_and_source_layer_set_correctly(self):
+        result = self._call(source_name="mapsplat", source_layer="my_layer")
+        self.assertEqual(result["source"], "mapsplat")
+        self.assertEqual(result["source-layer"], "my_layer")
+
+
 if __name__ == "__main__":
     unittest.main()
