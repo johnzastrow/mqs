@@ -971,6 +971,7 @@ class StyleConverter:
         from qgis.PyQt.QtCore import Qt
 
         images = {}
+        images_2x = {}
         for layer in self.layers:
             if layer.geometryType() != 0:  # points only
                 continue
@@ -983,14 +984,12 @@ class StyleConverter:
 
             svg_path = sym_layer.path()
             size_px = max(16, int(self._convert_size(sym_layer.size(), sym_layer.sizeUnit())))
+            fill_color = sym_layer.fillColor()
+            stroke_color = sym_layer.strokeColor()
+            stroke_width = self._convert_size(sym_layer.strokeWidth(), sym_layer.strokeWidthUnit())
 
-            img = self._render_svg_to_qimage(
-                svg_path,
-                size_px,
-                sym_layer.fillColor(),
-                sym_layer.strokeColor(),
-                self._convert_size(sym_layer.strokeWidth(), sym_layer.strokeWidthUnit()),
-            )
+            img = self._render_svg_to_qimage(svg_path, size_px, fill_color, stroke_color, stroke_width)
+            img_2x = self._render_svg_to_qimage(svg_path, size_px * 2, fill_color, stroke_color, stroke_width)
 
             source_layer = self._sanitize_name(layer.name())
             if img and not img.isNull():
@@ -1001,6 +1000,8 @@ class StyleConverter:
                 self._log(
                     f"Warning: could not render SVG for '{layer.name()}', using circle fallback"
                 )
+            if img_2x and not img_2x.isNull():
+                images_2x[source_layer] = img_2x
 
         if not images:
             return False
@@ -1030,6 +1031,28 @@ class StyleConverter:
             _json.dump(manifest, f, indent=2)
 
         self._log(f"Wrote sprite atlas: {len(images)} icon(s) → {atlas_path}")
+
+        # Write @2x sprite files — MapLibre 4.x on high-DPI displays requests these
+        # first and does not fall back to 1x when they are missing.
+        if images_2x:
+            sizes_2x = {name: (img.width(), img.height()) for name, img in images_2x.items()}
+            manifest_2x, total_w_2x, total_h_2x = self._compute_sprite_layout(sizes_2x)
+            for entry in manifest_2x.values():
+                entry["pixelRatio"] = 2
+            atlas_2x = QImage(max(total_w_2x, 1), max(total_h_2x, 1), QImage.Format_ARGB32)
+            if not atlas_2x.isNull():
+                atlas_2x.fill(Qt.transparent)
+                painter_2x = QPainter(atlas_2x)
+                for name, entry in manifest_2x.items():
+                    painter_2x.drawImage(entry["x"], entry["y"], images_2x[name])
+                painter_2x.end()
+                atlas_2x_path = os.path.join(output_dir, "sprites@2x.png")
+                json_2x_path = os.path.join(output_dir, "sprites@2x.json")
+                if atlas_2x.save(atlas_2x_path):
+                    with open(json_2x_path, "w", encoding="utf-8") as f:
+                        _json.dump(manifest_2x, f, indent=2)
+                    self._log(f"Wrote @2x sprite atlas → {atlas_2x_path}")
+
         return True
 
     def _compute_sprite_layout(self, sprite_sizes):
