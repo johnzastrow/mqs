@@ -5,7 +5,7 @@ This module contains the dockable widget that provides the main UI
 for layer selection, export options, and triggering exports.
 """
 
-__version__ = "0.4.0"
+__version__ = "0.5.0"
 
 import os
 
@@ -32,6 +32,7 @@ from qgis.PyQt.QtWidgets import (
     QSpinBox,
     QRadioButton,
     QButtonGroup,
+    QTabWidget,
 )
 
 from qgis.core import (
@@ -93,6 +94,16 @@ class MapSplatDockWidget(QDockWidget):
 
     def _setup_ui(self):
         """Set up the user interface."""
+        # ==================== Tab Widget ====================
+        self.tabs = QTabWidget()
+        self.main_layout.addWidget(self.tabs)
+
+        # --- Export tab ---
+        export_tab = QWidget()
+        export_layout = QVBoxLayout(export_tab)
+        export_layout.setContentsMargins(8, 8, 8, 8)
+        export_layout.setSpacing(8)
+
         # ==================== Layer Selection ====================
         layer_group = QGroupBox("Layers to Export")
         layer_layout = QVBoxLayout(layer_group)
@@ -111,7 +122,7 @@ class MapSplatDockWidget(QDockWidget):
         btn_layout.addWidget(self.btn_select_none)
         layer_layout.addLayout(btn_layout)
 
-        self.main_layout.addWidget(layer_group)
+        export_layout.addWidget(layer_group)
 
         # ==================== Export Options ====================
         options_group = QGroupBox("Export Options")
@@ -164,7 +175,7 @@ class MapSplatDockWidget(QDockWidget):
         style_import_layout.addWidget(self.lbl_imported_style, 1)
         options_layout.addLayout(style_import_layout)
 
-        self.main_layout.addWidget(options_group)
+        export_layout.addWidget(options_group)
 
         # ==================== Basemap Overlay ====================
         self.basemap_group = QGroupBox("Basemap Overlay")
@@ -210,7 +221,7 @@ class MapSplatDockWidget(QDockWidget):
         basemap_style_layout.addWidget(self.btn_basemap_style_browse)
         basemap_layout.addLayout(basemap_style_layout)
 
-        self.main_layout.addWidget(self.basemap_group)
+        export_layout.addWidget(self.basemap_group)
 
         # Connect radio buttons to show/hide browse button
         self.radio_basemap_url.toggled.connect(self._on_basemap_source_type_changed)
@@ -239,7 +250,7 @@ class MapSplatDockWidget(QDockWidget):
         folder_layout.addWidget(self.btn_browse)
         output_layout.addLayout(folder_layout)
 
-        self.main_layout.addWidget(output_group)
+        export_layout.addWidget(output_group)
 
         # ==================== Export Button ====================
         self.btn_export = QPushButton("Export Web Map")
@@ -260,7 +271,7 @@ class MapSplatDockWidget(QDockWidget):
             }
         """)
         self.btn_export.clicked.connect(self._do_export)
-        self.main_layout.addWidget(self.btn_export)
+        export_layout.addWidget(self.btn_export)
 
         # ==================== Progress ====================
         progress_layout = QHBoxLayout()
@@ -285,34 +296,22 @@ class MapSplatDockWidget(QDockWidget):
         self.btn_cancel.clicked.connect(self._cancel_export)
         progress_layout.addWidget(self.btn_cancel)
 
-        self.main_layout.addLayout(progress_layout)
+        export_layout.addLayout(progress_layout)
+        export_layout.addStretch()
 
-        # ==================== Log Area ====================
-        log_group = QGroupBox("Log")
-        log_layout = QVBoxLayout(log_group)
-
-        # Log header with expand button
-        log_header = QHBoxLayout()
-        self.btn_expand_log = QPushButton("Expand")
-        self.btn_expand_log.setMaximumWidth(70)
-        self.btn_expand_log.setCheckable(True)
-        self.btn_expand_log.clicked.connect(self._toggle_log_size)
-        log_header.addStretch()
-        log_header.addWidget(self.btn_expand_log)
-        log_layout.addLayout(log_header)
+        # --- Log tab ---
+        log_tab = QWidget()
+        log_layout = QVBoxLayout(log_tab)
+        log_layout.setContentsMargins(8, 8, 8, 8)
 
         self.txt_log = QTextEdit()
         self.txt_log.setReadOnly(True)
-        self.txt_log.setMinimumHeight(80)
-        self.txt_log.setMaximumHeight(100)
         self.txt_log.setStyleSheet("font-family: monospace; font-size: 11px;")
         log_layout.addWidget(self.txt_log)
 
-        self.main_layout.addWidget(log_group)
-        self._log_expanded = False
-
-        # Spacer at bottom
-        self.main_layout.addStretch()
+        # Register tabs
+        self.tabs.addTab(export_tab, "Export")
+        self.tabs.addTab(log_tab, "Log")
 
         # Store imported style path
         self.imported_style_path = None
@@ -422,17 +421,6 @@ class MapSplatDockWidget(QDockWidget):
         if file_path:
             self.txt_basemap_style.setText(file_path)
 
-    def _toggle_log_size(self):
-        """Toggle the log area between small and expanded size."""
-        if self._log_expanded:
-            self.txt_log.setMaximumHeight(100)
-            self.btn_expand_log.setText("Expand")
-            self._log_expanded = False
-        else:
-            self.txt_log.setMaximumHeight(400)
-            self.btn_expand_log.setText("Collapse")
-            self._log_expanded = True
-
     def _log(self, message, level="info"):
         """Add a message to the log area.
 
@@ -508,6 +496,7 @@ class MapSplatDockWidget(QDockWidget):
 
         self.txt_log.clear()
         self._log("Starting export...", "info")
+        self.tabs.setCurrentIndex(1)
 
         # Gather selected layers
         selected_layer_ids = []

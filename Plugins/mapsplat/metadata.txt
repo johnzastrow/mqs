@@ -2,7 +2,7 @@
 name=MapSplat
 qgisMinimumVersion=3.40
 description=Export QGIS projects to static web maps using PMTiles and MapLibre GL JS
-version=0.4.0
+version=0.5.0
 author=John Zastrow
 email=john@example.com
 
@@ -22,6 +22,12 @@ repository=https://github.com/johnzastrow/mqs
 hasProcessingProvider=no
 
 changelog=
+    0.5.0 - Tabbed dockwidget
+    - Export tab holds all settings; Log tab holds output log
+    - Log auto-shown when export starts
+    0.4.0 - SVG sprite rendering
+    - Point layers using SVG marker symbols export as MapLibre symbol layers
+    - Multi-sprite basemap support with MapLibre 4.x array format
     0.3.0 - Basemap overlay mode
     - New "Basemap Overlay" group in UI: toggle, source URL/file, style.json picker
     - pmtiles extract clips Protomaps basemap to data bounding box

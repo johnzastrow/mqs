@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.5.0 — 2026-02-22
+
+### Changed
+- **Tabbed dockwidget:** The panel now has two tabs — "Export" (all settings and controls) and "Log" (output log)
+- Log auto-shown when export starts (UI switches to Log tab automatically)
+- Removed expand/collapse toggle from the log area; log fills the tab naturally
+
+---
+
 ## v0.4.0 — 2026-02-22
 
 ### New features

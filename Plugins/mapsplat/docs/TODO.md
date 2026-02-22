@@ -267,3 +267,13 @@
 - [ ] 🟢 SFTP upload
 - [ ] 🟢 Preview in plugin before export
 - [ ] 🟢 Diff viewer for style changes
+
+
+## user entered
+- add checkbox to also write the export log to a file in the output folder (e.g. export.log) for easier debugging and record keeping
+- add a lot of additional map controls to the HTML viewer (e.g. scale bar, geolocate, navigation, etc.)
+- add extensive comments to the HTML template to explain how it works and how to customize it
+- add controls to the plugin to allow user to select which map controls are included in the generated HTML viewer (e.g. zoom, rotation, fullscreen, etc.)
+- add support for exporting to other formats besides PMTiles (e.g. GeoJSON, Shapefile, etc.)
+- add support for exporting to cloud storage services (e.g. AWS S3, Google Cloud Storage, etc.)
+-
