@@ -82,14 +82,27 @@ class StyleConverter:
         if self._log_callback:
             self._log_callback(message)
 
-    def convert(self, single_file=True):
+    def convert(self, single_file=True, output_dir=None):
         """Convert all layers to MapLibre style JSON.
 
         :param single_file: If True, all layers share one PMTiles source.
                            If False, each layer has its own PMTiles file.
+        :param output_dir: If provided, SVG single-symbol point layers are rendered
+                           to a sprite atlas (sprites.png + sprites.json) in this
+                           directory and the style gets a "sprite" key.
         :returns: Style JSON dictionary
         """
         self._single_file = single_file
+
+        self._svg_sprite_map = {}  # reset for each convert() call
+
+        # Pre-generate sprites for SVG single-symbol point layers
+        has_sprites = False
+        if output_dir:
+            try:
+                has_sprites = self._generate_sprites(output_dir)
+            except Exception as e:
+                self._log(f"Sprite generation skipped: {e}")
 
         if single_file:
             sources = {
@@ -122,6 +135,9 @@ class StyleConverter:
                 }
             ]
         }
+
+        if has_sprites:
+            style["sprite"] = "./sprites"
 
         # Convert each layer
         for layer in self.layers:
