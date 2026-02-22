@@ -347,18 +347,13 @@ class TestMultiSpriteBasemapMerge(unittest.TestCase):
 
     def test_basemap_array_sprite_gets_biz_appended(self):
         existing_array = [{"id": "default", "url": "https://example.com/sprites"}]
-        basemap = {"sources": {}, "layers": [], "sprite": existing_array}
-        business = {"sources": {}, "layers": [], "sprite": "./sprites"}
+        result = self._run_sprite_merge(existing_array, "./sprites")
+        self.assertEqual(len(result["sprite"]), 2)
+        self.assertEqual(result["sprite"][1]["id"], "biz")
 
-        b_sprite = business.get("sprite")
-        bm_sprite = basemap.get("sprite")
-
-        if b_sprite and isinstance(bm_sprite, list):
-            if not any(e.get("id") == "biz" for e in bm_sprite):
-                bm_sprite.append({"id": "biz", "url": b_sprite})
-
-        self.assertEqual(len(basemap["sprite"]), 2)
-        self.assertEqual(basemap["sprite"][1]["id"], "biz")
+    def test_only_basemap_sprite_left_unchanged(self):
+        result = self._run_sprite_merge("https://example.com/basemap/sprites", None)
+        self.assertEqual(result.get("sprite"), "https://example.com/basemap/sprites")
 
 
 if __name__ == "__main__":
