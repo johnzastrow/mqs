@@ -270,7 +270,7 @@
 
 
 ## user entered
-- add checkbox to also write the export log to a file in the output folder (e.g. export.log) for easier debugging and record keeping
+- [x] add checkbox to also write the export log to a file in the output folder (e.g. export.log) for easier debugging and record keeping. Log file should include timestamps and log levels (INFO, ERROR, etc.) for each message and append to the file if it already exists rather than overwriting it. This would allow users to review the export process in detail after the fact and help with troubleshooting any issues that arise during export. File: `mapsplat_dockwidget.py`, `log_utils.py` ✅ v0.5.1
 - add a lot of additional map controls to the HTML viewer (e.g. scale bar, geolocate, navigation, etc.)
 - add extensive comments to the HTML template to explain how it works and how to customize it
 - add controls to the plugin to allow user to select which map controls are included in the generated HTML viewer (e.g. zoom, rotation, fullscreen, etc.)
