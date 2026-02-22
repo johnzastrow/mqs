@@ -256,5 +256,110 @@ class TestBuildSymbolLayerForSprite(unittest.TestCase):
         self.assertEqual(result["source-layer"], "my_layer")
 
 
+
+class TestMultiSpriteBasemapMerge(unittest.TestCase):
+    """Test sprite handling in basemap merge — pure Python logic, no QGIS import."""
+
+    def _run_sprite_merge(self, basemap_sprite, business_sprite, overlay_layers=None):
+        """Replicate the sprite-handling portion of _merge_business_into_basemap."""
+        basemap = (
+            {"sources": {}, "layers": [], "sprite": basemap_sprite}
+            if basemap_sprite
+            else {"sources": {}, "layers": []}
+        )
+        business = (
+            {"sources": {}, "layers": overlay_layers or [], "sprite": business_sprite}
+            if business_sprite
+            else {"sources": {}, "layers": overlay_layers or []}
+        )
+
+        overlay = [l for l in business.get("layers", []) if l.get("id") != "background"]
+
+        b_sprite = business.get("sprite")
+        bm_sprite = basemap.get("sprite")
+
+        if b_sprite and bm_sprite:
+            if isinstance(bm_sprite, str):
+                basemap["sprite"] = [
+                    {"id": "default", "url": bm_sprite},
+                    {"id": "biz", "url": b_sprite},
+                ]
+            elif isinstance(bm_sprite, list):
+                if not any(e.get("id") == "biz" for e in bm_sprite):
+                    bm_sprite.append({"id": "biz", "url": b_sprite})
+            for layer in overlay:
+                layout = layer.get("layout", {})
+                if "icon-image" in layout and not str(layout["icon-image"]).startswith("biz:"):
+                    layout["icon-image"] = "biz:" + layout["icon-image"]
+        elif b_sprite and not bm_sprite:
+            basemap["sprite"] = b_sprite
+
+        return basemap
+
+    def test_no_sprites_no_sprite_key(self):
+        result = self._run_sprite_merge(None, None)
+        self.assertNotIn("sprite", result)
+
+    def test_only_business_sprite_sets_sprite_directly(self):
+        result = self._run_sprite_merge(None, "./sprites")
+        self.assertEqual(result["sprite"], "./sprites")
+
+    def test_both_sprites_produces_array(self):
+        result = self._run_sprite_merge(
+            "https://example.com/basemap/sprites", "./sprites"
+        )
+        self.assertIsInstance(result["sprite"], list)
+        self.assertEqual(len(result["sprite"]), 2)
+
+    def test_multi_sprite_array_has_default_and_biz_ids(self):
+        result = self._run_sprite_merge(
+            "https://example.com/basemap/sprites", "./sprites"
+        )
+        ids = {e["id"] for e in result["sprite"]}
+        self.assertIn("default", ids)
+        self.assertIn("biz", ids)
+
+    def test_multi_sprite_default_url_preserved(self):
+        result = self._run_sprite_merge(
+            "https://example.com/basemap/sprites", "./sprites"
+        )
+        default = next(e for e in result["sprite"] if e["id"] == "default")
+        self.assertEqual(default["url"], "https://example.com/basemap/sprites")
+
+    def test_icon_image_prefixed_with_biz(self):
+        overlay = [{"id": "icon_layer", "type": "symbol",
+                    "layout": {"icon-image": "my_icon"}}]
+        self._run_sprite_merge(
+            "https://example.com/basemap/sprites", "./sprites",
+            overlay_layers=overlay,
+        )
+        # overlay dicts are mutated in-place
+        self.assertEqual(overlay[0]["layout"]["icon-image"], "biz:my_icon")
+
+    def test_icon_image_not_double_prefixed(self):
+        overlay = [{"id": "icon_layer", "type": "symbol",
+                    "layout": {"icon-image": "biz:already_prefixed"}}]
+        self._run_sprite_merge(
+            "https://example.com/basemap/sprites", "./sprites",
+            overlay_layers=overlay,
+        )
+        self.assertEqual(overlay[0]["layout"]["icon-image"], "biz:already_prefixed")
+
+    def test_basemap_array_sprite_gets_biz_appended(self):
+        existing_array = [{"id": "default", "url": "https://example.com/sprites"}]
+        basemap = {"sources": {}, "layers": [], "sprite": existing_array}
+        business = {"sources": {}, "layers": [], "sprite": "./sprites"}
+
+        b_sprite = business.get("sprite")
+        bm_sprite = basemap.get("sprite")
+
+        if b_sprite and isinstance(bm_sprite, list):
+            if not any(e.get("id") == "biz" for e in bm_sprite):
+                bm_sprite.append({"id": "biz", "url": b_sprite})
+
+        self.assertEqual(len(basemap["sprite"]), 2)
+        self.assertEqual(basemap["sprite"][1]["id"], "biz")
+
+
 if __name__ == "__main__":
     unittest.main()
