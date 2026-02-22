@@ -64,15 +64,18 @@ class StyleConverter:
     # Unit conversion (mm to pixels at 96 DPI)
     MM_TO_PX = 3.78
 
-    def __init__(self, layers, settings):
+    def __init__(self, layers, settings, log_callback=None):
         """Initialize converter.
 
         :param layers: List of QgsVectorLayer
         :param settings: Export settings dictionary
+        :param log_callback: Optional callable(message: str) for logging during sprite generation
         """
         self.layers = layers
         self.settings = settings
-        self._layer_counter = {}  # For unique IDs when multiple symbol layers
+        self._layer_counter = {}
+        self._log_callback = log_callback
+        self._svg_sprite_map = {}  # populated by _generate_sprites(); {source_layer: sprite_key}
 
     def convert(self, single_file=True):
         """Convert all layers to MapLibre style JSON.
@@ -884,6 +887,130 @@ class StyleConverter:
         while "__" in sanitized:
             sanitized = sanitized.replace("__", "_")
         return sanitized.strip("_").lower()
+
+    def _is_svg_single_symbol(self, layer):
+        """Return True if a layer uses a single-symbol renderer with an SVG marker.
+
+        :param layer: QgsVectorLayer
+        :returns: bool
+        """
+        renderer = layer.renderer()
+        if not isinstance(renderer, QgsSingleSymbolRenderer):
+            return False
+        symbol = renderer.symbol()
+        if symbol is None or symbol.symbolLayerCount() == 0:
+            return False
+        return isinstance(symbol.symbolLayer(0), QgsSvgMarkerSymbolLayer)
+
+    def _render_svg_to_qimage(self, svg_path, size_px, fill_color, stroke_color, stroke_width_px):
+        """Rasterize an SVG marker via the QGIS SVG cache.
+
+        :param svg_path: Absolute path to SVG file (or QGIS resource path)
+        :param size_px: Output image dimension in pixels (square)
+        :param fill_color: QColor for SVG fill
+        :param stroke_color: QColor for SVG stroke
+        :param stroke_width_px: Stroke width in pixels
+        :returns: QImage on success, None on failure
+        """
+        try:
+            from qgis.core import QgsApplication
+            cache = QgsApplication.svgCache()
+            img, success = cache.svgAsImage(
+                svg_path,
+                float(size_px),
+                fill_color,
+                stroke_color,
+                float(stroke_width_px),
+                1.0,  # widthScaleFactor
+            )
+            if success and not img.isNull():
+                return img
+            # Retry without color substitution (some SVGs ignore fill/stroke params)
+            img, success = cache.svgAsImage(
+                svg_path, float(size_px), fill_color, stroke_color, 0.0, 1.0
+            )
+            if success and not img.isNull():
+                return img
+            return None
+        except Exception as e:
+            self._log(f"SVG render failed for '{svg_path}': {e}")
+            return None
+
+    def _generate_sprites(self, output_dir):
+        """Render SVG single-symbol point layers to a sprite atlas.
+
+        Writes sprites.png and sprites.json to output_dir.
+        Populates self._svg_sprite_map with {source_layer_name: sprite_key} for
+        each layer successfully rendered.
+
+        :param output_dir: Directory to write sprite files (same level as index.html)
+        :returns: True if at least one sprite was generated
+        """
+        import json as _json
+        from qgis.PyQt.QtGui import QImage, QPainter
+        from qgis.PyQt.QtCore import Qt
+
+        images = {}
+        for layer in self.layers:
+            if layer.geometryType() != 0:  # points only
+                continue
+            if not self._is_svg_single_symbol(layer):
+                continue
+
+            renderer = layer.renderer()
+            symbol = renderer.symbol()
+            sym_layer = symbol.symbolLayer(0)
+
+            svg_path = sym_layer.path()
+            size_px = max(16, int(self._convert_size(sym_layer.size(), sym_layer.sizeUnit())))
+
+            img = self._render_svg_to_qimage(
+                svg_path,
+                size_px,
+                sym_layer.fillColor(),
+                sym_layer.strokeColor(),
+                self._convert_size(sym_layer.strokeWidth(), sym_layer.strokeWidthUnit()),
+            )
+
+            source_layer = self._sanitize_name(layer.name())
+            if img and not img.isNull():
+                images[source_layer] = img
+                self._svg_sprite_map[source_layer] = source_layer
+                self._log(f"Rendered sprite for '{layer.name()}' ({size_px}px)")
+            else:
+                self._log(
+                    f"Warning: could not render SVG for '{layer.name()}', using circle fallback"
+                )
+
+        if not images:
+            return False
+
+        # Compute atlas layout
+        sizes = {name: (img.width(), img.height()) for name, img in images.items()}
+        manifest, total_w, total_h = self._compute_sprite_layout(sizes)
+
+        # Compose atlas image
+        atlas = QImage(max(total_w, 1), max(total_h, 1), QImage.Format_ARGB32)
+        atlas.fill(Qt.transparent)
+        painter = QPainter(atlas)
+        for name, entry in manifest.items():
+            painter.drawImage(entry["x"], entry["y"], images[name])
+        painter.end()
+
+        # Write sprites.png and sprites.json
+        atlas_path = os.path.join(output_dir, "sprites.png")
+        json_path = os.path.join(output_dir, "sprites.json")
+        atlas.save(atlas_path)
+        with open(json_path, "w", encoding="utf-8") as f:
+            _json.dump(manifest, f, indent=2)
+
+        self._log(f"Wrote sprite atlas: {len(images)} icon(s) → {atlas_path}")
+        return True
+
+    def _log(self, message):
+        """Emit a log message via callback if one was provided."""
+        if self._log_callback:
+            self._log_callback(message)
 
     def _compute_sprite_layout(self, sprite_sizes):
         """Compute x/y offsets for a single-row sprite atlas.
