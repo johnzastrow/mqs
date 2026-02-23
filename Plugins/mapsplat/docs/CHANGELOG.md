@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.5.5 — 2026-02-23
+
+### Fixed
+- **Basemap overlay mode: POI icons now render** — the generated `index.html`
+  now fetches `style.json` at runtime and passes the parsed object to MapLibre
+  instead of a URL string. Passing a URL string caused MapLibre to normalise
+  `pmtiles://` source URLs against the style base URL, which silently prevented
+  `querySourceFeatures` from seeing any features in the business layer when two
+  PMTiles sources were present. Both basemap and overlay layers now render
+  correctly.
+
+---
+
 ## v0.5.4 — 2026-02-23
 
 ### Fixed

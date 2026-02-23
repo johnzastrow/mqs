@@ -1,0 +1,59 @@
+name: Release MapSplat
+
+# Triggered by pushing a version tag: git tag v0.5.5 && git push --tags
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to create GitHub Releases
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pyrcc5
+        run: sudo apt-get install -y pyqt5-dev-tools
+
+      - name: Build mapsplat.zip
+        working-directory: Plugins/mapsplat
+        run: |
+          # Compile Qt resources (embeds icon.png into resources.py)
+          pyrcc5 -o resources.py resources.qrc
+
+          # Assemble plugin directory
+          mkdir -p mapsplat
+          cp __init__.py mapsplat.py mapsplat_dockwidget.py \
+             exporter.py style_converter.py resources.py \
+             metadata.txt icon.png resources.qrc mapsplat/
+          [ -d docs ] && cp -r docs mapsplat/
+          [ -f README.md ] && cp README.md mapsplat/
+
+          zip -r mapsplat.zip mapsplat/
+          rm -rf mapsplat/
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        working-directory: Plugins/mapsplat
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          # Extract the block for this version (between its ## heading and the next one)
+          NOTES=$(awk "/^## v${VERSION}/{found=1; next} found && /^## /{exit} found{print}" docs/CHANGELOG.md)
+          # Write to file so multiline content survives the environment variable
+          echo "$NOTES" > /tmp/release_notes.md
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.notes.outputs.version }}"
+          gh release create "${{ github.ref_name }}" \
+            Plugins/mapsplat/mapsplat.zip \
+            --title "MapSplat v${VERSION}" \
+            --notes-file /tmp/release_notes.md \
+            --repo "${{ github.repository }}"
