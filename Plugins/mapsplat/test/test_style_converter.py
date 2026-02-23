@@ -257,8 +257,14 @@ class TestBuildSymbolLayerForSprite(unittest.TestCase):
 
 
 
-class TestMultiSpriteBasemapMerge(unittest.TestCase):
-    """Test sprite handling in basemap merge — pure Python logic, no QGIS import."""
+class TestSpriteBasemapMerge(unittest.TestCase):
+    """Test sprite handling in basemap merge — pure Python logic, no QGIS import.
+
+    Policy: the local business sprite always wins.  Multi-sprite arrays with
+    remote URLs are unreliable offline, so we override basemap["sprite"] with
+    the local business sprite URL whenever one is present.  Business icon-image
+    references are left as-is (no "biz:" prefix needed).
+    """
 
     def _run_sprite_merge(self, basemap_sprite, business_sprite, overlay_layers=None):
         """Replicate the sprite-handling portion of _merge_business_into_basemap."""
@@ -273,25 +279,9 @@ class TestMultiSpriteBasemapMerge(unittest.TestCase):
             else {"sources": {}, "layers": overlay_layers or []}
         )
 
-        overlay = [l for l in business.get("layers", []) if l.get("id") != "background"]
-
         b_sprite = business.get("sprite")
-        bm_sprite = basemap.get("sprite")
 
-        if b_sprite and bm_sprite:
-            if isinstance(bm_sprite, str):
-                basemap["sprite"] = [
-                    {"id": "default", "url": bm_sprite},
-                    {"id": "biz", "url": b_sprite},
-                ]
-            elif isinstance(bm_sprite, list):
-                if not any(e.get("id") == "biz" for e in bm_sprite):
-                    bm_sprite.append({"id": "biz", "url": b_sprite})
-            for layer in overlay:
-                layout = layer.get("layout", {})
-                if "icon-image" in layout and not str(layout["icon-image"]).startswith("biz:"):
-                    layout["icon-image"] = "biz:" + layout["icon-image"]
-        elif b_sprite and not bm_sprite:
+        if b_sprite:
             basemap["sprite"] = b_sprite
 
         return basemap
@@ -304,52 +294,29 @@ class TestMultiSpriteBasemapMerge(unittest.TestCase):
         result = self._run_sprite_merge(None, "./sprites")
         self.assertEqual(result["sprite"], "./sprites")
 
-    def test_both_sprites_produces_array(self):
+    def test_both_sprites_business_wins(self):
+        """When basemap also has a sprite, the local business sprite takes over."""
         result = self._run_sprite_merge(
             "https://example.com/basemap/sprites", "./sprites"
         )
-        self.assertIsInstance(result["sprite"], list)
-        self.assertEqual(len(result["sprite"]), 2)
+        self.assertEqual(result["sprite"], "./sprites")
 
-    def test_multi_sprite_array_has_default_and_biz_ids(self):
+    def test_both_sprites_result_is_string_not_array(self):
         result = self._run_sprite_merge(
             "https://example.com/basemap/sprites", "./sprites"
         )
-        ids = {e["id"] for e in result["sprite"]}
-        self.assertIn("default", ids)
-        self.assertIn("biz", ids)
+        self.assertIsInstance(result["sprite"], str)
 
-    def test_multi_sprite_default_url_preserved(self):
-        result = self._run_sprite_merge(
-            "https://example.com/basemap/sprites", "./sprites"
-        )
-        default = next(e for e in result["sprite"] if e["id"] == "default")
-        self.assertEqual(default["url"], "https://example.com/basemap/sprites")
-
-    def test_icon_image_prefixed_with_biz(self):
+    def test_icon_image_not_prefixed(self):
+        """icon-image values are left unchanged (no 'biz:' prefix)."""
         overlay = [{"id": "icon_layer", "type": "symbol",
                     "layout": {"icon-image": "my_icon"}}]
-        self._run_sprite_merge(
+        result = self._run_sprite_merge(
             "https://example.com/basemap/sprites", "./sprites",
             overlay_layers=overlay,
         )
-        # overlay dicts are mutated in-place
-        self.assertEqual(overlay[0]["layout"]["icon-image"], "biz:my_icon")
-
-    def test_icon_image_not_double_prefixed(self):
-        overlay = [{"id": "icon_layer", "type": "symbol",
-                    "layout": {"icon-image": "biz:already_prefixed"}}]
-        self._run_sprite_merge(
-            "https://example.com/basemap/sprites", "./sprites",
-            overlay_layers=overlay,
-        )
-        self.assertEqual(overlay[0]["layout"]["icon-image"], "biz:already_prefixed")
-
-    def test_basemap_array_sprite_gets_biz_appended(self):
-        existing_array = [{"id": "default", "url": "https://example.com/sprites"}]
-        result = self._run_sprite_merge(existing_array, "./sprites")
-        self.assertEqual(len(result["sprite"]), 2)
-        self.assertEqual(result["sprite"][1]["id"], "biz")
+        # icon-image is NOT mutated
+        self.assertEqual(overlay[0]["layout"]["icon-image"], "my_icon")
 
     def test_only_basemap_sprite_left_unchanged(self):
         result = self._run_sprite_merge("https://example.com/basemap/sprites", None)

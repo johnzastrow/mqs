@@ -8,7 +8,7 @@ This module handles the actual export process:
 - Generating the HTML viewer
 """
 
-__version__ = "0.5.2"
+__version__ = "0.5.3"
 
 import os
 import sys
@@ -936,7 +936,8 @@ class MapSplatExporter(QObject):
 
         The basemap's remote tile URL is replaced with the local extracted file.
         Business layer sources are injected and layers appended (background excluded).
-        If both styles have sprites, uses MapLibre 4.x multi-sprite array format.
+        When the business style has a sprite, it overrides the basemap's sprite so
+        that business icons always render from the local file (reliable offline).
 
         :param basemap_style_path: Path to Protomaps basemap style.json
         :param business_style_json: Style dict generated from QGIS layers
@@ -972,34 +973,18 @@ class MapSplatExporter(QObject):
             f"  Merged {len(overlay_layers)} business layer(s) into basemap style", "info"
         )
 
-        # Handle sprites — use MapLibre 4.x multi-sprite array when both styles have sprites
+        # Handle sprites — always use the local business sprite directly.
+        # Multi-sprite arrays with remote basemap URLs are unreliable when the remote
+        # sprite is slow or unreachable; the local sprite is guaranteed to be present.
+        # Basemap icon-image layers (shields, arrows, POIs) will silently render no icon,
+        # but all fill/line/water/label layers continue to render normally.
         business_sprite = business_style_json.get("sprite")
-        basemap_sprite = basemap.get("sprite")
 
-        if business_sprite and basemap_sprite:
-            # Both have sprites: build multi-sprite array
-            # Basemap sprite may already be an array (e.g. from a previous merge); handle both
-            if isinstance(basemap_sprite, str):
-                basemap["sprite"] = [
-                    {"id": "default", "url": basemap_sprite},
-                    {"id": "biz", "url": business_sprite},
-                ]
-            elif isinstance(basemap_sprite, list):
-                # Append biz entry if not already present
-                if not any(e.get("id") == "biz" for e in basemap_sprite):
-                    basemap_sprite.append({"id": "biz", "url": business_sprite})
-            # Prefix all icon-image layout refs in business overlay layers with "biz:"
-            for layer in overlay_layers:
-                layout = layer.get("layout", {})
-                icon_image = layout.get("icon-image")
-                if isinstance(icon_image, str) and not icon_image.startswith("biz:"):
-                    layout["icon-image"] = "biz:" + icon_image
-            self.log_message.emit(
-                "  Using multi-sprite array for basemap + business icons", "info"
-            )
-        elif business_sprite and not basemap_sprite:
-            # Only business has sprites — set directly
+        if business_sprite:
             basemap["sprite"] = business_sprite
+            self.log_message.emit(
+                "  Using local business sprite for icons", "info"
+            )
 
         return basemap
 
