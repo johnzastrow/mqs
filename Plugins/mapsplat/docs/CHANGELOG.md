@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.5.3 — 2026-02-23
+
+### Fixed
+- **Basemap overlay mode: business layer icons now render** — replaced the
+  MapLibre multi-sprite array (remote basemap sprite + local biz sprite) with
+  a single local sprite. The multi-sprite approach silently failed when the
+  remote Protomaps sprite was slow or unavailable, preventing all `biz:*`
+  icon-image lookups. Now only the local `./sprites` file is used; basemap
+  icon layers (road shields, arrows, POIs) will silently show no icon, but all
+  fill/line/water/label layers and all business icons render correctly.
+
+---
+
 ## v0.5.2 — 2026-02-22
 
 ### Added
