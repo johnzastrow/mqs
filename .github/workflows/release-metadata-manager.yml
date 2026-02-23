@@ -1,0 +1,56 @@
+name: Release Metadata Manager
+
+# Triggered by pushing a version tag: git tag mm-v0.6.0 && git push --tags
+on:
+  push:
+    tags:
+      - 'mm-v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to create GitHub Releases
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install pyrcc5
+        run: sudo apt-get install -y pyqt5-dev-tools
+
+      - name: Build metadata_manager.zip
+        working-directory: Plugins/metadata_manager
+        run: |
+          # Compile Qt resources (embeds icons into resources.py)
+          pyrcc5 -o resources.py resources.qrc
+
+          # Assemble plugin directory
+          mkdir -p metadata_manager
+          cp *.py *.ui metadata.txt icon.png resources.qrc metadata_manager/
+          cp -r db widgets processors icons i18n metadata_manager/
+          [ -f README.md ] && cp README.md metadata_manager/
+
+          zip -r metadata_manager.zip metadata_manager/
+          rm -rf metadata_manager/
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        run: |
+          VERSION="${GITHUB_REF_NAME#mm-v}"
+          # CHANGELOG format: ## [0.6.0] - 2025-10-07
+          # Escape brackets for awk regex
+          NOTES=$(awk "/^## \[${VERSION}\]/{found=1; next} found && /^## /{exit} found{print}" docs/metadata_manager/CHANGELOG.md)
+          echo "$NOTES" > /tmp/release_notes.md
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VERSION="${{ steps.notes.outputs.version }}"
+          gh release create "${{ github.ref_name }}" \
+            Plugins/metadata_manager/metadata_manager.zip \
+            --title "Metadata Manager v${VERSION}" \
+            --notes-file /tmp/release_notes.md \
+            --repo "${{ github.repository }}"
