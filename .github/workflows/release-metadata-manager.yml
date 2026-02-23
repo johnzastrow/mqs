@@ -31,6 +31,9 @@ jobs:
           cp -r db widgets processors icons i18n metadata_manager/
           [ -f README.md ] && cp README.md metadata_manager/
 
+          # Remove any compiled Python cache directories
+          find metadata_manager -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+
           zip -r metadata_manager.zip metadata_manager/
           rm -rf metadata_manager/
 
