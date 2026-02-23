@@ -8,7 +8,7 @@ This module handles the actual export process:
 - Generating the HTML viewer
 """
 
-__version__ = "0.5.6"
+__version__ = "0.5.7"
 
 import os
 import sys
@@ -975,9 +975,11 @@ class MapSplatExporter(QObject):
             self.log_message.emit(f"Failed to load basemap style: {e}", "error")
             return business_style_json
 
-        # Update basemap's vector tile source URL to point to local extracted file
+        # Update basemap's vector tile source URL to point to local extracted file.
+        # Match any vector source that has a URL (not just Protomaps-hosted ones),
+        # so locally-sourced basemaps (e.g. pmtiles://maine4.pmtiles) are rewritten too.
         for src_name, src in basemap.get("sources", {}).items():
-            if src.get("type") == "vector" and "protomaps" in src.get("url", ""):
+            if src.get("type") == "vector" and src.get("url"):
                 src["url"] = "pmtiles://data/basemap.pmtiles"
                 self.log_message.emit(
                     f"  Updated basemap source '{src_name}' to local file", "info"

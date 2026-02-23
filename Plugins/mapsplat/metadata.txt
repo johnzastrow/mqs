@@ -2,7 +2,7 @@
 name=MapSplat
 qgisMinimumVersion=3.40
 description=Export QGIS projects to static web maps using PMTiles and MapLibre GL JS
-version=0.5.6
+version=0.5.7
 author=John Zastrow
 email=john@example.com
 
@@ -22,6 +22,8 @@ repository=https://github.com/johnzastrow/mqs
 hasProcessingProvider=no
 
 changelog=
+    0.5.7 - Fix basemap overlay blank map with local pmtiles source
+    - Basemap source URL rewrite now matches any vector source, not just protomaps-hosted URLs
     0.5.6 - Fix release ZIP missing log_utils.py
     - Switch CI file copy to glob (*.py) so new modules are included automatically
     0.5.5 - Fix basemap overlay culverts not rendering

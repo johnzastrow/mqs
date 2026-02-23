@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.5.7 — 2026-02-23
+
+### Fixed
+- **Basemap overlay: local `.pmtiles` sources now rewritten correctly** — the URL
+  rewrite that redirects the basemap tile source to `pmtiles://data/basemap.pmtiles`
+  previously only matched URLs containing "protomaps". Basemaps sourced from local
+  files (e.g. `pmtiles://maine4.pmtiles`) were never rewritten, causing a 404 and
+  blank map. The check now matches any vector source that has a URL.
+
 ## v0.5.6 — 2026-02-23
 
 ### Fixed
