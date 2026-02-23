@@ -8,7 +8,7 @@ This module handles the actual export process:
 - Generating the HTML viewer
 """
 
-__version__ = "0.5.8"
+__version__ = "0.5.9"
 
 import os
 import sys
@@ -997,6 +997,16 @@ class MapSplatExporter(QObject):
                     f"  Updated basemap source '{src_name}' to local file", "info"
                 )
                 break
+
+        # Override glyphs URL with the business style's working CDN.
+        # The basemap's glyphs URL may point to a stale or unavailable font server
+        # (e.g. protomaps.github.io/basemaps-assets/fonts).  In MapLibre 4.x a
+        # glyphs 404 stalls the entire symbol placement pipeline, which prevents
+        # icon-only layers (like POI markers) from rendering too.
+        business_glyphs = business_style_json.get("glyphs")
+        if business_glyphs:
+            basemap["glyphs"] = business_glyphs
+            self.log_message.emit("  Using business glyphs URL for font rendering", "info")
 
         # Inject business data sources
         basemap.setdefault("sources", {}).update(business_style_json.get("sources", {}))

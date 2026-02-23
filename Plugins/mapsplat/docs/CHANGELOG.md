@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.5.9 — 2026-02-23
+
+### Fixed
+- **Basemap overlay: POI icons now render (glyphs root cause)** — the merged
+  style inherited the basemap's `glyphs` URL
+  (`protomaps.github.io/basemaps-assets/fonts/…`), which returns HTTP 404.
+  In MapLibre 4.x a glyphs request failure stalls the entire symbol placement
+  pipeline, preventing icon-only layers (POI markers) from rendering even when
+  their sprite and PMTiles data load successfully. The fix overrides the merged
+  style's `glyphs` key with the business style's working URL
+  (`demotiles.maplibre.org`) so font loading succeeds and the symbol pipeline
+  can proceed.
+
 ## v0.5.8 — 2026-02-23
 
 ### Fixed
