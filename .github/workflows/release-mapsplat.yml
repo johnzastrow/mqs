@@ -27,9 +27,7 @@ jobs:
 
           # Assemble plugin directory
           mkdir -p mapsplat
-          cp __init__.py mapsplat.py mapsplat_dockwidget.py \
-             exporter.py style_converter.py resources.py \
-             metadata.txt icon.png resources.qrc mapsplat/
+          cp *.py metadata.txt icon.png resources.qrc mapsplat/
           [ -d docs ] && cp -r docs mapsplat/
           [ -f README.md ] && cp README.md mapsplat/
 
