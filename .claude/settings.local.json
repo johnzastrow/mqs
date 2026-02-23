@@ -21,7 +21,15 @@
       "Read(//mnt/c/**)",
       "Bash(pb_tool compile:*)",
       "Bash(sqlite3:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd MapSplat plugin scaffold \\(v0.1.1\\)\n\nNew QGIS plugin for exporting projects to static web maps using\nPMTiles format and MapLibre GL JS.\n\nFeatures:\n- Dockable widget UI with layer selection\n- Export pipeline: GeoPackage → PMTiles via ogr2ogr\n- Style converter for single symbol, categorized, graduated renderers\n- HTML viewer generation with click-to-identify popups\n- Auto-reprojection to EPSG:3857 \\(Web Mercator\\)\n- Style.json export/import for Maputnik roundtripping\n\nRenamed from ''po'' \\(Publish Online\\) to ''mapsplat''.\n\nDocumentation:\n- PLAN.md: Development roadmap and architecture\n- TODO.md: Prioritized task list\n- CHANGELOG.md: Version history\n- README.md: User documentation\n- REQUIREMENTS.md: Technical specifications\n- VIABILITY.md: Feasibility assessment\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd Qt6/QGIS 4.0 compatibility \\(v0.1.2\\)\n\nFixes for compatibility with both QGIS 3.x \\(Qt5\\) and QGIS 4.x \\(Qt6\\):\n\n- QAction import: moved from QtWidgets to QtGui in Qt6\n- Qt enum scoping changes:\n  - Qt.RightDockWidgetArea → Qt.DockWidgetArea.RightDockWidgetArea\n  - Qt.ItemIsEnabled → Qt.ItemFlag.ItemIsEnabled\n  - Qt.UserRole → Qt.ItemDataRole.UserRole\n  - QListWidget.MultiSelection → QAbstractItemView.SelectionMode.MultiSelection\n\nUses try/except blocks to maintain backwards compatibility with Qt5.\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nAdd comprehensive README with deployment instructions \\(v0.1.3\\)\n\n- Complete README.md with installation, usage, and deployment guides\n- Deployment instructions for:\n  - GitHub Pages\n  - Netlify / Vercel  \n  - AWS S3\n  - nginx / Apache\n- CORS configuration examples for nginx, Apache, and S3\n- Troubleshooting guide for common issues\n- Development and build instructions\n- Project structure documentation\n- Badge links for QGIS version, license, and version\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nConsolidate README files \\(v0.1.4\\)\n\n- Removed duplicate docs/README.md\n- Single comprehensive README.md at plugin root\n- Updated version badge to 0.1.4\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git commit:*)",
+      "Bash(git status:*)"
     ],
     "deny": [],
     "ask": []

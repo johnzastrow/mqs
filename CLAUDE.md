@@ -130,6 +130,14 @@ Each plugin-based subproject should have:
    - Docs: `docs/metadata_manager/`
    - Purpose: Create and manage QGIS layer metadata with reusable templates and inventory integration
 
+6. **mapsplat** (v0.2.2)
+   - Type: QGIS Plugin
+   - Plugin: `Plugins/mapsplat/`
+   - Docs: `Plugins/mapsplat/docs/`
+   - Purpose: Export QGIS projects to static web maps using PMTiles and MapLibre GL JS
+   - Key modules: `exporter.py` (export orchestration), `style_converter.py` (QGIS→MapLibre style), `mapsplat_dockwidget.py` (UI)
+   - Requires: GDAL 3.8+ (`ogr2ogr` for PMTiles conversion)
+
 ## Technical Details
 
 ### Common Requirements
