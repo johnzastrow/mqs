@@ -8,7 +8,7 @@ This module handles the actual export process:
 - Generating the HTML viewer
 """
 
-__version__ = "0.5.7"
+__version__ = "0.5.8"
 
 import os
 import sys
@@ -352,6 +352,18 @@ def generate_html_viewer(settings, style_json, bounds, use_external_style=False)
                 div.appendChild(label);
                 layerToggles.appendChild(div);
             }});
+        }});
+
+        // When the basemap sprite is replaced by the local business sprite, all
+        // basemap icon-image keys (shields, POIs, etc.) become missing.  In
+        // MapLibre 4.x, unhandled styleimagemissing events stall the symbol
+        // rendering queue and prevent business-layer icons from appearing.
+        // Adding a transparent 1×1 placeholder immediately unblocks rendering.
+        map.on('styleimagemissing', (e) => {{
+            if (!map.hasImage(e.id)) {{
+                const empty = new ImageData(new Uint8ClampedArray(4), 1, 1);
+                map.addImage(e.id, empty);
+            }}
         }});
 
         // Click handler for feature identification

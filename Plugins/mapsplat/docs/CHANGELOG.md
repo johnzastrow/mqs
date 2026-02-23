@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.5.8 — 2026-02-23
+
+### Fixed
+- **Basemap overlay: business POI icons now render** — replacing the basemap
+  sprite with the local `./sprites` URL causes MapLibre 4.x to fire
+  `styleimagemissing` for every basemap icon key (shields, POIs, etc.). In
+  MapLibre 4.x these unhandled events stall the symbol rendering queue, which
+  prevents business-layer icons from appearing even though the data and sprite
+  files load successfully. Added a `styleimagemissing` handler that immediately
+  registers a 1×1 transparent placeholder for any missing key, unblocking the
+  render queue.
+
 ## v0.5.7 — 2026-02-23
 
 ### Fixed
