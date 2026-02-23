@@ -2,7 +2,7 @@
 name=MapSplat
 qgisMinimumVersion=3.40
 description=Export QGIS projects to static web maps using PMTiles and MapLibre GL JS
-version=0.5.4
+version=0.5.5
 author=John Zastrow
 email=john@example.com
 
@@ -22,6 +22,9 @@ repository=https://github.com/johnzastrow/mqs
 hasProcessingProvider=no
 
 changelog=
+    0.5.5 - Fix basemap overlay culverts not rendering
+    - Fetch style.json at runtime and pass as inline object instead of URL
+    - Fixes MapLibre source queryability when two pmtiles:// sources are used
     0.5.4 - Fix viewer control overlaps
     - Bottom-left zoom/coords labels now clear the scale bar dynamically
     - Top-right buttons now clear NavigationControl + Fullscreen + Geolocate stack

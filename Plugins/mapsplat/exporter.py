@@ -8,7 +8,7 @@ This module handles the actual export process:
 - Generating the HTML viewer
 """
 
-__version__ = "0.5.4"
+__version__ = "0.5.5"
 
 import os
 import sys
@@ -61,9 +61,17 @@ def generate_html_viewer(settings, style_json, bounds, use_external_style=False)
     project_name = settings.get("project_name", "Map")
 
     if use_external_style:
-        style_ref = "'./style.json'"
+        # Fetch style.json at runtime and pass as inline object.
+        # Passing './style.json' as a URL string causes MapLibre to normalise
+        # source URLs against the style base URL, which prevents pmtiles://
+        # sources from being queryable via querySourceFeatures.
+        style_ref = "mapStyle"
+        _init_open = "\n        fetch('./style.json').then(r => r.json()).then(function(mapStyle) {"
+        _init_close = "\n        });"
     else:
         style_ref = json.dumps(style_json, indent=2)
+        _init_open = ""
+        _init_close = ""
 
     # ---------- Conditional control snippets ----------
     # Each snippet is an empty string when the control is disabled.
@@ -245,7 +253,7 @@ def generate_html_viewer(settings, style_json, bounds, use_external_style=False)
     <script>
         // Register PMTiles protocol
         const protocol = new pmtiles.Protocol();
-        maplibregl.addProtocol("pmtiles", protocol.tile);
+        maplibregl.addProtocol("pmtiles", protocol.tile);{_init_open}
 
         // Initialize map
         const map = new maplibregl.Map({{
@@ -372,7 +380,7 @@ def generate_html_viewer(settings, style_json, bounds, use_external_style=False)
         }});
         map.on('mouseleave', () => {{
             map.getCanvas().style.cursor = '';
-        }});{coords_js}{zoom_js}{reset_view_js}{north_reset_js}
+        }});{coords_js}{zoom_js}{reset_view_js}{north_reset_js}{_init_close}
     </script>
 </body>
 </html>'''

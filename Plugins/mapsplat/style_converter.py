@@ -17,7 +17,7 @@ Supported style properties:
 - Multiple symbol layers
 """
 
-__version__ = "0.5.4"
+__version__ = "0.5.5"
 
 import os
 from qgis.core import (
