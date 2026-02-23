@@ -4,7 +4,7 @@
 name=Metadata Manager
 qgisMinimumVersion=3.40
 description=Create and manage QGIS layer metadata with smart defaults, layer browser, and guided wizard. Integrates with inventory databases for efficient metadata workflows.
-version=0.6.0
+version=0.6.1
 author=John Zastrow
 email=br8kwall@gmail.com
 
