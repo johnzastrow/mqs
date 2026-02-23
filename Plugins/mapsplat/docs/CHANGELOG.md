@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.5.4 — 2026-02-23
+
+### Fixed
+- **Viewer control overlap** — custom map controls (zoom display, coords display,
+  reset-view, north-reset) now position themselves dynamically based on which
+  MapLibre built-in controls are enabled. Bottom-left labels clear the scale bar
+  (~36 px base when enabled, 8 px when not). Top-right buttons clear the stacked
+  NavigationControl (96 px) + optional FullscreenControl and GeolocateControl
+  (39 px each) before placing reset-view and north-reset.
+
+---
+
 ## v0.5.3 — 2026-02-23
 
 ### Fixed

@@ -8,7 +8,7 @@ This module handles the actual export process:
 - Generating the HTML viewer
 """
 
-__version__ = "0.5.3"
+__version__ = "0.5.4"
 
 import os
 import sys
@@ -81,9 +81,26 @@ def generate_html_viewer(settings, style_json, bounds, use_external_style=False)
         "\n        map.addControl(new maplibregl.FullscreenControl(), 'top-right');"
         if settings.get('viewer_fullscreen', True) else ""
     )
+
+    # Compute top-right offset so custom buttons clear the stacked MapLibre controls.
+    # NavigationControl is always added (96 px) + 10 px top margin.
+    # FullscreenControl and GeolocateControl each add 39 px (10 px gap + 29 px button)
+    # when enabled.  Add 8 px breathing room before our buttons.
+    _tr_top = 10 + 96
+    if settings.get('viewer_fullscreen', True):
+        _tr_top += 39
+    if settings.get('viewer_geolocate', True):
+        _tr_top += 39
+    _tr_top += 8
+
+    # Compute bottom-left offset so custom labels clear the scale bar.
+    # MapLibre's ScaleControl is ~22 px tall with a 10 px bottom margin ≈ 32 px.
+    # Without scale bar keep a minimal 8 px gap.
+    _bl_base = 36 if settings.get('viewer_scale_bar', True) else 8
+
     coords_html = (
-        '\n    <div id="coords-display"'
-        ' style="position:absolute;bottom:30px;left:10px;'
+        f'\n    <div id="coords-display"'
+        f' style="position:absolute;bottom:{_bl_base + 30}px;left:10px;'
         'background:rgba(255,255,255,0.85);padding:4px 8px;border-radius:3px;'
         'font-family:monospace;font-size:12px;z-index:1;"></div>'
         if settings.get('viewer_coords', True) else ""
@@ -95,8 +112,8 @@ def generate_html_viewer(settings, style_json, bounds, use_external_style=False)
         if settings.get('viewer_coords', True) else ""
     )
     zoom_html = (
-        '\n    <div id="zoom-display"'
-        ' style="position:absolute;bottom:10px;left:10px;'
+        f'\n    <div id="zoom-display"'
+        f' style="position:absolute;bottom:{_bl_base}px;left:10px;'
         'background:rgba(255,255,255,0.85);padding:4px 8px;border-radius:3px;'
         'font-family:monospace;font-size:12px;z-index:1;"></div>'
         if settings.get('viewer_zoom_display', True) else ""
@@ -110,8 +127,8 @@ def generate_html_viewer(settings, style_json, bounds, use_external_style=False)
         if settings.get('viewer_zoom_display', True) else ""
     )
     reset_view_html = (
-        '\n    <button id="reset-view"'
-        ' style="position:absolute;top:50px;right:10px;z-index:1;'
+        f'\n    <button id="reset-view"'
+        f' style="position:absolute;top:{_tr_top}px;right:10px;z-index:1;'
         'background:white;border:1px solid #ccc;border-radius:4px;'
         'padding:4px 8px;cursor:pointer;font-size:12px;" title="Reset view">&#8962;</button>'
         if settings.get('viewer_reset_view', True) else ""
@@ -123,8 +140,8 @@ def generate_html_viewer(settings, style_json, bounds, use_external_style=False)
         if settings.get('viewer_reset_view', True) else ""
     )
     north_reset_html = (
-        '\n    <button id="north-reset"'
-        ' style="position:absolute;top:90px;right:10px;z-index:1;'
+        f'\n    <button id="north-reset"'
+        f' style="position:absolute;top:{_tr_top + 37}px;right:10px;z-index:1;'
         'background:white;border:1px solid #ccc;border-radius:4px;'
         'padding:4px 8px;cursor:pointer;font-size:12px;" title="Reset north">N</button>'
         if settings.get('viewer_north_reset', True) else ""

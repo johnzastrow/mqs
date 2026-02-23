@@ -2,7 +2,7 @@
 name=MapSplat
 qgisMinimumVersion=3.40
 description=Export QGIS projects to static web maps using PMTiles and MapLibre GL JS
-version=0.5.3
+version=0.5.4
 author=John Zastrow
 email=john@example.com
 
@@ -22,6 +22,11 @@ repository=https://github.com/johnzastrow/mqs
 hasProcessingProvider=no
 
 changelog=
+    0.5.4 - Fix viewer control overlaps
+    - Bottom-left zoom/coords labels now clear the scale bar dynamically
+    - Top-right buttons now clear NavigationControl + Fullscreen + Geolocate stack
+    0.5.3 - Fix basemap overlay icon rendering
+    - Replace multi-sprite array with single local sprite to fix biz icon lookup
     0.5.2 - Viewer controls
     - Added Viewer tab with 7 map control checkboxes
     - Controls: scale bar, geolocate, fullscreen, coords, zoom, reset-view, north-reset
