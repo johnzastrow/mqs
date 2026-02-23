@@ -2,7 +2,7 @@
 name=MapSplat
 qgisMinimumVersion=3.40
 description=Export QGIS projects to static web maps using PMTiles and MapLibre GL JS
-version=0.5.9
+version=0.5.10
 author=John Zastrow
 email=john@example.com
 
@@ -22,6 +22,10 @@ repository=https://github.com/johnzastrow/mqs
 hasProcessingProvider=no
 
 changelog=
+    0.5.10 - Fix basemap overlay: restore basemap rendering + fix POI labels
+    - Use protomaps.github.io/basemaps-assets/fonts as glyphs URL (has Noto Sans, 200 OK)
+    - Change business label font to Noto Sans Regular/Medium (available at same server)
+    - Remove broken demotiles.maplibre.org glyphs override (returned 404 for all fonts)
     0.5.9 - Fix basemap overlay POI icons not rendering (glyphs 404)
     - Override merged style glyphs URL with business style's working CDN
     - Protomaps basemaps-assets font server returns 404; MapLibre 4.x stalls symbol pipeline on glyphs failure

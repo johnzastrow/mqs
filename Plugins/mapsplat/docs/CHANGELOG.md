@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.5.10 — 2026-02-23
+
+### Fixed
+- **Basemap overlay: basemap now renders again; POI labels also correct** —
+  v0.5.9 changed the glyphs URL to `demotiles.maplibre.org/font/` which
+  returns HTTP 404 for every font, including Noto Sans (used by the Protomaps
+  basemap). `protomaps.github.io/basemaps-assets/fonts/` serves Noto Sans
+  Regular and Noto Sans Medium with HTTP 200 and CORS headers. By pointing the
+  glyphs URL back to the protomaps font server and changing the business label
+  font from "Open Sans Regular" (unavailable there) to "Noto Sans Regular"
+  (available), all glyph requests now resolve successfully. The v0.5.9 glyphs
+  override is removed; the basemap's own URL is kept as-is.
+
 ## v0.5.9 — 2026-02-23
 
 ### Fixed

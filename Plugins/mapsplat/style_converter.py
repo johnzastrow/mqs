@@ -17,7 +17,7 @@ Supported style properties:
 - Multiple symbol layers
 """
 
-__version__ = "0.5.9"
+__version__ = "0.5.10"
 
 import os
 from qgis.core import (
@@ -124,7 +124,7 @@ class StyleConverter:
             "version": 8,
             "name": self.settings.get("project_name", "MapSplat Export"),
             "sources": sources,
-            "glyphs": "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
+            "glyphs": "https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf",
             "layers": [
                 {
                     "id": "background",
@@ -254,7 +254,7 @@ class StyleConverter:
             "layout": {
                 "visibility": "visible",
                 "text-field": text_field,
-                "text-font": ["Open Sans Regular", "Arial Unicode MS Regular"],
+                "text-font": ["Noto Sans Regular", "Noto Sans Medium"],
                 "text-size": font_size,
                 "text-anchor": "center",
                 "text-justify": "center",
