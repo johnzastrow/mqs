@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.5.11 — 2026-02-23
+
+### Fixed
+- **Label font request no longer 404** — MapLibre joins the `text-font` array
+  elements with a comma and issues a single URL like
+  `Noto Sans Regular,Noto Sans Medium/0-255.pbf`. The protomaps font server
+  only hosts individual font files, so the combined-fontstack path returned 404.
+  Changed to a single-element array `["Noto Sans Regular"]` so the URL matches
+  what the server actually provides.
+
 ## v0.5.10 — 2026-02-23
 
 ### Fixed

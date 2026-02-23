@@ -17,7 +17,7 @@ Supported style properties:
 - Multiple symbol layers
 """
 
-__version__ = "0.5.10"
+__version__ = "0.5.11"
 
 import os
 from qgis.core import (
@@ -254,7 +254,7 @@ class StyleConverter:
             "layout": {
                 "visibility": "visible",
                 "text-field": text_field,
-                "text-font": ["Noto Sans Regular", "Noto Sans Medium"],
+                "text-font": ["Noto Sans Regular"],
                 "text-size": font_size,
                 "text-anchor": "center",
                 "text-justify": "center",

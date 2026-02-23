@@ -2,7 +2,7 @@
 name=MapSplat
 qgisMinimumVersion=3.40
 description=Export QGIS projects to static web maps using PMTiles and MapLibre GL JS
-version=0.5.10
+version=0.5.11
 author=John Zastrow
 email=john@example.com
 
@@ -22,6 +22,9 @@ repository=https://github.com/johnzastrow/mqs
 hasProcessingProvider=no
 
 changelog=
+    0.5.11 - Fix label font: single Noto Sans Regular (no combined fontstack 404)
+    - MapLibre joins text-font array into one URL path; protomaps server has no combined stacks
+    - Use single font ["Noto Sans Regular"] so request path matches available files
     0.5.10 - Fix basemap overlay: restore basemap rendering + fix POI labels
     - Use protomaps.github.io/basemaps-assets/fonts as glyphs URL (has Noto Sans, 200 OK)
     - Change business label font to Noto Sans Regular/Medium (available at same server)
