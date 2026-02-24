@@ -4,7 +4,7 @@ MapSplat - Config Manager Tests
 Tests for config file read/write roundtrip and edge cases.
 """
 
-__version__ = "0.6.0"
+__version__ = "0.6.1"
 
 import os
 import sys

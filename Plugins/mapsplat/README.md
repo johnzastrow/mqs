@@ -2,58 +2,66 @@
 
 **Export QGIS projects to static web maps using PMTiles and MapLibre GL JS**
 
-![MapSplat](docs/images/mapsplat_logo.png)
+![MapSplat](docs/images/logo.svg)
 
 [![QGIS](https://img.shields.io/badge/QGIS-3.40%2B-green.svg)](https://qgis.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-0.5.5-orange.svg)](docs/CHANGELOG.md)
+[![Version](https://img.shields.io/badge/Version-0.6.1-orange.svg)](docs/CHANGELOG.md)
 
-MapSplat is a QGIS plugin that exports your project layers to self-contained static web map packages. The output, including a baby python server, can be hosted on any static web server, cloud storage, or even run locally for quick sharing and prototyping. 
+MapSplat is a QGIS plugin that exports (splats) your project layers to self-contained static web map packages. The output can be hosted on any static web server, cloud storage, or run locally — no tile server, no backend, no new stack to learn. Check the [docs/](docs/) directory for design notes, a full changelog, and technical details on the PMTiles + MapLibre GL JS architecture.
 
-This was a little project with a focused use case that I whipped up for myself. It has some potential to do more, but it began as a way to show points on basemap with little more than a simple web server, without needing to set up a tile server or learn a new stack. Check the [docs](docs/) directory for thought history and a detailed assessment of the project's strengths, challenges, and technical feasibility - including why we chose PMTiles and MapLibre GL JS, and how we handle styling and basemap overlays.
+**Quick start: install the plugin, put the [pmtiles CLI](https://github.com/protomaps/go-pmtiles/releases) on your PATH, configure and export from the MapSplat panel, then run `python serve.py` in the output folder.**
 
-**To run it, put the [pmtiles CLI](https://github.com/protomaps/go-pmtiles/releases) on your PATH, then export a web map from QGIS and run the included `serve.py` script.**
-
-
+---
 
 ## Features
 
 ### Core Export
-- **Vector Export**: Export vector layers to PMTiles format (single file or per-layer)
-- **Automatic Styling**: Convert QGIS symbology to MapLibre GL Style JSON
-- **Label Support**: Extract QGIS labels (text field, font, halo) to MapLibre symbol layers
-- **Auto-Reprojection**: All layers automatically transformed to Web Mercator (EPSG:3857)
-- **Style Roundtripping**: Export `style.json` for editing in Maputnik, then re-import
+- **Vector layers → PMTiles**: All selected vector layers exported and tiled in one step
+- **Single or per-layer PMTiles**: Combine everything in one file or produce one file per layer
+- **Auto-reprojection**: All layers re-projected to Web Mercator (EPSG:3857) on export
+- **Style conversion**: QGIS Single Symbol, Categorized, Graduated, and Rule-based renderers converted to MapLibre GL Style JSON
+- **Label support**: Text field, font, size, color, and halo extracted from QGIS label settings
+- **SVG icon sprites**: Point layers using SVG marker symbols export as MapLibre symbol layers backed by a raster sprite sheet
+- **Style roundtripping**: Export `style.json`, edit in [Maputnik](https://maputnik.github.io/), re-import
 
 ### Basemap Overlay Mode
-- **Protomaps Basemap**: Overlay your data on a Protomaps-compatible basemap (local `.pmtiles` or URL)
-- **Basemap Extraction**: Automatically clips basemap tiles to your data extent using the `pmtiles` CLI
-- **Style Merging**: Merges basemap style with your data layers; your layers render on top
+- **Protomaps basemap**: Overlay your data on a Protomaps-compatible basemap from a local `.pmtiles` file or a remote URL
+- **Basemap clipping**: `pmtiles extract` automatically clips the basemap tiles to your data's bounding box at export time
+- **Style merging**: Basemap style and your data layers are merged; your layers render on top
 
 ### Viewer
-- **Interactive Viewer**: Self-contained `index.html` with click-to-identify popups
-- **Layer Toggles**: Per-layer visibility controls in a side panel
-- **Viewer Controls**: Configurable scale bar, geolocate, fullscreen, coordinates display, zoom display, reset view, and north reset buttons
-- **Offline Capable**: Viewer assets (MapLibre GL JS, PMTiles) can be bundled locally
-- **Built-in Dev Server**: `serve.py` included with every export — handles HTTP Range requests required by PMTiles
+- **Self-contained `index.html`**: Interactive web map with click-to-identify popups and layer toggles
+- **Configurable controls** (Viewer tab): Scale bar, geolocate, fullscreen, coordinate display, zoom display, reset-view, and north-reset buttons — each individually enabled or disabled before export
+- **Embeddable map**: `index.html` contains clearly marked `BEGIN`/`END` copy-paste sections so you can drop the map into an existing HTML page without rebuilding from scratch
+- **Built-in dev server**: `serve.py` bundled with every export handles HTTP Range requests required by PMTiles
+
+### Config Save/Load
+- **Save Config… / Load Config…**: Persist all export settings (layers, output folder, PMTiles mode, zoom, basemap, viewer controls) to a human-editable TOML file
+- **Portable configs**: Layer names (not runtime IDs) are stored, so a config file works across QGIS sessions and machines
+- **Hand-editable**: Every key has an inline comment; open the file in any text editor to tweak settings directly
 
 ### Compatibility
-- **Qt5/Qt6**: Works with QGIS 3.x (Qt5) and QGIS 4.x (Qt6)
-- **Static Hosting**: No server-side processing; works on GitHub Pages, Netlify, S3, or any web host
+- **Qt5 / Qt6**: Works with QGIS 3.x (Qt5) and QGIS 4.x (Qt6)
+- **Static hosting**: No server-side processing — works on GitHub Pages, Netlify, S3, Cloudflare Pages, or any web host
+
+---
 
 ## Limitations
 
 - **Vector layers only**: Raster layers (WMS, GeoTIFF, etc.) are not exported
 - **No 3D**: Extrusions, terrain, and 3D tiles are not supported
-- **No live data**: Output is a static snapshot; layers are not updated after export
-- **Rule-based renderer**: Simple rule filters are converted; complex nested rules fall back to a default style
+- **Static snapshot**: Layers are not updated after export; re-export to pick up data changes
+- **Rule-based renderer**: Simple filter rules are converted; complex nested rules fall back to a default style
 - **Heatmap / Point Cluster renderers**: Fall back to a simple default style
-- **Zoom range**: Tile generation is bounded by the max zoom set at export time (default 6); features are not visible above that zoom without re-exporting
-- **Basemap overlay requires `pmtiles` CLI**: The [Protomaps CLI](https://github.com/protomaps/go-pmtiles/releases) must be on your PATH for basemap extraction; the plugin checks for it at export time
-- **Basemap source URL requires internet at export time**: When extracting from a remote URL, an internet connection is required during export (not during viewing)
-- **Single sprite sheet**: All custom icons share one sprite; icon names must be unique across all exported layers
+- **Zoom range**: Features are only tiled up to the max zoom set at export time (default 6); re-export at a higher zoom for more detail
+- **Basemap overlay requires `pmtiles` CLI**: The [Protomaps CLI](https://github.com/protomaps/go-pmtiles/releases) must be on your PATH
+- **Basemap from URL requires internet at export time**: The extracted basemap is bundled locally; internet is not needed for viewing
+- **Single sprite sheet**: All custom icons share one sprite; icon names must be unique across exported layers
 - **No authentication**: The viewer and `serve.py` serve files without access control
-- **`python -m http.server` will not work**: The standard Python dev server does not reliably support HTTP Range requests; always use the included `serve.py` or a proper web server
+- **`python -m http.server` will not work**: The standard Python dev server does not reliably support HTTP Range requests; use the included `serve.py` or a proper web server
+
+---
 
 ## Requirements
 
@@ -64,11 +72,20 @@ This was a little project with a focused use case that I whipped up for myself. 
 | Python | 3.9+ | Bundled with QGIS |
 | pmtiles CLI | Any | Required only for basemap overlay mode |
 
+---
+
 ## Installation
+
+### From ZIP (Recommended for most users)
+
+1. Download the latest `mapsplat.zip` from [Releases](https://github.com/johnzastrow/mqs/releases)
+2. In QGIS: **Plugins → Manage and Install Plugins → Install from ZIP**
+3. Select the downloaded ZIP and click **Install Plugin**
+4. Enable **MapSplat** in the installed plugins list
 
 ### From Source (Development)
 
-**Linux/macOS:**
+**Linux / macOS:**
 ```bash
 git clone https://github.com/johnzastrow/mqs.git
 cd mqs/Plugins/mapsplat
@@ -91,13 +108,6 @@ cd mqs\Plugins\mapsplat
 
 Restart QGIS and enable the plugin in Plugin Manager.
 
-### From ZIP (Release)
-
-1. Download the latest `mapsplat.zip` from [Releases](https://github.com/johnzastrow/mqs/releases)
-2. In QGIS: **Plugins > Manage and Install Plugins > Install from ZIP**
-3. Select the downloaded ZIP file
-4. Enable "MapSplat" in the plugin list
-
 ### Manual Installation
 
 Copy the `mapsplat` folder to your QGIS plugins directory:
@@ -108,127 +118,180 @@ Copy the `mapsplat` folder to your QGIS plugins directory:
 | macOS | `~/Library/Application Support/QGIS/QGIS3/profiles/default/python/plugins/` |
 | Windows | `%APPDATA%\QGIS\QGIS3\profiles\default\python\plugins\` |
 
-## Usage
+---
 
-### Basic Export
+## Map Production Workflow
 
-1. Open a QGIS project with vector layers
-2. Click the **MapSplat** button in the toolbar (or **Web > MapSplat**)
-3. Select layers to export in the dockable panel
-4. Choose export options:
-   - **PMTiles mode**: Single file (all layers) or separate files per layer
-   - **Export style.json**: Check to save an editable style file alongside the viewer
-   - **Max zoom**: Highest zoom level at which tiles are generated (4–18; default 6)
-5. Set output folder and project name
-6. Click **Export Web Map**
+### Step 1 — Prepare your QGIS project
 
-### Basemap Overlay Export
+- Load and style the vector layers you want to publish
+- Set labels, colors, and symbology in QGIS as usual — MapSplat reads them automatically
+- Confirm layer names are meaningful; they become the source-layer names in the PMTiles file and appear in the viewer's layer panel
 
-1. Check **Use basemap overlay** in the export panel
-2. Choose a basemap source:
-   - **URL**: A hosted Protomaps `.pmtiles` file (requires internet at export time)
-   - **File**: A locally downloaded Protomaps `.pmtiles` file
-3. Provide a **basemap style.json** (download from [protomaps/basemaps](https://github.com/protomaps/basemaps/releases))
-4. Ensure the `pmtiles` CLI is on your PATH
-5. Export as normal — the basemap is clipped to your data extent and bundled in `data/basemap.pmtiles`
+### Step 2 — Open the MapSplat panel
 
-### Output Structure
+Click the **MapSplat** toolbar button (or **Web → MapSplat**). The panel docks on the right side of QGIS with three tabs: **Export**, **Viewer**, and **Log**.
 
-**Standalone (no basemap):**
+### Step 3 — Configure the Export tab
+
+1. **Layers to Export**: Select one or more vector layers from the list. Use *Select All* / *Select None* for convenience.
+2. **PMTiles mode**: Choose *Single file* (all layers in one `.pmtiles`) or *Separate files per layer* (one `.pmtiles` per layer). Single file is simpler; separate files let you toggle individual layer sources.
+3. **Max zoom** (4–18): Controls the highest zoom level at which tiles are generated. Higher zoom = more detail but exponentially longer processing and larger files.
+   - 6: country/region overview (fast, small)
+   - 10: city/neighbourhood level (good default for most data)
+   - 14+: street-level detail (can take minutes to hours for large datasets)
+4. **Export style.json**: Keep checked. Exports a standalone `style.json` alongside the viewer so you can edit styles in Maputnik and reload without re-exporting data.
+5. **Style only** (skip data): Re-generate HTML and style without re-converting data. Useful for rapid style iteration when the PMTiles file is already correct.
+6. **Import style.json…**: Load a previously edited Maputnik style to merge into the export.
+7. **Save export log**: Writes a timestamped `export.log` to `_webmap/` for debugging.
+8. **Project name**: Used as the map title in the viewer. Defaults to the QGIS project filename.
+9. **Output folder**: Where the `_webmap/` directory will be created.
+
+#### Basemap Overlay (optional)
+
+Enable the **Basemap Overlay** group to combine your data with a Protomaps basemap:
+
+1. Choose **Remote URL** (requires internet at export time) or **Local file** (a previously downloaded `.pmtiles` file)
+2. Enter or browse to the basemap source
+3. Browse to a **basemap style.json** from [protomaps/basemaps releases](https://github.com/protomaps/basemaps/releases)
+4. Ensure the `pmtiles` CLI is on your PATH (see [Requirements](#requirements))
+
+### Step 4 — Configure the Viewer tab
+
+Switch to the **Viewer** tab and toggle the map controls that should appear in the exported HTML:
+
+| Control | What it does |
+|---------|-------------|
+| Scale bar | Distance scale in the bottom-left corner |
+| Geolocate | "Show my location" button (uses browser geolocation) |
+| Fullscreen | Full-screen toggle button |
+| Coordinate display | Live longitude/latitude readout under the mouse cursor |
+| Zoom level display | Current zoom level readout |
+| Reset view | Button to fit the map back to the data extent |
+| North-up reset | Button to snap the map back to north-up / zero pitch |
+
+### Step 5 — Save a config (optional but recommended)
+
+Click **Save Config…** above the Export button. Choose a location and name (e.g. `stations_export.toml`). The config file stores all current settings — layers, output folder, zoom, basemap, viewer controls — in a human-readable TOML file you can share or re-use.
+
+To reload settings in a future session: click **Load Config…** and select the file. All widgets update instantly.
+
+### Step 6 — Export
+
+Click **Export Web Map**. The Log tab opens automatically. Watch progress messages; a typical export takes:
+- A few seconds for small datasets at low zoom
+- Minutes for large datasets or high zoom levels
+- Extra time for basemap extraction (network-dependent if using a URL source)
+
+On completion a dialog shows the path to `_webmap/`.
+
+### Step 7 — View locally
+
+```bash
+cd /path/to/output/_webmap
+python serve.py
 ```
-myproject_webmap/
-├── index.html              # Interactive web map viewer
-├── style.json              # MapLibre style (if "Export style.json" checked)
-├── serve.py                # Local dev server with Range request support
+
+`serve.py` starts a local HTTP server on port 8000 and opens your browser automatically. It handles HTTP Range requests (required by PMTiles) and CORS headers.
+
+> **Do not use `python -m http.server`** — it does not support Range requests reliably.
+
+---
+
+## Output Structure
+
+Every export writes to a single `_webmap/` directory inside the folder you specified:
+
+```
+_webmap/
+├── index.html              # Interactive map viewer (open this in a browser)
+├── style.json              # MapLibre GL Style JSON (if "Export style.json" checked)
+├── serve.py                # Local HTTP dev server with Range request support
+├── export.log              # Timestamped export log (if "Save export log" checked)
+├── README.txt              # Deployment quick-reference
 ├── data/
-│   └── layers.pmtiles      # Vector tile data (all layers combined)
-├── lib/
-│   ├── maplibre-gl.js      # MapLibre GL JS library
-│   ├── maplibre-gl.css     # MapLibre styles
-│   └── pmtiles.js          # PMTiles protocol handler
-└── sprites/                # Icon sprite sheet (if symbol layers present)
+│   ├── layers.pmtiles      # Vector tile data — all layers (single-file mode)
+│   ├── <layer>.pmtiles     # Per-layer files (separate-files mode)
+│   └── basemap.pmtiles     # Basemap tiles clipped to data extent (basemap mode only)
+├── lib/                    # Reserved for offline JS/CSS bundles (currently CDN)
+└── sprites/                # Icon sprite sheet (present when SVG marker layers exported)
     ├── sprites.png
     └── sprites.json
 ```
 
-**Basemap overlay:**
-```
-myproject_webmap/
-├── index.html
-├── style.json
-├── serve.py
-├── data/
-│   ├── layers.pmtiles      # Your exported vector data
-│   └── basemap.pmtiles     # Basemap tiles clipped to your extent
-└── lib/  ...
-```
+---
+
+## Embedding the Map in an Existing Page
+
+The generated `index.html` contains copy-paste markers so you can embed the map into any existing HTML page:
+
+1. Open `_webmap/index.html` in a text editor
+2. Find `<!-- <----- BEGIN MAPSPLAT: copy the lines below into your page <head> ----- -->` and copy everything up to the matching `END` comment into your target page's `<head>` (CDN links + styles)
+3. Find `<!-- <----- BEGIN MAPSPLAT: copy the lines below into your page <body> ----- -->` and copy everything up to the matching `END` comment into your target page's `<body>` (map divs + initialisation script)
+4. Ensure the CDN `<script>` and `<link>` tags from step 2 are present in the target page's `<head>`
+
+The `<div id="map">` is styled `position: absolute; top: 0; bottom: 0; width: 100%` by default — resize or reposition it with CSS to fit your page layout.
+
+---
 
 ## Local Viewing
 
-**Important**: You cannot open `index.html` directly from the filesystem (`file://`). PMTiles requires HTTP Range requests, which only work over HTTP/HTTPS.
+**PMTiles requires HTTP Range requests** — you cannot open `index.html` directly from the filesystem (`file://`).
 
-### Using the Included `serve.py` (Recommended)
-
-Every MapSplat export includes a `serve.py` script that provides a lightweight HTTP server with proper Range request support:
+### Using the included `serve.py` (recommended)
 
 ```bash
-cd myproject_webmap/
+cd _webmap/
 python serve.py
+# Opens http://localhost:8000 automatically
 ```
 
-Then open http://localhost:8000 in your browser.
+`serve.py` handles Range requests, CORS headers, and CORS preflight — everything needed for PMTiles to work locally.
 
-`serve.py` handles:
-- HTTP Range requests (required for PMTiles random access)
-- CORS headers (required if the viewer and tiles are on different origins)
-- CORS preflight (`OPTIONS`) requests
-- Clean shutdown on `Ctrl+C` or `SIGTERM`
-
-> **Why not `python -m http.server`?** The standard Python dev server does not reliably support Range requests and will cause PMTiles to fail to load.
-
-### Other Options
+### Other options
 
 ```bash
-# Node.js (npx, no install needed)
-npx serve myproject_webmap/
+# Node.js (no install needed)
+npx serve _webmap/
 
 # PHP
-cd myproject_webmap/
-php -S localhost:8000
+cd _webmap/ && php -S localhost:8000
 ```
+
+---
 
 ## Deployment
 
-### Static Hosting (GitHub Pages, Netlify, Vercel, S3)
+### Static hosting (GitHub Pages, Netlify, Vercel, S3)
 
-The web map is fully self-contained. Upload the entire output folder to any static host that supports Range requests (all major CDNs do).
+Upload the entire `_webmap/` folder to any static host that supports Range requests (all major CDNs do).
 
 **GitHub Pages:**
 ```bash
-cd myproject_webmap/
+cd _webmap/
 git init && git add . && git commit -m "web map"
 git remote add origin https://github.com/username/my-webmap.git
 git push -u origin main
 # Enable GitHub Pages in repository Settings → Pages
 ```
 
-**Netlify / Vercel:** Drag and drop the output folder to the dashboard, or connect your repository.
+**Netlify / Vercel:** Drag and drop the `_webmap/` folder to the dashboard, or connect your repository.
 
 **AWS S3:**
 ```bash
-aws s3 sync myproject_webmap/ s3://my-bucket/webmap/ --acl public-read
+aws s3 sync _webmap/ s3://my-bucket/webmap/ --acl public-read
 ```
 
-### Linux VPS with systemd
+### Linux VPS with `serve.py` (low traffic)
 
-`serve.py` can run as a persistent background service on a Linux VPS. It is suitable for low-to-moderate traffic (dozens of concurrent users). For higher traffic, use Nginx (see below).
+`serve.py` can run as a persistent background service. Suitable for personal or small-team use.
 
-**1. Copy files to the server:**
+**Copy files to the server:**
 ```bash
-scp -r myproject_webmap/ user@yourserver:/var/www/myproject_webmap/
+scp -r _webmap/ user@yourserver:/var/www/myproject/
 ```
 
-**2. Create the service file** at `/etc/systemd/system/mapsplat-myproject.service`:
+**Create `/etc/systemd/system/mapsplat-myproject.service`:**
 ```ini
 [Unit]
 Description=MapSplat Web Map — My Project
@@ -237,8 +300,8 @@ After=network.target
 [Service]
 Type=simple
 User=www-data
-WorkingDirectory=/var/www/myproject_webmap
-ExecStart=/usr/bin/python3 /var/www/myproject_webmap/serve.py
+WorkingDirectory=/var/www/myproject
+ExecStart=/usr/bin/python3 /var/www/myproject/serve.py
 Restart=on-failure
 RestartSec=5
 
@@ -246,7 +309,7 @@ RestartSec=5
 WantedBy=multi-user.target
 ```
 
-**3. Enable and start:**
+**Enable and start:**
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl enable mapsplat-myproject
@@ -254,25 +317,15 @@ sudo systemctl start mapsplat-myproject
 sudo systemctl status mapsplat-myproject
 ```
 
-**Notes on `serve.py` as a service:**
-- The `webbrowser.open()` call in `serve.py` silently fails on headless servers — the server still starts normally
-- The server binds to all interfaces on port 8000; open that port in your firewall if needed
-- Logs go to stdout/stderr and are captured by `journalctl -u mapsplat-myproject`
-- Python's `http.server` is **single-threaded**: one request is processed at a time. This is sufficient for personal or small-team use but not for high-traffic public maps
+> `serve.py` is single-threaded. For higher traffic, use Nginx (see below).
 
-**Firewall (ufw):**
-```bash
-sudo ufw allow 8000/tcp
-```
+### Linux VPS with Nginx (production)
 
-### Linux VPS with Nginx (Recommended for Production)
+Nginx handles Range requests natively and can terminate HTTPS.
 
-Nginx handles Range requests natively, serves files in parallel, and can terminate HTTPS. Use it instead of `serve.py` for production deployments.
-
-**Install Nginx:**
 ```bash
 sudo apt install nginx
-sudo cp -r myproject_webmap/ /var/www/myproject_webmap/
+sudo cp -r _webmap/ /var/www/myproject/
 ```
 
 **`/etc/nginx/sites-available/myproject`:**
@@ -280,13 +333,13 @@ sudo cp -r myproject_webmap/ /var/www/myproject_webmap/
 server {
     listen 80;
     server_name your-domain.com;
-    root /var/www/myproject_webmap;
+    root /var/www/myproject;
 
     location / {
         try_files $uri $uri/ =404;
     }
 
-    # CORS headers for PMTiles (needed if served from a different domain)
+    # CORS headers for PMTiles (only needed if served from a different domain)
     location ~* \.pmtiles$ {
         add_header Access-Control-Allow-Origin  "*" always;
         add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS" always;
@@ -299,17 +352,14 @@ server {
 ```bash
 sudo ln -s /etc/nginx/sites-available/myproject /etc/nginx/sites-enabled/
 sudo nginx -t && sudo systemctl reload nginx
-```
-
-Add HTTPS with Certbot:
-```bash
+# Add HTTPS:
 sudo apt install certbot python3-certbot-nginx
 sudo certbot --nginx -d your-domain.com
 ```
 
-### CORS Configuration
+### CORS configuration
 
-CORS headers are only required if your `index.html` and `.pmtiles` files are served from **different origins**. When both are served from the same server and domain (the typical case), CORS is not needed.
+CORS is only needed when `index.html` and `.pmtiles` files are served from **different origins**. When served from the same domain (the typical case), no CORS configuration is required.
 
 **Apache (.htaccess):**
 ```apache
@@ -332,15 +382,17 @@ CORS headers are only required if your `index.html` and `.pmtiles` files are ser
 }]
 ```
 
-### Offline Viewing
+---
 
-For fully offline operation (no CDN), replace the `unpkg.com` script tags in `index.html` with local copies, or ensure the `lib/` folder contains:
+## Style Editing with Maputnik
 
-| File | Source |
-|------|--------|
-| `maplibre-gl.js` | https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js |
-| `maplibre-gl.css` | https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css |
-| `pmtiles.js` | https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js |
+1. Export with **Export style.json** checked
+2. Open [Maputnik](https://maputnik.github.io/) → **Open → Upload** and select `style.json`
+3. Edit colors, widths, opacity, labels, etc.
+4. **Export → Download** to save the edited file
+5. In MapSplat, click **Import style.json…** to apply your edits to the next export
+
+---
 
 ## Supported Symbology
 
@@ -349,23 +401,15 @@ For fully offline operation (no CDN), replace the `unpkg.com` script tags in `in
 | Single Symbol | Full | Fill, line, and marker symbol layers |
 | Categorized | Full | MapLibre `match` expressions |
 | Graduated | Full | MapLibre `step` expressions |
-| Rule-based | Partial | Simple filter rules converted; nested/complex rules fall back to default style |
-| Heatmap | Fallback | Rendered as simple circles with default style |
-| Point Cluster | Fallback | Rendered as simple circles with default style |
-| Labels | Partial | Text field, font family, size, and halo extracted; complex label expressions may simplify |
-
-**Unsupported symbol layer types** (e.g., SVG markers, geometry generators) fall back to a simple geometry-appropriate default style.
+| Rule-based | Partial | Simple filter rules converted; complex nested rules fall back to default |
+| SVG marker (single symbol) | Full | Rasterised to sprite atlas; exported as MapLibre `symbol` layer |
+| Heatmap | Fallback | Rendered as simple circles |
+| Point Cluster | Fallback | Rendered as simple circles |
+| Labels | Partial | Text field, font, size, color, halo extracted; complex expressions may simplify |
 
 **Unit conversion**: QGIS millimetre sizes are converted to pixels at 96 DPI (1 mm ≈ 3.78 px).
 
-## Style Editing with Maputnik
-
-1. Export with **Export style.json** checked
-2. Open [Maputnik](https://maputnik.github.io/)
-3. Click **Open > Upload** and select your `style.json`
-4. Edit colors, widths, opacity, etc.
-5. Click **Export > Download** to save the edited file
-6. In MapSplat, use **Import style.json** to apply edits to future exports
+---
 
 ## Troubleshooting
 
@@ -376,27 +420,20 @@ For fully offline operation (no CDN), replace the `unpkg.com` script tags in `in
 3. Verify `data/layers.pmtiles` exists and is not 0 bytes
 4. If using basemap overlay, verify `data/basemap.pmtiles` also exists
 
-### Culvert / POI icons missing in basemap overlay mode
-
-Ensure you are on MapSplat v0.5.5 or later. Earlier versions passed `style.json` as a URL string to MapLibre, which prevented icon layers from rendering when two PMTiles sources were present. v0.5.5 fetches `style.json` at runtime and passes the parsed object, which resolves the issue.
-
 ### "ogr2ogr not found"
 
-GDAL 3.8+ is required. Check your version:
+GDAL 3.8+ is required:
 ```bash
 ogr2ogr --version
-```
-
-On Ubuntu/Debian:
-```bash
+# Ubuntu/Debian:
 sudo apt update && sudo apt install gdal-bin
 ```
 
 ### "pmtiles CLI not found" (basemap overlay)
 
-Download the `pmtiles` binary from [go-pmtiles releases](https://github.com/protomaps/go-pmtiles/releases) and place it on your PATH:
+Download from [go-pmtiles releases](https://github.com/protomaps/go-pmtiles/releases) and place on your PATH:
 ```bash
-# Example for Linux x86_64
+# Linux x86_64 example
 wget https://github.com/protomaps/go-pmtiles/releases/latest/download/go-pmtiles_Linux_x86_64.tar.gz
 tar xf go-pmtiles_Linux_x86_64.tar.gz
 sudo mv pmtiles /usr/local/bin/
@@ -405,79 +442,103 @@ pmtiles --version
 
 ### Style not applied / wrong colors
 
-Verify that layer names in `style.json` match the source-layer names in the PMTiles file. Use the [PMTiles Viewer](https://pmtiles.io/) to inspect your file.
+Verify that layer names in `style.json` match the `source-layer` names in the PMTiles file. Use the [PMTiles Viewer](https://pmtiles.io/) to inspect your file.
+
+### POI / culvert icons missing in basemap overlay mode
+
+Ensure you are on v0.5.5 or later. Earlier versions passed `style.json` as a URL string, which prevented icon layers from rendering when two PMTiles sources were present.
+
+---
 
 ## Development
 
-### Building
+### Build commands
 
 ```bash
 cd Plugins/mapsplat
 
-# Compile resources (after editing resources.qrc)
-make compile
-
-# Deploy to QGIS default profile
-make deploy
-
-# Create distribution ZIP
-make package
-
-# Run tests
-make test
+make compile   # Compile Qt resources (run after editing resources.qrc)
+make deploy    # Copy to QGIS default profile
+make package   # Produce mapsplat.zip for distribution
+make test      # Run unit tests
+make clean     # Remove compiled/cached files
 ```
 
-### Project Structure
+### Project structure
 
 ```
 mapsplat/
-├── __init__.py              # Plugin entry point
-├── mapsplat.py              # Plugin lifecycle (toolbar, menu, dockwidget)
-├── mapsplat_dockwidget.py   # All UI; validates settings, fires export
-├── exporter.py              # Orchestrates the full export workflow
-├── style_converter.py       # QGIS renderer → MapLibre Style JSON
+├── __init__.py              # Plugin entry point (classFactory)
+├── mapsplat.py              # Plugin lifecycle: toolbar, menu, dockwidget init
+├── mapsplat_dockwidget.py   # All UI: settings, validation, export trigger
+├── exporter.py              # Export orchestration; generate_html_viewer()
+├── style_converter.py       # QGIS renderer → MapLibre Style JSON v8
+├── config_manager.py        # TOML config read/write (no external dependencies)
+├── log_utils.py             # Timestamped log line formatter
 ├── metadata.txt             # Plugin metadata (version, changelog)
 ├── Makefile                 # Build automation
 ├── docs/
-│   ├── CHANGELOG.md
-│   ├── PLAN.md
-│   ├── REQUIREMENTS.md
-│   └── TODO.md
-└── test/                    # Unit tests (pure-Python helpers only)
+│   ├── CHANGELOG.md         # Full version history
+│   ├── PLAN.md              # Design notes and architecture decisions
+│   ├── REQUIREMENTS.md      # Technical requirements
+│   ├── TODO.md              # Planned features and known issues
+│   └── images/              # Logo and screenshots
+└── test/                    # Unit tests (pure-Python, no QGIS required)
+    ├── test_style_converter.py
+    ├── test_config_manager.py
+    ├── test_log_writer.py
+    └── test_viewer_controls.py
 ```
 
-### Architecture Notes
+### Architecture notes
 
-- `exporter.py` exports layers via `QgsVectorFileWriter` → GeoPackage, then calls `ogr2ogr` to convert to PMTiles
-- `style_converter.py` walks QGIS renderers and builds MapLibre Style JSON v8; unit conversion constant `MM_TO_PX = 3.78`
-- The generated `index.html` fetches `style.json` at runtime (not via URL string) to ensure MapLibre correctly resolves `pmtiles://` source URLs
-- Basemap overlay uses the `pmtiles extract` CLI command via `QProcess`
+- Export pipeline: `QgsVectorFileWriter` → GeoPackage → `ogr2ogr` (via `QProcess`) → PMTiles
+- `style_converter.py` walks QGIS renderers and builds MapLibre Style JSON v8; unit conversion `MM_TO_PX = 3.78`
+- `generate_html_viewer()` in `exporter.py` is a standalone function with no Qt dependencies, enabling unit testing
+- The HTML viewer fetches `style.json` at runtime (not as a URL string) so MapLibre correctly resolves `pmtiles://` source URLs
+- Basemap overlay uses `pmtiles extract` via `QProcess` with the same polling/cancellation pattern as `ogr2ogr`
+- Config files store layer **names**, not runtime QGIS layer IDs, so they are portable across sessions
+
+### Versioning and releases
+
+Bump `__version__` in all seven `.py` modules and `version=` in `metadata.txt` together. Update `docs/CHANGELOG.md`. Releases are created by pushing a version tag — the CI workflow builds `mapsplat.zip` and publishes the GitHub Release automatically:
+
+```bash
+git tag v0.6.1
+git push origin v0.6.1
+```
+
+---
 
 ## Contributing
 
-Contributions are welcome! Please:
+Contributions are welcome!
 
 1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes following the project versioning rules (bump `__version__` in all five `.py` files and `metadata.txt`, update `docs/CHANGELOG.md`)
-4. Push and open a Pull Request
+2. Create a feature branch (`git checkout -b feature/my-feature`)
+3. Write tests for new functionality (tests live in `test/`)
+4. Bump `__version__` in all seven `.py` files and `metadata.txt`, update `docs/CHANGELOG.md`
+5. Push and open a Pull Request
 
 See [TODO.md](docs/TODO.md) for planned features and known issues.
 
+---
+
 ## License
 
-MIT License — see [LICENSE](../../LICENSE) for details.
+MIT — see [LICENSE](../../LICENSE) for details.
 
 ## Credits
 
-- [MapLibre GL JS](https://maplibre.org/) — Open-source map rendering
-- [PMTiles](https://protomaps.com/docs/pmtiles) — Single-file tile archives
+- [MapLibre GL JS](https://maplibre.org/) — Open-source map rendering library
+- [PMTiles](https://protomaps.com/docs/pmtiles) — Single-file tile archive format
 - [Protomaps Basemaps](https://github.com/protomaps/basemaps) — Open basemap tiles and styles
-- [Maputnik](https://maputnik.github.io/) — Visual style editor
+- [Maputnik](https://maputnik.github.io/) — Visual MapLibre style editor
 - [QGIS](https://qgis.org/) — Geographic Information System
 
 ## Links
 
 - **Repository**: https://github.com/johnzastrow/mqs
 - **Issues**: https://github.com/johnzastrow/mqs/issues
+- **Releases**: https://github.com/johnzastrow/mqs/releases
 - **Documentation**: [docs/](docs/)

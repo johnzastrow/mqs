@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.6.1 — 2026-02-23
+
+### Changed
+- **Fixed output directory name** — export always writes to `_webmap/` inside the chosen output folder instead of `{project_name}_webmap/`. The export log (when enabled) is also placed in `_webmap/export.log`.
+- **Embeddable HTML** — `index.html` now contains `<!-- <----- BEGIN MAPSPLAT ... ----- -->` / `<!-- <----- END MAPSPLAT ... ----- -->` demarcation comments marking which `<head>` (CDN links + styles) and `<body>` (divs + script) blocks to copy when embedding the map in an existing page.
+- **New logo** — the pink blob mark (`docs/images/logo.svg`) is inlined in the viewer info panel header alongside the project name. `README.md` updated to reference the new logo.
+
 ## v0.6.0 — 2026-02-23
 
 ### Added

@@ -2,7 +2,7 @@
 name=MapSplat
 qgisMinimumVersion=3.40
 description=Export QGIS projects to static web maps using PMTiles and MapLibre GL JS
-version=0.6.0
+version=0.6.1
 author=John Zastrow
 email=john@example.com
 
@@ -22,6 +22,11 @@ repository=https://github.com/johnzastrow/mqs
 hasProcessingProvider=no
 
 changelog=
+    0.6.1 - Output dir, embeddable HTML, new logo
+    - Output directory is always _webmap/ (no project-name prefix)
+    - Export log also written to _webmap/export.log
+    - HTML viewer includes BEGIN/END copy-paste demarcation comments for embedding in existing pages
+    - New logo (pink blob) inlined in viewer info panel and README
     0.6.0 - Config file save/load
     - Save/Load Config buttons above Export button write/read human-editable TOML files
     - New config_manager.py: pure-Python TOML writer with per-key comments; line-by-line reader
