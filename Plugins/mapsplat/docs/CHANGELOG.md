@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.6.0 — 2026-02-23
+
+### Added
+- **Config file save/load** — "Save Config..." and "Load Config..." buttons above the Export button let users persist and restore all export settings between sessions.
+- **`config_manager.py`** — new pure-Python module (no external dependencies) that writes human-editable TOML files with per-key comment headers and reads them back with type detection (bool, int, string, string array).
+- Config files store all three setting groups: `[export]` (project name, output folder, layer names, PMTiles mode, zoom, style options, log flag), `[basemap]` (enabled, source type, source path, style path), and `[viewer]` (all 7 map-control checkboxes).
+- Layer **names** (not runtime QGIS IDs) are stored in the config file so configs are portable across sessions and machines; names are matched back to the live layer list on load.
+- Missing or unknown keys in hand-edited config files are silently ignored for forward compatibility.
+
 ## v0.5.11 — 2026-02-23
 
 ### Fixed

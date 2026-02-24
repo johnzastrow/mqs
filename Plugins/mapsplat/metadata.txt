@@ -2,7 +2,7 @@
 name=MapSplat
 qgisMinimumVersion=3.40
 description=Export QGIS projects to static web maps using PMTiles and MapLibre GL JS
-version=0.5.11
+version=0.6.0
 author=John Zastrow
 email=john@example.com
 
@@ -22,6 +22,11 @@ repository=https://github.com/johnzastrow/mqs
 hasProcessingProvider=no
 
 changelog=
+    0.6.0 - Config file save/load
+    - Save/Load Config buttons above Export button write/read human-editable TOML files
+    - New config_manager.py: pure-Python TOML writer with per-key comments; line-by-line reader
+    - Layer names (not runtime IDs) stored in config; resolved back to list items on load
+    - Config files store all export, basemap, and viewer settings
     0.5.11 - Fix label font: single Noto Sans Regular (no combined fontstack 404)
     - MapLibre joins text-font array into one URL path; protomaps server has no combined stacks
     - Use single font ["Noto Sans Regular"] so request path matches available files

@@ -2,11 +2,15 @@
 
 **Export QGIS projects to static web maps using PMTiles and MapLibre GL JS**
 
+![MapSplat](docs/images/mapsplat_logo.png)
+
 [![QGIS](https://img.shields.io/badge/QGIS-3.40%2B-green.svg)](https://qgis.org)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Version](https://img.shields.io/badge/Version-0.5.5-orange.svg)](docs/CHANGELOG.md)
 
-MapSplat is a QGIS plugin that exports your project layers to self-contained static web map packages. The output can be hosted on any static web server, cloud storage, or CDN — no tile server required.
+MapSplat is a QGIS plugin that exports your project layers to self-contained static web map packages. The output, including a baby python server, can be hosted on any static web server, cloud storage, or even run locally for quick sharing and prototyping. 
+
+This was a little project with a focused use case that I whipped up for myself. It has some potential to do more, but it began as a way to show points on basemap with little more than a simple web server, without needing to set up a tile server or learn a new stack. Check the [docs](docs/) directory for thought history and a detailed assessment of the project's strengths, challenges, and technical feasibility - including why we chose PMTiles and MapLibre GL JS, and how we handle styling and basemap overlays.
 
 ## Features
 

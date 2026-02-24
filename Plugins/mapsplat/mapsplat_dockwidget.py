@@ -5,7 +5,7 @@ This module contains the dockable widget that provides the main UI
 for layer selection, export options, and triggering exports.
 """
 
-__version__ = "0.5.11"
+__version__ = "0.6.0"
 
 import os
 
@@ -13,6 +13,11 @@ try:
     from .log_utils import format_log_line
 except ImportError:
     from log_utils import format_log_line  # test environment (no package)
+
+try:
+    from . import config_manager
+except ImportError:
+    import config_manager  # test environment (no package)
 
 from qgis.PyQt import uic
 from qgis.PyQt.QtCore import pyqtSignal, Qt
@@ -261,6 +266,16 @@ class MapSplatDockWidget(QDockWidget):
 
         export_layout.addWidget(output_group)
 
+        # ==================== Config Save/Load ====================
+        config_btn_layout = QHBoxLayout()
+        self.btn_save_config = QPushButton("Save Config...")
+        self.btn_load_config = QPushButton("Load Config...")
+        self.btn_save_config.clicked.connect(self._save_config)
+        self.btn_load_config.clicked.connect(self._load_config)
+        config_btn_layout.addWidget(self.btn_save_config)
+        config_btn_layout.addWidget(self.btn_load_config)
+        export_layout.addLayout(config_btn_layout)
+
         # ==================== Export Button ====================
         self.btn_export = QPushButton("Export Web Map")
         self.btn_export.setMinimumHeight(40)
@@ -368,6 +383,9 @@ class MapSplatDockWidget(QDockWidget):
 
         # Log file handle (opened at export start, closed at finish)
         self._log_file = None
+
+        # Remember last config directory for file dialogs
+        self._last_config_dir = ""
 
     def refresh_layer_list(self):
         """Refresh the layer list from the current project."""
@@ -670,6 +688,190 @@ class MapSplatDockWidget(QDockWidget):
             self._log("Cancelling export...", "warning")
             self._exporter.cancel()
             self.btn_cancel.setEnabled(False)
+
+    def _save_config(self):
+        """Save current UI settings to a TOML config file."""
+        # Determine default directory for the dialog
+        default_dir = (
+            self.txt_output_folder.text().strip()
+            or self._last_config_dir
+            or os.path.expanduser("~")
+        )
+
+        file_path, _ = QFileDialog.getSaveFileName(
+            self,
+            "Save MapSplat Config",
+            os.path.join(default_dir, "mapsplat_config.toml"),
+            "MapSplat Config (*.toml);;All Files (*)",
+        )
+        if not file_path:
+            return
+
+        self._last_config_dir = os.path.dirname(file_path)
+
+        # Collect layer names from selected items
+        layer_names = []
+        project = QgsProject.instance()
+        for item in self.layer_list.selectedItems():
+            layer_id = item.data(_UserRole)
+            layer = project.mapLayer(layer_id)
+            if layer:
+                layer_names.append(layer.name())
+
+        config_dict = {
+            "export": {
+                "project_name": self.txt_project_name.text().strip(),
+                "output_folder": self.txt_output_folder.text().strip(),
+                "layer_names": layer_names,
+                "pmtiles_mode": "single" if self.combo_export_mode.currentIndex() == 0 else "separate",
+                "max_zoom": self.spin_max_zoom.value(),
+                "export_style_json": self.chk_export_style.isChecked(),
+                "style_only": self.chk_style_only.isChecked(),
+                "imported_style_path": self.imported_style_path or "",
+                "write_log": self.chk_save_log.isChecked(),
+            },
+            "basemap": {
+                "enabled": self.basemap_group.isChecked(),
+                "source_type": "file" if self.radio_basemap_file.isChecked() else "url",
+                "source": self.txt_basemap_source.text().strip(),
+                "style_path": self.txt_basemap_style.text().strip(),
+            },
+            "viewer": {
+                "scale_bar": self.chk_viewer_scale_bar.isChecked(),
+                "geolocate": self.chk_viewer_geolocate.isChecked(),
+                "fullscreen": self.chk_viewer_fullscreen.isChecked(),
+                "coords": self.chk_viewer_coords.isChecked(),
+                "zoom_display": self.chk_viewer_zoom_display.isChecked(),
+                "reset_view": self.chk_viewer_reset_view.isChecked(),
+                "north_reset": self.chk_viewer_north_reset.isChecked(),
+            },
+        }
+
+        try:
+            config_manager.write_config(file_path, config_dict)
+            self._log(f"Config saved: {file_path}", "success")
+        except OSError as e:
+            self._log(f"Failed to save config: {e}", "error")
+
+    def _load_config(self):
+        """Load settings from a TOML config file into the UI."""
+        default_dir = self._last_config_dir or os.path.expanduser("~")
+
+        file_path, _ = QFileDialog.getOpenFileName(
+            self,
+            "Load MapSplat Config",
+            default_dir,
+            "MapSplat Config (*.toml);;All Files (*)",
+        )
+        if not file_path:
+            return
+
+        self._last_config_dir = os.path.dirname(file_path)
+
+        try:
+            config_dict = config_manager.read_config(file_path)
+        except (FileNotFoundError, ValueError) as e:
+            self._log(f"Failed to load config: {e}", "error")
+            return
+
+        applied = 0
+
+        # --- [export] section ---
+        export = config_dict.get("export", {})
+
+        if "project_name" in export:
+            self.txt_project_name.setText(export["project_name"])
+            applied += 1
+
+        if "output_folder" in export:
+            self.txt_output_folder.setText(export["output_folder"])
+            applied += 1
+
+        if "layer_names" in export:
+            saved_names = set(export["layer_names"])
+            project = QgsProject.instance()
+            for i in range(self.layer_list.count()):
+                item = self.layer_list.item(i)
+                layer_id = item.data(_UserRole)
+                layer = project.mapLayer(layer_id)
+                if layer and layer.name() in saved_names:
+                    item.setSelected(True)
+                else:
+                    item.setSelected(False)
+            applied += 1
+
+        if "pmtiles_mode" in export:
+            mode = export["pmtiles_mode"]
+            self.combo_export_mode.setCurrentIndex(0 if mode == "single" else 1)
+            applied += 1
+
+        if "max_zoom" in export:
+            self.spin_max_zoom.setValue(int(export["max_zoom"]))
+            applied += 1
+
+        if "export_style_json" in export:
+            self.chk_export_style.setChecked(bool(export["export_style_json"]))
+            applied += 1
+
+        if "style_only" in export:
+            self.chk_style_only.setChecked(bool(export["style_only"]))
+            applied += 1
+
+        if "imported_style_path" in export:
+            path_val = export["imported_style_path"]
+            if path_val:
+                self.imported_style_path = path_val
+                self.lbl_imported_style.setText(f"Imported: {os.path.basename(path_val)}")
+                self.lbl_imported_style.setStyleSheet("color: green;")
+            else:
+                self.imported_style_path = None
+                self.lbl_imported_style.setText("No style imported")
+                self.lbl_imported_style.setStyleSheet("color: gray; font-style: italic;")
+            applied += 1
+
+        if "write_log" in export:
+            self.chk_save_log.setChecked(bool(export["write_log"]))
+            applied += 1
+
+        # --- [basemap] section ---
+        basemap = config_dict.get("basemap", {})
+
+        if "enabled" in basemap:
+            self.basemap_group.setChecked(bool(basemap["enabled"]))
+            applied += 1
+
+        if "source_type" in basemap:
+            if basemap["source_type"] == "file":
+                self.radio_basemap_file.setChecked(True)
+            else:
+                self.radio_basemap_url.setChecked(True)
+            applied += 1
+
+        if "source" in basemap:
+            self.txt_basemap_source.setText(basemap["source"])
+            applied += 1
+
+        if "style_path" in basemap:
+            self.txt_basemap_style.setText(basemap["style_path"])
+            applied += 1
+
+        # --- [viewer] section ---
+        viewer = config_dict.get("viewer", {})
+        viewer_map = {
+            "scale_bar": self.chk_viewer_scale_bar,
+            "geolocate": self.chk_viewer_geolocate,
+            "fullscreen": self.chk_viewer_fullscreen,
+            "coords": self.chk_viewer_coords,
+            "zoom_display": self.chk_viewer_zoom_display,
+            "reset_view": self.chk_viewer_reset_view,
+            "north_reset": self.chk_viewer_north_reset,
+        }
+        for key, widget in viewer_map.items():
+            if key in viewer:
+                widget.setChecked(bool(viewer[key]))
+                applied += 1
+
+        self._log(f"Config loaded: {applied} settings applied from {file_path}", "info")
 
     def closeEvent(self, event):
         """Handle close event."""
