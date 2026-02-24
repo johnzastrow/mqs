@@ -12,6 +12,9 @@ MapSplat is a QGIS plugin that exports (splats) your project layers to self-cont
 
 **Quick start: install the plugin, put the [pmtiles CLI](https://github.com/protomaps/go-pmtiles/releases) on your PATH, configure and export from the MapSplat panel, then run `python serve.py` in the output folder.**
 
+
+The resulting HTML has comments that can help you copy/paste the map into another HTML page for embedding.
+
 ---
 
 ## Features
@@ -143,9 +146,9 @@ Click the **MapSplat** toolbar button (or **Web → MapSplat**). The panel docks
 4. **Export style.json**: Keep checked. Exports a standalone `style.json` alongside the viewer so you can edit styles in Maputnik and reload without re-exporting data.
 5. **Style only** (skip data): Re-generate HTML and style without re-converting data. Useful for rapid style iteration when the PMTiles file is already correct.
 6. **Import style.json…**: Load a previously edited Maputnik style to merge into the export.
-7. **Save export log**: Writes a timestamped `export.log` to `_webmap/` for debugging.
-8. **Project name**: Used as the map title in the viewer. Defaults to the QGIS project filename.
-9. **Output folder**: Where the `_webmap/` directory will be created.
+7. **Save export log**: Writes a timestamped `export.log` to `<project_name>/_webmap/` for debugging.
+8. **Project name**: Used as a subdirectory name and the map title in the viewer. Defaults to the QGIS project filename.
+9. **Output folder**: Parent folder. The full output path is `<output_folder>/<project_name>/_webmap/`.
 
 #### Basemap Overlay (optional)
 
@@ -183,12 +186,12 @@ Click **Export Web Map**. The Log tab opens automatically. Watch progress messag
 - Minutes for large datasets or high zoom levels
 - Extra time for basemap extraction (network-dependent if using a URL source)
 
-On completion a dialog shows the path to `_webmap/`.
+On completion a dialog shows the full path to `<project_name>/_webmap/`.
 
 ### Step 7 — View locally
 
 ```bash
-cd /path/to/output/_webmap
+cd /path/to/output/stations_project4/_webmap
 python serve.py
 ```
 
@@ -200,7 +203,7 @@ python serve.py
 
 ## Output Structure
 
-Every export writes to a single `_webmap/` directory inside the folder you specified:
+Every export writes to `<output_folder>/<project_name>/_webmap/`. For a project named `stations_project4` with output folder `C:/Maps`, the result is `C:/Maps/stations_project4/_webmap/`:
 
 ```
 _webmap/
@@ -225,7 +228,7 @@ _webmap/
 
 The generated `index.html` contains copy-paste markers so you can embed the map into any existing HTML page:
 
-1. Open `_webmap/index.html` in a text editor
+1. Open `<project_name>/_webmap/index.html` in a text editor
 2. Find `<!-- <----- BEGIN MAPSPLAT: copy the lines below into your page <head> ----- -->` and copy everything up to the matching `END` comment into your target page's `<head>` (CDN links + styles)
 3. Find `<!-- <----- BEGIN MAPSPLAT: copy the lines below into your page <body> ----- -->` and copy everything up to the matching `END` comment into your target page's `<body>` (map divs + initialisation script)
 4. Ensure the CDN `<script>` and `<link>` tags from step 2 are present in the target page's `<head>`
@@ -241,7 +244,7 @@ The `<div id="map">` is styled `position: absolute; top: 0; bottom: 0; width: 10
 ### Using the included `serve.py` (recommended)
 
 ```bash
-cd _webmap/
+cd <project_name>/_webmap/
 python serve.py
 # Opens http://localhost:8000 automatically
 ```
@@ -252,10 +255,10 @@ python serve.py
 
 ```bash
 # Node.js (no install needed)
-npx serve _webmap/
+npx serve <project_name>/_webmap/
 
 # PHP
-cd _webmap/ && php -S localhost:8000
+cd <project_name>/_webmap/ && php -S localhost:8000
 ```
 
 ---
@@ -264,11 +267,11 @@ cd _webmap/ && php -S localhost:8000
 
 ### Static hosting (GitHub Pages, Netlify, Vercel, S3)
 
-Upload the entire `_webmap/` folder to any static host that supports Range requests (all major CDNs do).
+Upload the entire `_webmap/` folder (inside the project subdirectory) to any static host that supports Range requests (all major CDNs do).
 
 **GitHub Pages:**
 ```bash
-cd _webmap/
+cd <project_name>/_webmap/
 git init && git add . && git commit -m "web map"
 git remote add origin https://github.com/username/my-webmap.git
 git push -u origin main
@@ -279,7 +282,7 @@ git push -u origin main
 
 **AWS S3:**
 ```bash
-aws s3 sync _webmap/ s3://my-bucket/webmap/ --acl public-read
+aws s3 sync <project_name>/_webmap/ s3://my-bucket/webmap/ --acl public-read
 ```
 
 ### Linux VPS with `serve.py` (low traffic)
@@ -288,7 +291,7 @@ aws s3 sync _webmap/ s3://my-bucket/webmap/ --acl public-read
 
 **Copy files to the server:**
 ```bash
-scp -r _webmap/ user@yourserver:/var/www/myproject/
+scp -r <project_name>/_webmap/ user@yourserver:/var/www/myproject/
 ```
 
 **Create `/etc/systemd/system/mapsplat-myproject.service`:**
@@ -325,7 +328,7 @@ Nginx handles Range requests natively and can terminate HTTPS.
 
 ```bash
 sudo apt install nginx
-sudo cp -r _webmap/ /var/www/myproject/
+sudo cp -r <project_name>/_webmap/ /var/www/myproject/
 ```
 
 **`/etc/nginx/sites-available/myproject`:**

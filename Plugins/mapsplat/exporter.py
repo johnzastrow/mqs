@@ -8,7 +8,7 @@ This module handles the actual export process:
 - Generating the HTML viewer
 """
 
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 
 import os
 import sys
@@ -515,7 +515,7 @@ class MapSplatExporter(QObject):
         """Internal export implementation."""
         output_base = self.settings["output_folder"]
         project_name = self.settings["project_name"]
-        output_dir = os.path.join(output_base, "_webmap")
+        output_dir = os.path.join(output_base, project_name, "_webmap")
 
         # Create output directory structure
         self.log_message.emit(f"Creating output directory: {output_dir}", "info")

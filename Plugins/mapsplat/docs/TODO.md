@@ -276,4 +276,6 @@
 - add controls to the plugin to allow user to select which map controls are included in the generated HTML viewer (e.g. zoom, rotation, fullscreen, etc.)
 - add support for exporting to other formats besides PMTiles (e.g. GeoJSON, Shapefile, etc.)
 - add support for exporting to cloud storage services (e.g. AWS S3, Google Cloud Storage, etc.)
+- bring all assets locally for offline use, including MapLibre GL JS and PMTiles JS libraries, to ensure the generated HTML viewer works without an internet connection when deploying to environments with limited connectivity. This would involve downloading the necessary JavaScript and CSS files during the export process and referencing them locally in the generated HTML file. File: `exporter.py`, `mapsplat_dockwidget.py`
+- 
 -

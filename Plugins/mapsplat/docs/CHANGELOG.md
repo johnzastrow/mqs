@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## v0.6.2 — 2026-02-23
+
+### Fixed
+- **Output directory now includes project name** — export path is `<output_folder>/<project_name>/_webmap/` so different projects written to the same output folder never overwrite each other. Previously the path was just `<output_folder>/_webmap/`, which silently discarded the Project Name input.
+
+### Changed
+- **Toolbar icon** — `icon.png` replaced with a 32×32 PNG rendered from `docs/images/logo.svg` (the pink splat mark) via Inkscape. The new icon appears in the QGIS toolbar and Plugin Manager.
+
 ## v0.6.1 — 2026-02-23
 
 ### Changed

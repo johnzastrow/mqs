@@ -5,7 +5,7 @@ This module contains the dockable widget that provides the main UI
 for layer selection, export options, and triggering exports.
 """
 
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 
 import os
 
@@ -585,8 +585,9 @@ class MapSplatDockWidget(QDockWidget):
         # Open log file before first message so the header is captured
         if self.chk_save_log.isChecked():
             output_folder = self.txt_output_folder.text().strip()
-            log_path = os.path.join(output_folder, "_webmap", "export.log")
-            os.makedirs(os.path.join(output_folder, "_webmap"), exist_ok=True)
+            project_name = self.txt_project_name.text().strip()
+            log_path = os.path.join(output_folder, project_name, "_webmap", "export.log")
+            os.makedirs(os.path.join(output_folder, project_name, "_webmap"), exist_ok=True)
             try:
                 from datetime import datetime
                 self._log_file = open(log_path, "a", encoding="utf-8")

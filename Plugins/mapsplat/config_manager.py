@@ -5,7 +5,7 @@ Pure-Python TOML-like config file reader/writer. No external dependencies.
 Supports human-editable config files with comments.
 """
 
-__version__ = "0.6.1"
+__version__ = "0.6.2"
 
 import os
 
