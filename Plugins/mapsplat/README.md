@@ -12,6 +12,10 @@ MapSplat is a QGIS plugin that exports your project layers to self-contained sta
 
 This was a little project with a focused use case that I whipped up for myself. It has some potential to do more, but it began as a way to show points on basemap with little more than a simple web server, without needing to set up a tile server or learn a new stack. Check the [docs](docs/) directory for thought history and a detailed assessment of the project's strengths, challenges, and technical feasibility - including why we chose PMTiles and MapLibre GL JS, and how we handle styling and basemap overlays.
 
+**To run it, put the [pmtiles CLI](https://github.com/protomaps/go-pmtiles/releases) on your PATH, then export a web map from QGIS and run the included `serve.py` script.**
+
+
+
 ## Features
 
 ### Core Export
