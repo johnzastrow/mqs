@@ -1,11 +1,13 @@
 # MQS
 My QGIS Stuff - A random assortment of things I might reuse. These might be images, styles, scripts or just documentation.
 
+
+**Note:** Mapsplat grew up and moved out of the house. Now it lives in its own apartment here [https://github.com/johnzastrow/mapsplat](https://github.com/johnzastrow/mapsplat)
 ---
 
 ## Support
 
-These are my resources that I make freely available to the world. You can ask me for help using them, but I may not be able to provide it due to knowledge or time constraints. I'm also not a QGIS developer, so I can't promise that these will work in future versions of QGIS. Use at your own risk. 
+These are the resources that I make freely available to the world. You can ask me for help using them, but I may not be able to provide it due to a lack of knowledge or time constraints. I'm also not a QGIS developer, so I can't promise that these will work in future versions of QGIS. Use at your own risk. 
 
 Have a look at my [blog post](https://johnzastrow.github.io/2025-10-01-qgis-tutorial-materials/) for some more usefulness
 
@@ -13,7 +15,7 @@ Have a look at my [blog post](https://johnzastrow.github.io/2025-10-01-qgis-tuto
 
 ## Scripts
 
-Lately I'm doing work using python scripts to be used the in the [QGIS Toolbox](https://docs.qgis.org/3.40/en/docs/user_manual/processing/toolbox.html). You can use these scripts by downloading them, then importing them into your toolbox as following
+Lately, I've been writing Python scripts for the [QGIS Toolbox](https://docs.qgis.org/3.40/en/docs/user_manual/processing/toolbox.html). You can use these scripts by downloading them, then importing them into your toolbox as follows
 
 1. Open your QGIS Toolbox
 2. Select `Add script to toolbox` from the little python button
@@ -79,11 +81,11 @@ See `docs/vectors2gpkg/README.md` for detailed documentation.
 Location: `docs/rasters2gpkg/`
 Script: `Scripts/rasters2gpkg.py`
 
-**This subproject has been abandoned due to GeoPackage specification limitations for analytical raster data.**
+**This subproject has been abandoned due to limitations in the GeoPackage specification for analytical raster data.**
 
-The GeoPackage raster storage specification is designed for tile-based base layers (web mapping), not analytical datasets requiring lossless compression, high bit-depths, and continuous data access. For analytical raster workflows, keep native formats (GeoTIFF, NetCDF, HDF) that are optimized for scientific analysis.
+The GeoPackage raster storage specification is designed for tile-based base layers (web mapping), not for analytical datasets that require lossless compression, high bit depths, and continuous data access. For analytical raster workflows, keep native formats (GeoTIFF, NetCDF, HDF) that are optimized for scientific analysis.
 
-See `docs/rasters2gpkg/README.md` for detailed explanation of abandonment reasons and alternative approaches.
+See `docs/rasters2gpkg/README.md` for a detailed explanation of abandonment reasons and alternative approaches.
 
 ---
 
@@ -141,7 +143,7 @@ See `docs/inventory_miner/README.md` for detailed documentation and usage exampl
 Location: `docs/metadata_manager/`
 Plugin: `Plugins/metadata_manager/`
 
-A QGIS Plugin that helps users create, manage, and apply metadata to layers following QGIS metadata standards. Uses a **unified GeoPackage database** shared with Inventory Miner for seamless integration - single database contains both file catalog AND metadata management. Features reusable metadata component libraries, guided workflow wizards, template system for bulk application, and real-time metadata status tracking. Perfect for data managers who need to create comprehensive metadata for large geospatial data collections.
+A QGIS Plugin that helps users create, manage, and apply metadata to layers following QGIS metadata standards. Uses a **unified GeoPackage database** shared with Inventory Miner for seamless integration - single database contains both file catalog AND metadata management. Features reusable metadata component libraries, guided workflow wizards, a template system for bulk application, and real-time metadata status tracking. Perfect for data managers who need to create comprehensive metadata for large geospatial data collections.
 
 **Features:**
 - **Unified database architecture**: Shares GeoPackage with Inventory Miner (e.g., `geospatial_catalog.gpkg`) - single source of truth
@@ -154,7 +156,7 @@ A QGIS Plugin that helps users create, manage, and apply metadata to layers foll
 - **Progressive Disclosure Wizard** ✅ (Phase 3 - COMPLETE): 4-step wizard (Essential → Common → Optional → Review) with skip navigation, validation, contact/link management, and HTML summary. Auto-saves to database cache. Completeness tracking (Complete/Partial status).
 - **Smart Defaults from Inventory** ✅ (Phase 4 - COMPLETE): Auto-populate title (Title Case), CRS, extent, geometry type, feature count, field list, raster dimensions. Uses existing GIS metadata if available. User refines instead of entering from scratch - massive time savings!
 - **Layer Browser Widget** ✅ (Phase 4 - COMPLETE): Embedded layer list with filtering (All/Needs/Partial/Complete), search, sortable columns, Next/Previous navigation with auto-save, position indicator. Seamless workflow for processing 50+ layers.
-- **Batch template application** (Phase 5 - Planned): Apply templates to multiple layers at once, watch dashboard update in real-time
+- **Batch template application** (Phase 5 - Planned): Apply templates to multiple layers at once, watch the dashboard update in real-time
 
 **Core Features:**
 - **Guided metadata creation**: Step-by-step wizard for creating QGIS-compliant metadata with Next/Previous navigation
@@ -164,17 +166,17 @@ A QGIS Plugin that helps users create, manage, and apply metadata to layers foll
 - **Validation**: Check metadata completeness and validate required fields
 - **Metadata caching**: All metadata backed up in metadata_cache table for recovery
 - **Dual version tracking**: Independent schema versions for Inventory Miner and Metadata Manager
-- **Versioning support**: Tracks retired inventory records when files deleted/moved
+- **Versioning support**: Tracks retired inventory records when files are deleted/moved
 
 **Installation** (QGIS Plugin - different from Processing scripts):
-1. **Prerequisites**: Install Inventory Miner script first (from Scripts/ directory)
+1. **Prerequisites**: Install the Inventory Miner script first (from Scripts/ directory)
 2. Copy `Plugins/metadata_manager` to your QGIS plugins folder:
    - Windows: `C:\Users\<username>\AppData\Roaming\QGIS\QGIS3\profiles\<profile>\python\plugins\`
    - Linux: `~/.local/share/QGIS/QGIS3/profiles/<profile>/python/plugins/`
    - macOS: `~/Library/Application Support/QGIS/QGIS3/profiles/<profile>/python/plugins/`
 3. Compile resources: `cd metadata_manager && make` (or `pyrcc5 -o resources.py resources.qrc`)
 4. Enable in QGIS: Plugins → Manage and Install Plugins → Enable "Metadata Manager"
-5. **First use**: Run Inventory Miner to create database, then select that database in Metadata Manager
+5. **First use**: Run Inventory Miner to create a database, then select that database in the Metadata Manager
 
 **Workflow**: Inventory Miner creates `geospatial_catalog.gpkg` → Metadata Manager adds its tables to same database → both tools share single unified database
 
@@ -228,6 +230,6 @@ Python scripts for the QGIS Processing Toolbox. These correspond to most subproj
 
 #### Plugins
 
-QGIS Plugins (installed differently from Processing scripts). Copy entire plugin directory to your QGIS plugins folder, compile resources, then enable in QGIS Plugin Manager.
+QGIS Plugins (installed differently from Processing scripts). Copy the entire plugin directory to your QGIS plugins folder, compile resources, then enable it in the QGIS Plugin Manager.
 
 1. **Plugins\metadata_manager** - ⚙️ IN DEVELOPMENT - see metadata_manager above for installation instructions
