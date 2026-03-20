@@ -122,9 +122,18 @@ Each plugin-based subproject should have:
    - Docs: `docs/inventory_miner/`
    - Purpose: Scan directories and create spatial inventory of geospatial data in GeoPackage
 
+5. **QGISProjectManager** (v0.1.0)
+   - Type: Standalone Python GUI (no PyQGIS required)
+   - Script: `Scripts/qgis_project_manager.py`
+   - Docs: `docs/QGISProjectManager/`
+   - Purpose: Edit QGIS project files stored in PostGIS without opening QGIS.
+     Fixes stale datasource URIs and authentication configs in batch.
+   - Dependencies: `psycopg2-binary`, `tkinter` (stdlib), `xml.etree` (stdlib)
+   - Run: `python Scripts/qgis_project_manager.py`
+
 #### QGIS Plugins
 
-5. **metadata_manager** (v0.1.0) - IN DEVELOPMENT
+6. **metadata_manager** (v0.1.0) - IN DEVELOPMENT
    - Type: QGIS Plugin
    - Plugin: `Plugins/metadata_manager/`
    - Docs: `docs/metadata_manager/`

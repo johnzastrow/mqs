@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-03-19
+
+### Added
+- **QGISProjectManager** (v0.1.0) — Standalone Python GUI tool
+  - Connects to any PostGIS database storing QGIS projects in `qgis_projects` table
+  - Lists all stored projects; loads and parses project XML without opening QGIS
+  - Displays all layers with host, database, schema.table, and auth config columns
+  - Structured editor for individual PostGIS layer connection parameters
+  - Batch edit dialog: override host, port, database, schema, user/password, auth config
+    across all selected layers in one operation
+  - Find & Replace across raw datasource URIs (plain text or Python regex)
+  - Preview tab shows before/after diff before any changes are committed
+  - Connection tester validates new credentials via direct psycopg2 connection
+  - Save corrected project to PostGIS (overwrite or new name) or export as `.qgs`
+  - No PyQGIS dependency — runs outside QGIS with only `psycopg2-binary`
+  - 20 unit tests covering URI parsing, building, XML extraction, and serialisation
+  - Documentation: `docs/QGISProjectManager/` with README, REQUIREMENTS, CHANGELOG
+
 ## [0.9.0] - 2025-10-07
 
 ### Added
